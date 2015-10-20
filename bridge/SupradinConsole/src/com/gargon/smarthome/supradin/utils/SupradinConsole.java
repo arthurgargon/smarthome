@@ -1,4 +1,4 @@
-package supradin.utils;
+package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.clunet.ClunetDictionary;
