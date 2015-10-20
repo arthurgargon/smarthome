@@ -5,13 +5,8 @@ import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
-import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
