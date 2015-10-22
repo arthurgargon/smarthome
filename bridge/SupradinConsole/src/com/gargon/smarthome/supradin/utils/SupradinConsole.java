@@ -70,8 +70,8 @@ public class SupradinConsole extends javax.swing.JFrame {
     
     private static final String APP_TRAY_TOOLTIP = "SupradinConsole";
 
-    private static final String ACTIVE_ICON_PATH   = "/supradin/resources/house_64.png";
-    private static final String INACTIVE_ICON_PATH = "/supradin/resources/house_red_64.png";
+    private static final String ACTIVE_ICON_PATH   = "/com/gargon/smarthome/supradin/resources/house_64.png";
+    private static final String INACTIVE_ICON_PATH = "/com/gargon/smarthome/supradin/resources/house_red_64.png";
     
     private TrayIcon trayIcon;
     private SystemTray tray;
