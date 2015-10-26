@@ -7,5 +7,7 @@
         <property name="hibernate.connection.username">smarthome</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
         <property name="connection.password">medvedAn</property>
+        
+        <mapping class="com.gargon.smarthome.supradin.utils.supradinkeeper.entities.Sniff"/>
   </session-factory>
 </hibernate-configuration>
