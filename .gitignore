@@ -2,6 +2,7 @@ build
 dist
 nbproject
 build.xml
+*.mf
 
 *.atsuo
 datasheets
