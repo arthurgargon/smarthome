@@ -23,8 +23,11 @@ public class ClunetDictionary {
         put(Clunet.ADDRESS_BROADCAST, "BROADCAST");
         put(Clunet.ADDRESS_SUPRADIN, "Supradin");
         put(Clunet.ADDRESS_AUDIOBOX, "AudioBox");
+        
         put(Clunet.ADDRESS_RELAY_1, "Relay_1");
         put(Clunet.ADDRESS_RELAY_2, "Relay_2");
+        
+        put(Clunet.ADDRESS_KITCHEN, "Kitchen");
         put(Clunet.ADDRESS_BATH_SENSORS, "BathSensors");
         put(Clunet.ADDRESS_WARDROBE, "Wardrobe");
     }};
@@ -49,6 +52,8 @@ public class ClunetDictionary {
         
         put(Clunet.COMMAND_SWITCH, "Switch");
         put(Clunet.COMMAND_SWITCH_INFO, "SwitchInfo");
+        put(Clunet.COMMAND_BUTTON, "Button");
+        put(Clunet.COMMAND_BUTTON_INFO, "ButtonInfo");
         
         put(Clunet.COMMAND_TEMPERATURE, "Temperature");
         put(Clunet.COMMAND_TEMPERATURE_INFO, "TemperatureInfo");
@@ -72,6 +77,9 @@ public class ClunetDictionary {
         
         put(Clunet.COMMAND_HEATFLOOR, "Heatfloor");
         put(Clunet.COMMAND_HEATFLOOR_INFO, "HeatfloorInfo");
+        
+        put(Clunet.COMMAND_DEVICE_STATE, "DeviceState");
+        put(Clunet.COMMAND_DEVICE_STATE_INFO, "DeviceStateInfo");
         
         put(Clunet.COMMAND_LOCK, "Lock");
         put(Clunet.COMMAND_UNLOCK, "Unlock");
@@ -160,22 +168,8 @@ public class ClunetDictionary {
         }
         return null;
     }
-    
-    public static Boolean motionInfo(byte[] value) {
-        if (value.length == 1) {
-            return value[0] == 1;
-        }
-        return null;
-    }
-    
-    public static Boolean doorsInfo(byte[] value) {
-        if (value.length == 1) {
-            return value[0] > 0;
-        }
-        return null;
-    }
-    
-     public static int[] lighLevelInfo(byte[] value) {
+
+   public static int[] lightLevelInfo(byte[] value) {
         if (value.length == 2) {
             return new int[]{value[0], value[1]};
         }
@@ -203,6 +197,11 @@ public class ClunetDictionary {
                     }
                 }
                 break;
+            case Clunet.COMMAND_BUTTON_INFO:
+                if (value.length == 2){
+                    return String.format("Кнопка %d %s", value[0], value[1] == 1 ? "нажата" : "не нажата");
+                }
+                break;
             case Clunet.COMMAND_TEMPERATURE_INFO:
                 String response = "";
                 Map<String, Float> t = temperatureInfo(value);
@@ -217,25 +216,28 @@ public class ClunetDictionary {
                 if (h != null){
                     return String.format("Влажность: %.01f %%", h);
                 }
-            break;
+                break;
             case Clunet.COMMAND_MOTION_INFO:
-                Boolean m = motionInfo(value);
-                if (m != null) {
-                    return m ? "Обнаружено движение" : "Движение отсутствует";
+                if (value.length == 1) {
+                    return value[0] == 1 ? "Обнаружено движение" : "Движение отсутствует";
                 }
-            break;
-            case Clunet.COMMAND_DOORS_INFO:
-                Boolean d = doorsInfo(value);
-                if (d != null) {
-                    return d ? "Дверь открыта" : "Дверь закрыта";
+                break;
+            case Clunet.COMMAND_DOORS_INFO:       
+                if (value.length == 1) {
+                    return value[0] > 0 ? "Дверь открыта" : "Дверь закрыта";
                 }
-            break;
+                break;
+            case Clunet.COMMAND_DEVICE_STATE_INFO:       
+                if (value.length == 2) {
+                    return String.format("Устройство %d %s", value[0], value[1] == 1 ? "включено" : "отключено");
+                }
+                break;
             case Clunet.COMMAND_LIGHT_LEVEL_INFO:
-                int[] ll = lighLevelInfo(value);
+                int[] ll = lightLevelInfo(value);
                 if (ll != null) {
                     return String.format("Уровень освещенности %s (%d %%)", ll[0] == 1 ? "высокий" : "низкий", ll[1]);
                 }
-            break;
+                break;
             case Clunet.COMMAND_HEATFLOOR_INFO:
                 if (value.length > 0) {
                     int cnt = value[0];

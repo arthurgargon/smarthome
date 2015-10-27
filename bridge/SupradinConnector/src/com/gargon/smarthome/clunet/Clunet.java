@@ -66,6 +66,12 @@ public class Clunet {
 
     /* Сообщение о состоянии всех выключателей устройства в виде битовой маски*/
     public final static int COMMAND_SWITCH_INFO = 0x21;
+    
+    /* Команда запроса состояния нефиксируемых кнопок*/
+    public final static int COMMAND_BUTTON = 0x22;
+    
+    /* Сообщает о состоянии нефиксируемой кнопки*/
+    public final static int COMMAND_BUTTON_INFO = 0x23;
 
     /* Команда запроса текущей температуры*/
     public final static int COMMAND_TEMPERATURE = 0x25;
@@ -116,6 +122,11 @@ public class Clunet {
     /* Сообщает о состоянии теплого пола */
     public final static int COMMAND_HEATFLOOR_INFO = 0x61;
     
+     /* Команда управления состоянием произвольного устройства */
+    public final static int COMMAND_DEVICE_STATE = 0x70;
+
+    /* Сообщает о состоянии произвольного устройства */
+    public final static int COMMAND_DEVICE_STATE_INFO = 0x71;
     
      /* Команда блокирования*/
     public final static int COMMAND_LOCK = 0xA0;
@@ -139,11 +150,17 @@ public class Clunet {
     public final static int ADDRESS_SUPRADIN  = 0x00;
     public final static int ADDRESS_BROADCAST = 0xFF;
     
-    public final static int ADDRESS_AUDIOBOX = 0x0A;
-    public final static int ADDRESS_RELAY_1  = 0x14;
-    public final static int ADDRESS_RELAY_2  = 0x15;
-    public final static int ADDRESS_BATH_SENSORS  = 0x1E;
-    public final static int ADDRESS_WARDROBE  = 0x1F;
+    
+    public final static int ADDRESS_AUDIOBOX        = 0x0A;
+    
+    public final static int ADDRESS_RELAY_1         = 0x14;
+    public final static int ADDRESS_RELAY_2         = 0x15;
+    
+    public final static int ADDRESS_KITCHEN         = 0x1D;
+    public final static int ADDRESS_BATH_SENSORS    = 0x1E;
+    public final static int ADDRESS_WARDROBE        = 0x1F;
+    
+    
     
     
      /**Отправляет сообщение по сети clunet:
