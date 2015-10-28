@@ -19,8 +19,6 @@ import java.util.logging.Logger;
  */
 public class SupradinKeeper {
 
-    private static final Logger LOG = Logger.getLogger(SupradinKeeper.class.getName());
-
     // JDBC driver name and database URL
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost/smarthome?useUnicode=true&characterEncoding=utf8";
