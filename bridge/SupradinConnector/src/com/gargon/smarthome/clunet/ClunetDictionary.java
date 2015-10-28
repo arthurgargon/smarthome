@@ -1,9 +1,11 @@
 package com.gargon.smarthome.clunet;
 
 import com.gargon.smarthome.clunet.utils.DataFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -159,6 +161,44 @@ public class ClunetDictionary {
         }
     }
     
+    
+    public static List<String> oneWireInfo(byte[] value) {
+        try {
+            List<String> r = new ArrayList();
+            if (value.length > 0) {
+                int num = value[0] & 0xFF;
+                int pos = 1;
+                for (int i = 0; i < num; i++) {
+                    r.add(DataFormat.bytesToHex(Arrays.copyOfRange(value, pos, pos + 8)));
+                    pos += 8;
+                }
+            }
+            return r;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /*Краткая информация о состоянии теплого пола, в консоле используется полная */
+    public static Map<String, Byte> heatfloorInfo(byte[] value) {
+        try {
+            Map<String, Byte> r = null;
+            if (value.length > 0) {
+                r = new HashMap();
+                int cnt = value[0];
+                if (value.length == cnt * 6 + 1) {
+                    for (int i = 0; i < cnt; i++) {
+                        int index = i * 6 + 1;
+                        r.put(String.valueOf(value[index]), value[index + 1]);
+                    }
+                }
+            }
+            return r;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public static Float humidityInfo(byte[] value) {
         try {
             if (value[0] != (byte)0xFF && value[1] != (byte)0xFF){
@@ -199,7 +239,7 @@ public class ClunetDictionary {
                 break;
             case Clunet.COMMAND_BUTTON_INFO:
                 if (value.length == 2){
-                    return String.format("Кнопка %d %s", value[0], value[1] == 1 ? "нажата" : "не нажата");
+                    return String.format("Кнопка %d: %s", value[0], value[1] == 1 ? "нажата" : "не нажата");
                 }
                 break;
             case Clunet.COMMAND_TEMPERATURE_INFO:
@@ -208,6 +248,15 @@ public class ClunetDictionary {
                 if (t != null){
                     for (Map.Entry<String, Float> entry : t.entrySet()){
                         response += String.format("Температура на датчике %s: %.01f °C; ", entry.getKey(), entry.getValue());
+                    }
+                }
+                return response;
+            case Clunet.COMMAND_ONEWIRE_INFO:
+                response = "";
+                List<String> ow = oneWireInfo(value);
+                if (ow != null) {
+                    for (String o : ow) {
+                        response += o + "; ";
                     }
                 }
                 return response;
@@ -229,7 +278,7 @@ public class ClunetDictionary {
                 break;
             case Clunet.COMMAND_DEVICE_STATE_INFO:       
                 if (value.length == 2) {
-                    return String.format("Устройство %d %s", value[0], value[1] == 1 ? "включено" : "отключено");
+                    return String.format("Устройство %d: %s", value[0], value[1] == 1 ? "включено" : "отключено");
                 }
                 break;
             case Clunet.COMMAND_LIGHT_LEVEL_INFO:
@@ -246,7 +295,7 @@ public class ClunetDictionary {
                         for (int i = 0; i < cnt; i++) {
                             int index = i * 6 + 1;
                             String solution = "???";
-                            switch (value[index]) {
+                            switch (value[index+1]) {
                                 case 0:
                                     solution = "Режим ожидания";
                                     break;
