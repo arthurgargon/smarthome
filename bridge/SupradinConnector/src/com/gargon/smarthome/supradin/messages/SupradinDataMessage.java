@@ -90,6 +90,43 @@ public class SupradinDataMessage {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SupradinDataMessage other = (SupradinDataMessage) obj;
+        if (this.src != other.src) {
+            return false;
+        }
+        if (this.dst != other.dst) {
+            return false;
+        }
+        if (this.command != other.command) {
+            return false;
+        }
+        if (this.size != other.size) {
+            return false;
+        }
+        return Arrays.equals(this.data, other.data);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 23 * hash + this.src;
+        hash = 23 * hash + this.dst;
+        hash = 23 * hash + this.command;
+        hash = 23 * hash + this.size;
+        hash = 23 * hash + Arrays.hashCode(this.data);
+        return hash;
+    }
+
+    
+    
+    @Override
     public String toString() {
         return "src=" + src + ", dst=" + dst + ", command=" + command + ", data=" + DataFormat.bytesToHex(data);
     }

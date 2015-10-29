@@ -252,8 +252,8 @@ public class Clunet {
     }
     
     public static SupradinDataMessage sendResponsible(SupradinConnection conn, final int address, final int priority, final int command,
-            SupradinConnectionResponseFilter responseFilter, int resonseTimeout) {
-        return sendResponsible(conn, address, priority, command, responseFilter, resonseTimeout, 1);
+            SupradinConnectionResponseFilter responseFilter, int responseTimeout) {
+        return sendResponsible(conn, address, priority, command, responseFilter, responseTimeout, 1);
     }
     
     
