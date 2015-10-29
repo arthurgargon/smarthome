@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.readers;
+package com.gargon.smarthome.supradin.utils.logger.commands.readers;
 
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
@@ -46,6 +46,7 @@ public class DataBytes implements Reader {
         }
     }
 
+    @Override
     public Map<String, Object> perform(SupradinDataMessage supradin) {
         if (supradin.getData().length > idByte1 && supradin.getData().length > valueByte1) {
 

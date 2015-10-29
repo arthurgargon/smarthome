@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config;
+package com.gargon.smarthome.supradin.utils.logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,12 +13,12 @@ import org.json.JSONObject;
  */
 public class ConfigReader {
 
-    public static void read() {
+    public static JSONObject read(String fileName) {
         String jsonData = "";
         BufferedReader br = null;
         try {
             String line;
-            br = new BufferedReader(new FileReader("C:\\Users\\gargon\\Desktop\\config.json"));
+            br = new BufferedReader(new FileReader(fileName));
             while ((line = br.readLine()) != null) {
                 jsonData += line + "\n";
             }
@@ -38,11 +38,12 @@ public class ConfigReader {
 
         try {
             if (jsonData != null) {
-                JSONObject obj = new JSONObject(jsonData);
+                return new JSONObject(jsonData);
             }
         } catch (Exception e) {
             Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, "JSON config file parse error", e);
         }
+        return null;
     }
 
 }

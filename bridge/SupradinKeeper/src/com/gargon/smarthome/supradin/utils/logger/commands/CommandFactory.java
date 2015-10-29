@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands;
+package com.gargon.smarthome.supradin.utils.logger.commands;
 
 import org.json.JSONObject;
 
@@ -25,6 +25,7 @@ public class CommandFactory {
                     c = new ChangeCommand(config);
                     break;
             }
+
         }
         return c;
     }

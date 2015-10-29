@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.readers;
+package com.gargon.smarthome.supradin.utils.logger.commands.readers;
 
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ public class DataByte implements Reader {
         }
     }
 
+    @Override
     public Map<String, Object> perform(SupradinDataMessage supradin) {
 
         if (supradin.getData().length > idByte && supradin.getData().length > valueByte) {

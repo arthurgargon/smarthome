@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.readers;
+package com.gargon.smarthome.supradin.utils.logger.commands.readers;
 
 import org.json.JSONObject;
 
@@ -8,7 +8,7 @@ import org.json.JSONObject;
  */
 public class ReaderFactory {
 
-    public static Reader createFilter(JSONObject config) {
+    public static Reader createReader(JSONObject config) {
         if (config != null) {
             if (config.has("name")) {
                 String readerName = config.optString("name").toLowerCase();
@@ -23,10 +23,9 @@ public class ReaderFactory {
                         return new DataBytes(config);
                     case "heatfloor":
                         return new Heatfloor();
-                    default:
                 }
             }
         }
-        return null;
+        return new DefaultReader();
     }
 }

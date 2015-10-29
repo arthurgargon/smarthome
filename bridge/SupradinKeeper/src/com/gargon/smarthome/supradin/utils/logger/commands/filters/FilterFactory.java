@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.filters;
+package com.gargon.smarthome.supradin.utils.logger.commands.filters;
 
 import org.json.JSONObject;
 

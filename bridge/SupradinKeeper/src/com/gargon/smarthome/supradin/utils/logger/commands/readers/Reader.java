@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.readers;
+package com.gargon.smarthome.supradin.utils.logger.commands.readers;
 
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import java.util.Map;

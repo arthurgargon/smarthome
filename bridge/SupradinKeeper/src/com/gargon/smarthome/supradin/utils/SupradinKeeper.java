@@ -1,17 +1,18 @@
 package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
-import com.gargon.smarthome.clunet.utils.DataFormat;
-import com.gargon.smarthome.supradin.SupradinConnection;
-import com.gargon.smarthome.supradin.SupradinDataListener;
-import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import com.gargon.smarthome.supradin.utils.logger.LoggerController;
+import com.gargon.smarthome.supradin.utils.logger.ConfigReader;
+import com.gargon.smarthome.supradin.utils.logger.RealTimeSupradinDataMessage;
+import com.gargon.smarthome.supradin.utils.logger.listeners.LoggerControllerMessageListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Calendar;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  *
@@ -30,24 +31,57 @@ public class SupradinKeeper {
     //Queries
     private static final String INSERT_QUERY = "insert into sniffs (s_time, src, dst, cmd, data, interpretation) values (?, ?, ?, ?, ?, ?)";
 
+    private static LoggerController controller = null;
+
     private static Connection dbConnection = null;
-    private static SupradinConnection supradinConnection;
+    private static PreparedStatement preparedStmt = null;
+
+    private static void dbInsert(RealTimeSupradinDataMessage message) {
+        try {
+            
+            System.out.println("inserting " + message.toString());
+            
+            preparedStmt.setLong(1, message.getTime());
+            preparedStmt.setByte(2, (byte) message.getSrc());
+            preparedStmt.setByte(3, (byte) message.getDst());
+            preparedStmt.setByte(4, (byte) message.getCommand());
+            preparedStmt.setBytes(5, message.getData());
+            preparedStmt.setString(6, ClunetDictionary.toString(message.getCommand(), message.getData()));
+
+            preparedStmt.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "insert error", ex);
+        }
+    }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
         try {
+            JSONObject config = ConfigReader.read("config.json");
+
             Class.forName(JDBC_DRIVER);
             dbConnection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            final PreparedStatement preparedStmt = dbConnection.prepareStatement(INSERT_QUERY);
+            preparedStmt = dbConnection.prepareStatement(INSERT_QUERY);
 
-            supradinConnection = new SupradinConnection();
-            supradinConnection.open();
+            controller = new LoggerController(config.optJSONObject("commands"));
+            controller.addMessageListener(new LoggerControllerMessageListener() {
+
+                @Override
+                public void messages(List<RealTimeSupradinDataMessage> messages) {
+                    for (RealTimeSupradinDataMessage m : messages) {
+                        dbInsert(m);
+                    }
+                }
+            });
 
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {
+                    if (controller != null) {
+                        controller.shutdown();
+                    }
+
                     if (dbConnection != null) {
                         try {
                             dbConnection.close();
@@ -56,50 +90,22 @@ public class SupradinKeeper {
                         }
                     }
 
-                    if (supradinConnection != null) {
-                        supradinConnection.close();
-                    }
-                    
                     Logger.getLogger(SupradinKeeper.class.getName()).log(Level.INFO, "SupradinKeeper closed");
                 }
             });
 
-            supradinConnection.addDataListener(new SupradinDataListener() {
-
-                @Override
-                public void dataRecieved(SupradinDataMessage supradin) {
-
-                    try {
-                        Calendar calendar = Calendar.getInstance();
-
-                        preparedStmt.setLong(1, calendar.getTime().getTime());
-                        preparedStmt.setByte(2, (byte)supradin.getSrc());
-                        preparedStmt.setByte(3, (byte)supradin.getDst());
-                        preparedStmt.setByte(4, (byte)supradin.getCommand());
-                        preparedStmt.setBytes(5, supradin.getData());
-                        preparedStmt.setString(6, ClunetDictionary.toString(supradin.getCommand(), supradin.getData()));
-
-                        preparedStmt.execute();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "insert error", ex);
-                    }
-                }
-            });
-            supradinConnection.connect();
-
         } catch (Exception e) {
             Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "initialization error", e);
 
+            if (controller != null) {
+                controller.shutdown();
+            }
             if (dbConnection != null) {
                 try {
                     dbConnection.close();
                 } catch (SQLException ex) {
                     Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "connection closing error", ex);
                 }
-            }
-
-            if (supradinConnection != null) {
-                supradinConnection.close();
             }
         }
     }

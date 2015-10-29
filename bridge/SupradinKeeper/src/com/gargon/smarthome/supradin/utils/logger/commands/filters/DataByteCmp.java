@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.utils.config.commands.filters;
+package com.gargon.smarthome.supradin.utils.logger.commands.filters;
 
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import org.json.JSONObject;
@@ -23,7 +23,7 @@ public class DataByteCmp implements Filter {
                 } catch (Exception e) {
                     eq = null;
                 }
-            } else if (config.has("new")) {
+            } else if (config.has("ne")) {
                 try {
                     ne = (byte) config.getInt("ne");
                 } catch (Exception e) {
