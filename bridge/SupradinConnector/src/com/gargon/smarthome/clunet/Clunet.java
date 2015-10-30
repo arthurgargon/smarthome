@@ -6,6 +6,9 @@ import java.util.List;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -308,9 +311,11 @@ public class Clunet {
     private static final int COMMAND_FIRMWARE_UPDATE_ERROR = 255;
     
     
+    private static final DateFormat logDateFormat = new SimpleDateFormat(/*"dd.MM.yy */"HH:mm:ss.S");
+
     private static void log(PrintStream log, String message) {
         if (log != null) {
-            log.println(message);
+            log.println(logDateFormat.format(new Date()) + ": " + message);
         }
     }
     
@@ -390,7 +395,11 @@ public class Clunet {
                                     }
                                 }
                             }
-                            log(log, "");
+                            //log(log, "");
+                            if (log != null){
+                                log.println();
+                            }
+                            
                             //Посылаем в устройство CLUNET_COMMAND_BOOT_CONTROL, в данных 5 
                             //Это завершает работу бутлоадера и запускает только что прошитый код.
                             log(log, "Done!");
