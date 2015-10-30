@@ -8,7 +8,6 @@ import com.gargon.smarthome.supradin.utils.logger.commands.Command;
 import com.gargon.smarthome.supradin.utils.logger.commands.CommandFactory;
 import com.gargon.smarthome.supradin.utils.logger.commands.PeriodCommand;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +41,9 @@ public final class LoggerController {
                 supradinConnection.addDataListener(new SupradinDataListener() {
                     @Override
                     public void dataRecieved(SupradinDataMessage message) {
-                        RealTimeSupradinDataMessage rtm = new RealTimeSupradinDataMessage(message, System.currentTimeMillis());
+                        final RealTimeSupradinDataMessage rtm = new RealTimeSupradinDataMessage(message, System.currentTimeMillis());
                         
-                        System.out.println(rtm.toString());
+                        //System.out.println(rtm.toString());
                         
                         if (commands.containsKey((byte) message.getCommand())) {
                             if (commands.get((byte) message.getCommand()).approve(rtm)) {

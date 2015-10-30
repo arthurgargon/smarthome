@@ -36,10 +36,9 @@ public class SupradinKeeper {
     private static Connection dbConnection = null;
     private static PreparedStatement preparedStmt = null;
 
-    private static void dbInsert(RealTimeSupradinDataMessage message) {
+    private static synchronized void dbInsert(RealTimeSupradinDataMessage message) {
         try {
-            
-            System.out.println("inserting " + message.toString());
+            //System.out.println("inserting " + message.toString());
             
             preparedStmt.setLong(1, message.getTime());
             preparedStmt.setByte(2, (byte) message.getSrc());
@@ -50,7 +49,7 @@ public class SupradinKeeper {
 
             preparedStmt.execute();
         } catch (SQLException ex) {
-            Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "insert error", ex);
+            Logger.getLogger(SupradinKeeper.class.getName()).log(Level.SEVERE, "insert error on: " + message, ex);
         }
     }
 
@@ -63,6 +62,7 @@ public class SupradinKeeper {
 
             Class.forName(JDBC_DRIVER);
             dbConnection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            dbConnection.setAutoCommit(true);
             preparedStmt = dbConnection.prepareStatement(INSERT_QUERY);
 
             controller = new LoggerController(config.optJSONObject("commands"));
