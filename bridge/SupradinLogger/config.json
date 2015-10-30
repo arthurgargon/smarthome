@@ -1,4 +1,9 @@
 {
+	db:{
+		/*jdbc_url: "jdbc:mysql://localhost/smarthome?useUnicode=true&characterEncoding=utf8",*/
+		/*jdbc_user: "smarthome",*/
+		/*jdbc_pass: ""*/
+	},
 	commands: {
 		3: {},		/*CLUNET_COMMAND_REBOOT*/
 		4: {},		/*CLUNET_COMMAND_BOOT_COMPLETED*/
@@ -66,9 +71,11 @@
 		
 		38:{		/*CLUNET_COMMAND_TEMPERATURE_INFO*/
 			type: "period",
-			period: 60,
+			period: 3600,
 			trigger: {
-				command: 37		/*CLUNET_COMMAND_TEMPERATURE*/
+				command: 37,		/*CLUNET_COMMAND_TEMPERATURE*/
+				data: "00",
+				timeout: 2000
 			},	
 			uniqueCount: 5,
 			reader:	{
@@ -80,7 +87,6 @@
 			period: 60,
 			trigger: {
 				command: 39,		/*CLUNET_COMMAND_HUMIDITY*/
-				data: "00"
 			},
 			uniqueCount: 2,
 		},
@@ -97,9 +103,9 @@
 		},
 		-1:{
 			type: "period",
-			period: 3600,
+			period: 30,
 			trigger: {
-				command: -2,		/*CLUNET_COMMAND_PING*/
+				command: -2,		/*CLUNET_COMMAND_PING_REPLY*/
 			},
 			triggerRequired: 1,
 		},
