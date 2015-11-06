@@ -112,7 +112,7 @@ public final class LoggerController {
                 shutdown();
             }
         } else {
-            throw new Exception("can't read config file");
+            Logger.getLogger(LoggerController.class.getName()).log(Level.SEVERE, "can't read config file. Application will be closed");
         }
     }
 

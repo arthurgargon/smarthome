@@ -63,7 +63,7 @@ public class SupradinLogger {
                 JSONObject db = config.getJSONObject("db");
                 
                 Class.forName(JDBC_DRIVER);
-                dbConnection = DriverManager.getConnection(db.optString("jdbc_url", DB_URL), db.optString("jdbc_user", DB_USER), db.optString("jdbc_user", DB_PASS));
+                dbConnection = DriverManager.getConnection(db.optString("jdbc_url", DB_URL), db.optString("jdbc_user", DB_USER), db.optString("jdbc_pass", DB_PASS));
                 dbConnection.setAutoCommit(true);
                 preparedStmt = dbConnection.prepareStatement(INSERT_QUERY);
 

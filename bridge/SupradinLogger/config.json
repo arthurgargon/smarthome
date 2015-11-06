@@ -104,9 +104,9 @@
 		},
 		-1:{
 			type: "period",
-			period: 30,
+			period: 1800,
 			trigger: {
-				command: -2,		/*CLUNET_COMMAND_PING_REPLY*/
+				command: -2,		/*CLUNET_COMMAND_PING_REPLY*/ 
 			},
 			triggerRequired: 1,
 		},
