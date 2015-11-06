@@ -8,7 +8,7 @@
 		3: {},		/*CLUNET_COMMAND_REBOOT*/
 		4: {},		/*CLUNET_COMMAND_BOOT_COMPLETED*/
 		16:{		/*CLUNET_COMMAND_CHANNEL*/
-			type: "always",
+			type: "always",	/*by default*/
 			filters: [
 				{
 					name: "databytecmp",
@@ -71,7 +71,7 @@
 		
 		38:{		/*CLUNET_COMMAND_TEMPERATURE_INFO*/
 			type: "period",
-			period: 3600,
+			period: 60,
 			trigger: {
 				command: 37,		/*CLUNET_COMMAND_TEMPERATURE*/
 				data: "00",
@@ -87,6 +87,7 @@
 			period: 60,
 			trigger: {
 				command: 39,		/*CLUNET_COMMAND_HUMIDITY*/
+				timeout: 1000
 			},
 			uniqueCount: 2,
 		},
