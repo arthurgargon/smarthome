@@ -26,7 +26,7 @@ public class SupradinLogger {
 
     //  Database credentials
     private static final String DB_USER = "smarthome";
-    private static final String DB_PASS = "medvedAn";
+    private static final String DB_PASS = "";
 
     //Queries
     private static final String INSERT_QUERY = "insert into sniffs (s_time, src, dst, cmd, data, interpretation) values (?, ?, ?, ?, ?, ?)";
