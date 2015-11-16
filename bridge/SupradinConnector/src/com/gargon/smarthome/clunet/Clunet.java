@@ -155,6 +155,7 @@ public class Clunet {
     
     
     public final static int ADDRESS_AUDIOBOX        = 0x0A;
+    public final static int ADDRESS_AUDIOBATH       = 0x0B;
     
     public final static int ADDRESS_RELAY_1         = 0x14;
     public final static int ADDRESS_RELAY_2         = 0x15;

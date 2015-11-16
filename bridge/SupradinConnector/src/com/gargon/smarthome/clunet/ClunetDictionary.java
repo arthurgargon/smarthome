@@ -24,7 +24,9 @@ public class ClunetDictionary {
     private static final Map<Integer, String> devices = new LinkedHashMap(){{
         put(Clunet.ADDRESS_BROADCAST, "BROADCAST");
         put(Clunet.ADDRESS_SUPRADIN, "Supradin");
+        
         put(Clunet.ADDRESS_AUDIOBOX, "AudioBox");
+        put(Clunet.ADDRESS_AUDIOBATH, "AudioBath");
         
         put(Clunet.ADDRESS_RELAY_1, "Relay_1");
         put(Clunet.ADDRESS_RELAY_2, "Relay_2");
