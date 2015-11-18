@@ -132,10 +132,7 @@ public class Clunet {
     public final static int COMMAND_DEVICE_STATE_INFO = 0x71;
     
      /* Команда блокирования*/
-    public final static int COMMAND_LOCK = 0xA0;
-    
-    /* Команда разблокирования*/
-    public final static int COMMAND_UNLOCK = 0xA1;
+    public final static int COMMAND_ANDROID = 0xA0;
     
     
 
