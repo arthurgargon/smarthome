@@ -85,8 +85,7 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_DEVICE_STATE, "DeviceState");
         put(Clunet.COMMAND_DEVICE_STATE_INFO, "DeviceStateInfo");
         
-        put(Clunet.COMMAND_LOCK, "Lock");
-        put(Clunet.COMMAND_UNLOCK, "Unlock");
+        put(Clunet.COMMAND_ANDROID, "Android");
     }};
     
     public static Map<Integer, String> getPrioritiesList(){

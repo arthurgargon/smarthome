@@ -605,20 +605,28 @@ public class Commands {
 
     /**
      * Проверяет должен ли быть планшет в ванной заблокирован или разблокирован
-     * по входящему сообщению
+     * по входящему сообщению и текущему состоянию
      *
      * @param message входящее сообщение для анализа
      * @return возвращает true - если планшет должен быть разблоокирован; false
      * - если планшет должен быть разблокирован; null - если переданное
      * сообщение не имеет значения
      */
-    public static Boolean isPadInBathtroomShouldBeUnlocked(SupradinDataMessage message) {
+    public static Boolean isPadInBathtroomShouldBeUnlocked(SupradinDataMessage message, boolean isNowUnlocked) {
         if (message != null) {
             switch (message.getCommand()) {
-                case Clunet.COMMAND_LOCK:
-                    return false;
-                case Clunet.COMMAND_UNLOCK:
-                    return true;
+                case Clunet.COMMAND_ANDROID:
+                    if (message.getData().length == 1){
+                        switch(message.getData()[0]){
+                            case 0:
+                                return false;
+                            case 1: 
+                                return true;
+                            case 2:
+                                return !isNowUnlocked;
+                        }
+                    }
+                break;
                 case Clunet.COMMAND_LIGHT_LEVEL_INFO:
                     if (message.getSrc() == Clunet.ADDRESS_BATH_SENSORS
                             && message.getData().length == 2) {
