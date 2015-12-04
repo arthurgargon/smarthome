@@ -70,9 +70,11 @@ public class PeriodCommand extends Command {
         if (filter(message)) {
             Map<String, Object> v = read(message);
             try {
-                for (Map.Entry<String, Object> entry : v.entrySet()) {
-                    String key = message.getSrc() + ";" + entry.getKey();
-                    lastValues.put(key, message);
+                if (v != null) {
+                    for (Map.Entry<String, Object> entry : v.entrySet()) {
+                        String key = message.getSrc() + ";" + entry.getKey();
+                        lastValues.put(key, message);
+                    }
                 }
             } catch (Exception e) {
                 Logger.getLogger(PeriodCommand.class.getName()).log(Level.SEVERE, "reader format error", e);
