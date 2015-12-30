@@ -22,12 +22,14 @@ import java.awt.TrayIcon;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +41,14 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.ListModel;
+import javax.swing.ListCellRenderer;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -93,23 +97,55 @@ public class SupradinConsole extends javax.swing.JFrame {
     public SupradinConsole() {
         initComponents();
         
+        
+        //filter lists implementation
+        MouseListener filterCheckBoxItemMouseListener = new MouseAdapter() {
+            
+            public void mouseClicked(MouseEvent event) {
+                JList<CheckBoxItem> list = (JList<CheckBoxItem>) event.getSource();
+
+                // Get index of item clicked
+                int index = list.locationToIndex(event.getPoint());
+                CheckBoxItem item = (CheckBoxItem) list.getModel()
+                        .getElementAt(index);
+
+                // Toggle selected state
+                item.setChecked(!item.isChecked());
+
+                // Repaint cell
+                list.repaint(list.getCellBounds(index, index));
+            }
+        };
+        
+        
         //filters models
+        listFilterSenders.setCellRenderer(new FilterListCellRenderer());
+        listFilterSenders.addMouseListener(filterCheckBoxItemMouseListener);
+        
         DefaultListModel model = new DefaultListModel();
         listFilterSenders.setModel(model);
         for (Map.Entry<Integer, String> entry : ClunetDictionary.getDevicesList().entrySet()) {
-            model.addElement(entry.getValue());
+            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
         }
         
+        
+        listFilterRecievers.setCellRenderer(new FilterListCellRenderer());
+        listFilterRecievers.addMouseListener(filterCheckBoxItemMouseListener);
+      
         model = new DefaultListModel();
         listFilterRecievers.setModel(model);
         for (Map.Entry<Integer, String> entry : ClunetDictionary.getDevicesList().entrySet()) {
-            model.addElement(entry.getValue());
+            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
         }
         
+        
+        listFilterCommands.setCellRenderer(new FilterListCellRenderer());
+        listFilterCommands.addMouseListener(filterCheckBoxItemMouseListener);
+      
         model = new DefaultListModel();
         listFilterCommands.setModel(model);
         for (Map.Entry<Integer, String> entry : ClunetDictionary.getCommandsList().entrySet()) {
-            model.addElement(entry.getValue());
+            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
         }
         
         
@@ -315,6 +351,8 @@ public class SupradinConsole extends javax.swing.JFrame {
                         }
                     });
                 }
+                
+                printMessageCount();
             }
         });
         connection.connect();
@@ -327,7 +365,7 @@ public class SupradinConsole extends javax.swing.JFrame {
             public void run() {
                 boolean active = connection.isActive();
                 if (btSend.isEnabled() ^ active) {
-                    lbStatus.setText(active ? "Подключено" : "Не подключено");
+                    setTitle(String.format("SupradinConsole [%s]", active ? "Подключено" : "Не подключено"));
                     btSearchDevices.setEnabled(active);                              //дополнительно отсеиваем лок по нажатию на "Поиск устройств"
                     btSend.setEnabled(active);
                     
@@ -386,18 +424,17 @@ public class SupradinConsole extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         lbFilterSender = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        listFilterSenders = new javax.swing.JList<>();
+        listFilterSenders = new javax.swing.JList();
         lbFilterReciever = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        listFilterRecievers = new javax.swing.JList<>();
+        listFilterRecievers = new javax.swing.JList();
         jScrollPane4 = new javax.swing.JScrollPane();
-        listFilterCommands = new javax.swing.JList<>();
+        listFilterCommands = new javax.swing.JList();
         lbFilterCommand = new javax.swing.JLabel();
         cbFilterAllSenders = new javax.swing.JCheckBox();
         cbFilterAllRecievers = new javax.swing.JCheckBox();
         cbFilterAllCommands = new javax.swing.JCheckBox();
         btResetFilters = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tbMain = new JColoredClunetTable();
@@ -412,9 +449,8 @@ public class SupradinConsole extends javax.swing.JFrame {
         edData = new javax.swing.JTextField();
         btSend = new javax.swing.JButton();
         btSearchDevices = new javax.swing.JButton();
-        lbStatus = new javax.swing.JLabel();
         lbNumDevices = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        lbNumMessages = new javax.swing.JLabel();
 
         miShowConsole.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         miShowConsole.setText("Показать консоль");
@@ -618,9 +654,9 @@ public class SupradinConsole extends javax.swing.JFrame {
         pmMain.add(pmiResetFilters);
 
         jFilterDialog.setTitle("Фильтр");
-        jFilterDialog.setMinimumSize(new java.awt.Dimension(420, 500));
+        jFilterDialog.setMinimumSize(new java.awt.Dimension(510, 500));
         jFilterDialog.setModal(true);
-        jFilterDialog.setPreferredSize(new java.awt.Dimension(420, 500));
+        jFilterDialog.setPreferredSize(new java.awt.Dimension(510, 500));
         jFilterDialog.setResizable(false);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -628,23 +664,41 @@ public class SupradinConsole extends javax.swing.JFrame {
         lbFilterSender.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         lbFilterSender.setText("Отправитель");
 
+        listFilterSenders.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(listFilterSenders);
 
         lbFilterReciever.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         lbFilterReciever.setText("Получатель");
 
+        listFilterRecievers.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane3.setViewportView(listFilterRecievers);
 
+        listFilterCommands.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane4.setViewportView(listFilterCommands);
 
         lbFilterCommand.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         lbFilterCommand.setText("Команда");
 
         cbFilterAllSenders.setText("Выбрать все");
+        cbFilterAllSenders.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbFilterAllSendersActionPerformed(evt);
+            }
+        });
 
         cbFilterAllRecievers.setText("Выбрать все");
+        cbFilterAllRecievers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbFilterAllRecieversActionPerformed(evt);
+            }
+        });
 
         cbFilterAllCommands.setText("Выбрать все");
+        cbFilterAllCommands.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbFilterAllCommandsActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -663,10 +717,13 @@ public class SupradinConsole extends javax.swing.JFrame {
                     .add(lbFilterReciever))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lbFilterCommand)
-                    .add(cbFilterAllCommands)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lbFilterCommand)
+                            .add(cbFilterAllCommands))
+                        .add(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -683,18 +740,16 @@ public class SupradinConsole extends javax.swing.JFrame {
                     .add(cbFilterAllCommands))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
                     .add(jScrollPane3)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane4))
                 .addContainerGap())
         );
 
         btResetFilters.setText("Сбросить все фильтры");
-
-        jButton2.setText("Отмена");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btResetFilters.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btResetFiltersActionPerformed(evt);
             }
         });
 
@@ -713,13 +768,9 @@ public class SupradinConsole extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(btResetFilters)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jButton3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton2)
+                .add(jButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .add(jFilterDialogLayout.createSequentialGroup()
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, Short.MAX_VALUE))
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jFilterDialogLayout.setVerticalGroup(
             jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -728,7 +779,6 @@ public class SupradinConsole extends javax.swing.JFrame {
                 .add(9, 9, 9)
                 .add(jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btResetFilters)
-                    .add(jButton2)
                     .add(jButton3))
                 .addContainerGap())
         );
@@ -824,21 +874,20 @@ public class SupradinConsole extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1Layout.createSequentialGroup()
-                        .add(cbAddress, 0, 187, Short.MAX_VALUE)
+                        .add(cbAddress, 0, 182, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(lbCommand)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbCommand, 0, 198, Short.MAX_VALUE)
+                        .add(cbCommand, 0, 183, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(lbPriority))
                     .add(edData))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(54, 54, 54)
-                        .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbPriority, 0, 210, Short.MAX_VALUE)))
+                    .add(cbPriority, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(0, 0, Short.MAX_VALUE)
+                        .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -867,17 +916,11 @@ public class SupradinConsole extends javax.swing.JFrame {
             }
         });
 
-        lbStatus.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        lbStatus.setAutoscrolls(true);
-
         lbNumDevices.setAutoscrolls(true);
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+        lbNumMessages.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lbNumMessages.setText("Сообщений: 0");
+        lbNumMessages.setToolTipText("");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -886,25 +929,22 @@ public class SupradinConsole extends javax.swing.JFrame {
             .add(jScrollPane1)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(btSearchDevices)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(lbNumDevices, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(lbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(lbNumDevices, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 360, Short.MAX_VALUE)
+                .add(lbNumMessages, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(6, 6, 6)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(btSearchDevices)
-                        .add(lbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(lbNumDevices, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jButton1))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(btSearchDevices)
+                    .add(lbNumDevices, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(lbNumMessages, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1037,37 +1077,6 @@ public class SupradinConsole extends javax.swing.JFrame {
         Commands.changeVolumeOfSoundInRoom(connection, false);
     }//GEN-LAST:event_miSoundRoomDecVolumeActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-         DefaultTableModel model = (DefaultTableModel) tbMain.getModel();
-            DateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS");
-            
-            int srci = 10;
-            int dsti = 11;
-            int cmdi = 16;
-            
-               String src = DataFormat.byteToHex(srci);
-                String srcName = ClunetDictionary.getDeviceById(srci);
-                if (srcName != null) {
-                    src += " - " + srcName;
-                }
-
-                String rcv = DataFormat.byteToHex(dsti);
-                String rcvName = ClunetDictionary.getDeviceById(dsti);
-                if (rcvName != null) {
-                    rcv += " - " + rcvName;
-                }
-
-                String cmd = DataFormat.byteToHex(cmdi);
-                String cmdName = ClunetDictionary.getCommandById(cmdi);
-                if (cmdName != null) {
-                    cmd += " - " + cmdName;
-                }
-
-                String interpretation = ClunetDictionary.toString(cmdi, new byte[]{01});
-        
-        model.addRow(new Object[]{sdf.format(new Date()), src, rcv, cmd, DataFormat.bytesToHex(new byte[]{01}), interpretation});
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void pmiCopyAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiCopyAllActionPerformed
         String buf = "";
         
@@ -1132,37 +1141,107 @@ public class SupradinConsole extends javax.swing.JFrame {
 
     private void pmiClearAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiClearAllActionPerformed
         ((DefaultTableModel)tbMain.getModel()).setRowCount(0);
+        printMessageCount();
     }//GEN-LAST:event_pmiClearAllActionPerformed
 
     private void pmiFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiFilterActionPerformed
-       /* RowFilter<Object, Object> filter = new RowFilter<Object, Object>() {
-            @Override
-            public boolean include(RowFilter.Entry entry) {
-                //Integer population = (Integer) entry.getValue(1);
-                //return population.intValue() > 3;
-                
-                return ((Integer)entry.getIdentifier()) > 5;
-            }
-        };
-        
-        TableRowSorter<TableModel> sorter = new TableRowSorter(tbMain.getModel());
-        sorter.setRowFilter(filter);
-        tbMain.setRowSorter(sorter);*/
-       
-       jFilterDialog.setVisible(true);
+        jFilterDialog.setLocation(getLocationOnScreen().x + getSize().width / 2 - jFilterDialog.getSize().width / 2,
+                getLocationOnScreen().y + getSize().height / 2 - jFilterDialog.getSize().height / 2);
+        jFilterDialog.setVisible(true);
     }//GEN-LAST:event_pmiFilterActionPerformed
 
     private void pmiResetFiltersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiResetFiltersActionPerformed
         tbMain.setRowSorter(null);
+        printMessageCount();
     }//GEN-LAST:event_pmiResetFiltersActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        //reset at first
+        tbMain.setRowSorter(null);
+        
+        //prepare the filter
+        List<RowFilter<Object, Object>> filters = new ArrayList(3);
+
+        List<RowFilter<Object, Object>> srcFilters = new ArrayList();
+        DefaultListModel model = (DefaultListModel) listFilterSenders.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
+            if (cbi.isChecked()) {
+                srcFilters.add(RowFilter.regexFilter(cbi.toString(), 1));
+            }
+        }
+        if (!srcFilters.isEmpty()) {
+            filters.add(RowFilter.orFilter(srcFilters));
+        }
+
+        List<RowFilter<Object, Object>> rcvFilters = new ArrayList();
+        model = (DefaultListModel) listFilterRecievers.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
+            if (cbi.isChecked()) {
+                rcvFilters.add(RowFilter.regexFilter(cbi.toString(), 2));
+            }
+        }
+        if (!rcvFilters.isEmpty()) {
+            filters.add(RowFilter.orFilter(rcvFilters));
+        }
+
+        List<RowFilter<Object, Object>> cmdFilters = new ArrayList();
+        model = (DefaultListModel) listFilterCommands.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
+            if (cbi.isChecked()) {
+                cmdFilters.add(RowFilter.regexFilter(cbi.toString(), 3));
+            }
+        }
+        if (!cmdFilters.isEmpty()) {
+            filters.add(RowFilter.orFilter(cmdFilters));
+        }
+
+        //apply filter if need
+        if (!filters.isEmpty()) {
+            TableRowSorter<TableModel> sorter = new TableRowSorter(tbMain.getModel());
+            sorter.setRowFilter(RowFilter.andFilter(filters));
+            tbMain.setRowSorter(sorter);
+        }
+
         jFilterDialog.setVisible(false);
+        
+        printMessageCount();
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        jFilterDialog.setVisible(false);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void cbFilterAllSendersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFilterAllSendersActionPerformed
+        DefaultListModel model = (DefaultListModel) listFilterSenders.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            ((CheckBoxItem) model.getElementAt(i)).setChecked(cbFilterAllSenders.isSelected());
+        }
+        listFilterSenders.repaint();
+    }//GEN-LAST:event_cbFilterAllSendersActionPerformed
+
+    private void cbFilterAllRecieversActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFilterAllRecieversActionPerformed
+        DefaultListModel model = (DefaultListModel) listFilterRecievers.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            ((CheckBoxItem) model.getElementAt(i)).setChecked(cbFilterAllRecievers.isSelected());
+        }
+        listFilterRecievers.repaint();
+    }//GEN-LAST:event_cbFilterAllRecieversActionPerformed
+
+    private void cbFilterAllCommandsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFilterAllCommandsActionPerformed
+        DefaultListModel model = (DefaultListModel) listFilterCommands.getModel();
+        for (int i = 0; i < model.getSize(); i++) {
+            ((CheckBoxItem) model.getElementAt(i)).setChecked(cbFilterAllCommands.isSelected());
+        }
+        listFilterCommands.repaint();
+    }//GEN-LAST:event_cbFilterAllCommandsActionPerformed
+
+    private void btResetFiltersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btResetFiltersActionPerformed
+        cbFilterAllSenders.setSelected(false);
+        cbFilterAllSendersActionPerformed(null);
+        cbFilterAllRecievers.setSelected(false);
+        cbFilterAllRecieversActionPerformed(null);
+        cbFilterAllCommands.setSelected(false);
+        cbFilterAllCommandsActionPerformed(null);
+    }//GEN-LAST:event_btResetFiltersActionPerformed
 
     private void trayImageFree() {
         if (tray != null && trayIcon != null){
@@ -1237,6 +1316,17 @@ public class SupradinConsole extends javax.swing.JFrame {
         setVisible(true);
         setExtendedState(getExtendedState() & (~JFrame.ICONIFIED));
     }
+    
+    private void printMessageCount(){
+        if (tbMain.getRowCount() != tbMain.getModel().getRowCount()){   //has filtered
+            lbNumMessages.setText(String.format("Сообщений: %d / %d", tbMain.getRowCount(), tbMain.getModel().getRowCount()));
+            lbNumMessages.setForeground(Color.RED);
+        }else{
+            lbNumMessages.setText(String.format("Сообщений: %d", tbMain.getRowCount()));
+            lbNumMessages.setForeground(Color.BLACK);
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -1287,8 +1377,6 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JCheckBox cbFilterAllSenders;
     private javax.swing.JComboBox cbPriority;
     private javax.swing.JTextField edData;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JDialog jFilterDialog;
     private javax.swing.JPanel jPanel1;
@@ -1308,11 +1396,11 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JLabel lbFilterReciever;
     private javax.swing.JLabel lbFilterSender;
     private javax.swing.JLabel lbNumDevices;
+    private javax.swing.JLabel lbNumMessages;
     private javax.swing.JLabel lbPriority;
-    private javax.swing.JLabel lbStatus;
-    private javax.swing.JList<String> listFilterCommands;
-    private javax.swing.JList<String> listFilterRecievers;
-    private javax.swing.JList<String> listFilterSenders;
+    private javax.swing.JList listFilterCommands;
+    private javax.swing.JList listFilterRecievers;
+    private javax.swing.JList listFilterSenders;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miLightBathroomOff;
     private javax.swing.JMenuItem miLightBathroomOn;
@@ -1387,7 +1475,7 @@ class ComboBoxItem {
 
 class CheckBoxItem extends ComboBoxItem {
 
-    private boolean checked;
+    private boolean checked = false;
 
     public CheckBoxItem(int id, String value) {
         super(id, value);
@@ -1400,4 +1488,31 @@ class CheckBoxItem extends ComboBoxItem {
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
+}
+
+class FilterListCellRenderer extends JCheckBox implements ListCellRenderer<Object> {
+
+    @Override
+    public Component getListCellRendererComponent(JList<? extends Object> list, Object value, int index,
+            boolean isSelected, boolean cellHasFocus) {
+
+        setComponentOrientation(list.getComponentOrientation());
+        setFont(list.getFont());
+        setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+        setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+        setEnabled(list.isEnabled());
+
+        if (value != null && value instanceof CheckBoxItem) {
+            CheckBoxItem cbi = (CheckBoxItem) value;
+            setText(cbi.toString());
+            setSelected(cbi.isChecked());
+        }
+
+        return this;
+    }
+    
+    
+    
+    
+
 }
