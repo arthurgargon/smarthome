@@ -1152,6 +1152,7 @@ public class SupradinConsole extends javax.swing.JFrame {
 
     private void pmiResetFiltersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiResetFiltersActionPerformed
         tbMain.setRowSorter(null);
+        btResetFiltersActionPerformed(null);
         printMessageCount();
     }//GEN-LAST:event_pmiResetFiltersActionPerformed
 
