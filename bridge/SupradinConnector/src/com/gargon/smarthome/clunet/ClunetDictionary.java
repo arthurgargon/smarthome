@@ -30,6 +30,7 @@ public class ClunetDictionary {
         
         put(Clunet.ADDRESS_RELAY_1, "Relay_1");
         put(Clunet.ADDRESS_RELAY_2, "Relay_2");
+        put(Clunet.ADDRESS_KITCHEN_LIGHT, "KitchenLight");
         
         put(Clunet.ADDRESS_KITCHEN, "Kitchen");
         put(Clunet.ADDRESS_BATH_SENSORS, "BathSensors");

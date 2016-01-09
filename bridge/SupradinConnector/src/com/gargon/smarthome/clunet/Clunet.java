@@ -156,6 +156,7 @@ public class Clunet {
     
     public final static int ADDRESS_RELAY_1         = 0x14;
     public final static int ADDRESS_RELAY_2         = 0x15;
+    public final static int ADDRESS_KITCHEN_LIGHT   = 0x16;
     
     public final static int ADDRESS_KITCHEN         = 0x1D;
     public final static int ADDRESS_BATH_SENSORS    = 0x1E;
