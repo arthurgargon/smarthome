@@ -335,7 +335,7 @@ public class SupradinConsole extends javax.swing.JFrame {
 
                 //check if we need autoscroll
                 JViewport viewport = (JViewport) tbMain.getParent();
-                Rectangle rect = tbMain.getCellRect(model.getRowCount() - 1, 0, true);
+                Rectangle rect = tbMain.getCellRect(tbMain.getRowCount() - 1, 0, true);
                 rect.setBounds(0, rect.y - viewport.getViewPosition().y, rect.width, 1);
                 boolean autoscroll = new Rectangle(viewport.getExtentSize()).contains(rect);
 
@@ -347,7 +347,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            tbMain.scrollRectToVisible(tbMain.getCellRect(model.getRowCount() - 1, 0, true));
+                            tbMain.scrollRectToVisible(tbMain.getCellRect(tbMain.getRowCount() - 1, 0, true));
                         }
                     });
                 }
