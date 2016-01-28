@@ -335,10 +335,20 @@ public class ClunetDictionary {
                 break;
             case Clunet.COMMAND_FAN_INFO:
                 if (value.length > 1){
-                    String state = null;
+                    String mode = null;
                     switch (value[0]){
+                        case 0:
+                            mode = "авто режим выкл.";
+                            break;
                         case 1:
-                            state = "режим ожидания";
+                            mode = "авто режим";
+                            break;
+                    }
+                    
+                    String state = null;
+                    switch (value[1]){
+                        case 1:
+                            state = "ожидание";
                             break;
                         case 2:
                             state = "требуется включение";
@@ -350,8 +360,8 @@ public class ClunetDictionary {
                             state = "включен (ручной)";
                             break;
                     }
-                    if (state != null){
-                        return String.format("Вентилятор: %s", state);
+                    if (mode != null && state != null){
+                        return String.format("Вентилятор (%s): %s", mode, state);
                     }
                 }
             break;
