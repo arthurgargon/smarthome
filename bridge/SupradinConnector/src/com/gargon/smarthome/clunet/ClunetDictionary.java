@@ -87,6 +87,7 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_DEVICE_STATE_INFO, "DeviceStateInfo");
         
         put(Clunet.COMMAND_ANDROID, "Android");
+        put(Clunet.COMMAND_DEBUG, "Debug");
     }};
     
     public static Map<Integer, String> getPrioritiesList(){

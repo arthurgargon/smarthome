@@ -133,6 +133,9 @@ public class Clunet {
     
      /* Команда блокирования*/
     public final static int COMMAND_ANDROID = 0xA0;
+
+    /* Команда отладки*/
+    public final static int COMMAND_DEBUG = 0x99;
     
     
 
