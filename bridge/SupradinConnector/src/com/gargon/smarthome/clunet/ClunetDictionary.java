@@ -43,6 +43,10 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_BOOT_CONTROL, "BootControl");
         put(Clunet.COMMAND_REBOOT, "Reboot");
         put(Clunet.COMMAND_BOOT_COMPLETED, "BootCompleted");
+        
+        put(Clunet.COMMAND_TIME, "Time");
+        put(Clunet.COMMAND_TIME_INFO, "TimeInfo");
+        
         put(Clunet.COMMAND_PING, "Ping");
         put(Clunet.COMMAND_PING_REPLY, "PingReply");
         
@@ -243,6 +247,11 @@ public class ClunetDictionary {
             case Clunet.COMMAND_BUTTON_INFO:
                 if (value.length == 2){
                     return String.format("Кнопка %d: %s", value[0], value[1] == 1 ? "нажата" : "не нажата");
+                }
+                break;
+             case Clunet.COMMAND_TIME_INFO:
+                if (value.length == 7){
+                    return String.format("Текущая дата: %02d-%02d-%04d %02d:%02d:%02d, %d день недели", value[2], value[1], value[0]+2000, value[3], value[4], value[5], value[6]);
                 }
                 break;
             case Clunet.COMMAND_TEMPERATURE_INFO:

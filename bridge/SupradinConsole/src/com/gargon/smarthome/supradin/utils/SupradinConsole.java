@@ -1,6 +1,7 @@
 package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.Clunet;
+import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
@@ -311,7 +312,7 @@ public class SupradinConsole extends javax.swing.JFrame {
             DateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS");
 
             @Override
-            public void dataRecieved(SupradinDataMessage supradin) {
+            public void dataRecieved(SupradinConnection connection, SupradinDataMessage supradin) {
 
                 String src = DataFormat.byteToHex(supradin.getSrc());
                 String srcName = ClunetDictionary.getDeviceById(supradin.getSrc());
@@ -355,6 +356,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                 printMessageCount();
             }
         });
+        connection.addDataListener(new ClunetDateTimeResolver());
         connection.connect();
        
         

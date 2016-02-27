@@ -1,5 +1,6 @@
 package com.gargon.smarthome.supradin;
 
+import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import com.gargon.smarthome.supradin.messages.SupradinControlMessage;
 import com.gargon.smarthome.supradin.socket.SupradinSocket;
@@ -179,6 +180,8 @@ public class SupradinConnection{
     public boolean connect() {
         if (!connected) {
             byte[] response = control(SupradinControlMessage.COMMAND_CONNECT);
+            
+            final SupradinConnection connection = this;
             socketWrapper.addDatagramDataListener(socketListener = new SupradinSocketDataListener() {
 
                 @Override
@@ -187,7 +190,7 @@ public class SupradinConnection{
                         SupradinDataMessage supradin = new SupradinDataMessage(data);
                         if (supradin.isValid()) {
                             for (SupradinDataListener listener : dataListeners) {
-                                listener.dataRecieved(supradin);
+                                listener.dataRecieved(connection, supradin);
                             }
                         }
                     }

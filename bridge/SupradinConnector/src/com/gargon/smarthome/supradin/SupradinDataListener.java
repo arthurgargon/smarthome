@@ -10,8 +10,9 @@ public interface SupradinDataListener {
     
     /**Получение новых данных
      * 
+     * @param connection текущее соединение, например для немедленной отправки ответа
      * @param message пакет данных
      */
-    public void dataRecieved(SupradinDataMessage message);
+    public void dataRecieved(SupradinConnection connection, SupradinDataMessage message);
     
 }

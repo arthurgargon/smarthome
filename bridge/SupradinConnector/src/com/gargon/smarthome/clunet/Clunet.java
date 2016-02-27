@@ -37,6 +37,12 @@ public class Clunet {
     /* Посылается устройством после инициализации библиотеки, сообщает об успешной загрузке устройства. 
      Параметр - содержимое MCU регистра, говорящее о причине перезагрузки. */
     public final static int COMMAND_BOOT_COMPLETED = 0x04;
+    
+    /*Запрос текущего времени*/
+    public final static int COMMAND_TIME = 0x08;
+    
+    /*Сообщение о текущем времени*/
+    public final static int COMMAND_TIME_INFO = 0x09;
 
     /* Пинг, на эту команду устройство должно ответить следующей командой, возвратив весь буфер */
     public final static int COMMAND_PING = 0xFE;

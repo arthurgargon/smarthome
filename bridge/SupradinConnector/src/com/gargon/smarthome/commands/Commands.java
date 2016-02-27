@@ -4,6 +4,7 @@ package com.gargon.smarthome.commands;
 import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
+import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 
 /**
