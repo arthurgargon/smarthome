@@ -1,5 +1,6 @@
 package com.gargon.smarthome.supradin.utils.logger;
 
+import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.utils.logger.listeners.LoggerControllerMessageListener;
@@ -40,7 +41,7 @@ public final class LoggerController {
 
                 supradinConnection.addDataListener(new SupradinDataListener() {
                     @Override
-                    public void dataRecieved(SupradinDataMessage message) {
+                    public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
                         final RealTimeSupradinDataMessage rtm = new RealTimeSupradinDataMessage(message, System.currentTimeMillis());
                         
                         //System.out.println(rtm.toString());
@@ -59,6 +60,8 @@ public final class LoggerController {
                         }
                     }
                 });
+                
+                supradinConnection.addDataListener(new ClunetDateTimeResolver());
 
                 List<PeriodCommand> periodCommands = new ArrayList();
                 for (String key : config.keySet()) {

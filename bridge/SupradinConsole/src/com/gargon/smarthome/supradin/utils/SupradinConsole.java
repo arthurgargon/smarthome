@@ -658,7 +658,6 @@ public class SupradinConsole extends javax.swing.JFrame {
         jFilterDialog.setTitle("Фильтр");
         jFilterDialog.setMinimumSize(new java.awt.Dimension(510, 500));
         jFilterDialog.setModal(true);
-        jFilterDialog.setPreferredSize(new java.awt.Dimension(510, 500));
         jFilterDialog.setResizable(false);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -856,6 +855,12 @@ public class SupradinConsole extends javax.swing.JFrame {
         lbPriority.setText("Приоритет:");
 
         lbData.setText("Данные:");
+
+        edData.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                edDataKeyPressed(evt);
+            }
+        });
 
         btSend.setText("Отправить");
         btSend.addActionListener(new java.awt.event.ActionListener() {
@@ -1245,6 +1250,12 @@ public class SupradinConsole extends javax.swing.JFrame {
         cbFilterAllCommands.setSelected(false);
         cbFilterAllCommandsActionPerformed(null);
     }//GEN-LAST:event_btResetFiltersActionPerformed
+
+    private void edDataKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_edDataKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER){
+            btSendActionPerformed(null);
+        }
+    }//GEN-LAST:event_edDataKeyPressed
 
     private void trayImageFree() {
         if (tray != null && trayIcon != null){

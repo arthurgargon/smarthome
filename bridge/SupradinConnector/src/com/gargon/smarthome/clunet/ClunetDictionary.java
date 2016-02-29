@@ -173,11 +173,8 @@ public class ClunetDictionary {
         try {
             List<String> r = new ArrayList();
             if (value.length > 0) {
-                int num = value[0] & 0xFF;
-                int pos = 1;
-                for (int i = 0; i < num; i++) {
-                    r.add(DataFormat.bytesToHex(Arrays.copyOfRange(value, pos, pos + 8)));
-                    pos += 8;
+                for (int i = 0; i < value.length; i+=8) {
+                    r.add(DataFormat.bytesToHex(Arrays.copyOfRange(value, i, i + 8)));
                 }
             }
             return r;
