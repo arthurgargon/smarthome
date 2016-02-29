@@ -299,42 +299,62 @@ public class ClunetDictionary {
             case Clunet.COMMAND_HEATFLOOR_INFO:
                 if (value.length > 0) {
                     int cnt = value[0];
-                    if (value.length == cnt * 6 + 1) {
+                    if (value.length == cnt * 7 + 1) {
                         response = "";
                         for (int i = 0; i < cnt; i++) {
-                            int index = i * 6 + 1;
-                            String solution = "???";
+                            int index = i * 7 + 1;
+                            
+                            String mode = "???";
                             switch (value[index+1]) {
                                 case 0:
-                                    solution = "Режим ожидания";
+                                    mode = "Выкл.";
                                     break;
                                 case 1:
-                                    solution = "Нагрев";
+                                    mode = "режим ручной";
                                     break;
-                                case -1:
-                                    solution = "Охлаждение";
+                                case 2:
+                                    mode = "режим дневной";
                                     break;
-                                case -2:
-                                    solution = "Ошибка чтения датчика";
+                                case 3:
+                                    mode = "режим недельный";
                                     break;
-                                case -3:
-                                    solution = "Ошибка диапазона значения датчика";
-                                    break;
-                                case -4:
-                                    solution = "Ошибка диспетчера";
+                                case 4:
+                                    mode = "режим вечеринка";
                                     break;
                             }
-                            Float sensorT = ds18b20Temperature(value, index + 2);
+                            
+                            String solution = "???";
+                            switch (value[index+2]) {
+                                case 0:
+                                    solution = "ожидание";
+                                    break;
+                                case 1:
+                                    solution = "нагрев";
+                                    break;
+                                case -1:
+                                    solution = "охлаждение";
+                                    break;
+                                case -2:
+                                    solution = "ошибка чтения датчика";
+                                    break;
+                                case -3:
+                                    solution = "ошибка диапазона значения датчика";
+                                    break;
+                                case -4:
+                                    solution = "ошибка диспетчера";
+                                    break;
+                            }
+                            Float sensorT = ds18b20Temperature(value, index + 3);
                             String sensorTStr = "-";
                             if (sensorT != null) {
                                 sensorTStr = String.format("%.01f°C", sensorT);
                             }
-                            Float settingT = ds18b20Temperature(value, index + 4);
+                            Float settingT = ds18b20Temperature(value, index + 5);
                             String settingTStr = "-";
                             if (settingT != null) {
                                 settingTStr = String.format("%.01f°C", settingT);
                             }
-                            response += String.format("Канал %d: (%s, %s/%s); ", value[index], solution, sensorTStr, settingTStr);
+                            response += String.format("Канал %d: %s (%s, %s/%s); ", value[index], mode, solution, sensorTStr, settingTStr);
                         }
                         return response;
                     }

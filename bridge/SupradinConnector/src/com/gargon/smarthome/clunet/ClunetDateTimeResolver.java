@@ -15,7 +15,7 @@ public class ClunetDateTimeResolver implements SupradinDataListener {
     @Override
     public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
         if (message != null && message.getCommand() == Clunet.COMMAND_TIME
-                && message.getDst() == Clunet.ADDRESS_SUPRADIN) {
+                && (message.getDst() == Clunet.ADDRESS_SUPRADIN || message.getDst() == Clunet.ADDRESS_BROADCAST)) {
 
             GregorianCalendar c = new GregorianCalendar();
             int dw = c.get(Calendar.DAY_OF_WEEK) - 1;
