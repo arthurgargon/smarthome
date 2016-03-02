@@ -220,6 +220,55 @@ public class ClunetDictionary {
         return null;
     }
     
+    public static String heatfloorMode(int m) {
+        String mode;
+        switch (m) {
+            case 0:
+                mode = "Выкл.";
+                break;
+            case 1:
+                mode = "режим ручной";
+                break;
+            case 2:
+                mode = "режим дневной";
+                break;
+            case 3:
+                mode = "режим недельный";
+                break;
+            case 4:
+                mode = "режим вечеринка";
+                break;
+            case 5:
+                mode = "режим дневной на день";
+                break;
+            default:
+                mode = "???";
+        }
+        return mode;
+    }
+    
+    public static String heatfloorModeExt(byte[] value, int startIndex){
+        String mode = heatfloorMode(value[startIndex]);
+        switch (value[startIndex]){
+            case 1:
+                mode = String.format("%s (t=%d °C)", mode, value[startIndex + 1]);
+                break;
+            case 2:
+            case 5:
+                mode = String.format("%s (Пр.=%d)", mode, value[startIndex + 1]);
+                break;
+            case 3:
+                mode = String.format("%s (Пp.[пн-пт]=%d; Пр.[сб]=%d; Пр.[вс]=%d)", mode, value[startIndex + 1], value[startIndex + 2], value[startIndex + 3]);
+                break;
+            case 4:
+                mode = String.format("%s (t=%d °C, осталось %d сек.)", mode, value[startIndex + 1], ((value[startIndex + 3] & 0xFF) << 8) | (value[startIndex + 2] & 0xFF));
+                break;
+        }
+        return mode;
+    }
+    
+    
+   
     public static String toString(int commandId, byte[] value) {
         switch (commandId) {
             case Clunet.COMMAND_DISCOVERY_RESPONSE:
@@ -298,66 +347,87 @@ public class ClunetDictionary {
                 break;
             case Clunet.COMMAND_HEATFLOOR_INFO:
                 if (value.length > 0) {
-                    int cnt = value[0];
-                    if (value.length == cnt * 7 + 1) {
-                        response = "";
-                        for (int i = 0; i < cnt; i++) {
-                            int index = i * 7 + 1;
-                            
-                            String mode = "???";
-                            switch (value[index+1]) {
-                                case 0:
-                                    mode = "Выкл.";
-                                    break;
-                                case 1:
-                                    mode = "режим ручной";
-                                    break;
-                                case 2:
-                                    mode = "режим дневной";
-                                    break;
-                                case 3:
-                                    mode = "режим недельный";
-                                    break;
-                                case 4:
-                                    mode = "режим вечеринка";
-                                    break;
+                    response = "";
+                    switch (value[0] & 0xFF) {
+                        case 0x00:  //выкл
+                            response = "Устройство отключено";
+                            break;
+                        case 0xFE:  //режимы
+                            int cnt = (value.length - 1) / 4;
+                            for (int i = 0; i < cnt; i++) {
+                                response += String.format("Канал %d: %s; ", i, heatfloorModeExt(value, i * 4 + 1));
                             }
-                            
-                            String solution = "???";
-                            switch (value[index+2]) {
-                                case 0:
-                                    solution = "ожидание";
-                                    break;
-                                case 1:
-                                    solution = "нагрев";
-                                    break;
-                                case -1:
-                                    solution = "охлаждение";
-                                    break;
-                                case -2:
-                                    solution = "ошибка чтения датчика";
-                                    break;
-                                case -3:
-                                    solution = "ошибка диапазона значения датчика";
-                                    break;
-                                case -4:
-                                    solution = "ошибка диспетчера";
-                                    break;
+                            break;
+                        case 0xF0:
+                        case 0xF1:
+                        case 0xF2:
+                        case 0xF3:
+                        case 0xF4:
+                        case 0xF5:
+                        case 0xF6:
+                        case 0xF7:
+                        case 0xF8:
+                        case 0xF9:  //программы
+                            response = String.format("Пр.%d: ", value[0] & 0x0F);
+                            cnt = value[1];
+                            if (cnt > 0 && cnt < 10){
+                                for (int i=0; i<cnt; i++){
+                                    int pos = i*2 + 2;
+                                    response+= String.format("%02d ч.→%d °C; ", value[pos], value[pos+1]);
+                                }
+                            }else{
+                                response += "не установлена";
                             }
-                            Float sensorT = ds18b20Temperature(value, index + 3);
-                            String sensorTStr = "-";
-                            if (sensorT != null) {
-                                sensorTStr = String.format("%.01f°C", sensorT);
+                            break;
+                        default:    //статус
+                            cnt = value[0];
+                            if (value.length == cnt * 6 + 1) {
+                                for (int i = 0; i < cnt; i++) {
+                                    int index = i * 6 + 1;
+
+                                    String mode = heatfloorMode(value[index]);
+
+                                    response += String.format("Канал %d: %s", i, mode);
+
+                                    if (value[index] > 0) {  //не выкл
+                                        String solution = "???";
+                                        switch (value[index + 1]) {
+                                            case 0:
+                                                solution = "ожидание";
+                                                break;
+                                            case 1:
+                                                solution = "нагрев";
+                                                break;
+                                            case -1:
+                                                solution = "охлаждение";
+                                                break;
+                                            case -2:
+                                                solution = "ошибка чтения датчика";
+                                                break;
+                                            case -3:
+                                                solution = "ошибка диапазона значения датчика";
+                                                break;
+                                            case -4:
+                                                solution = "ошибка диспетчера";
+                                                break;
+                                        }
+                                        Float sensorT = ds18b20Temperature(value, index + 2);
+                                        String sensorTStr = "-";
+                                        if (sensorT != null) {
+                                            sensorTStr = String.format("%.01f°C", sensorT);
+                                        }
+                                        Float settingT = ds18b20Temperature(value, index + 4);
+                                        String settingTStr = "-";
+                                        if (settingT != null) {
+                                            settingTStr = String.format("%.01f°C", settingT);
+                                        }
+                                        response += String.format(" (%s, %s/%s)", solution, sensorTStr, settingTStr);
+                                    }
+                                    response += "; ";
+                                }
                             }
-                            Float settingT = ds18b20Temperature(value, index + 5);
-                            String settingTStr = "-";
-                            if (settingT != null) {
-                                settingTStr = String.format("%.01f°C", settingT);
-                            }
-                            response += String.format("Канал %d: %s (%s, %s/%s); ", value[index], mode, solution, sensorTStr, settingTStr);
-                        }
-                        return response;
                     }
+                    return response;
                 }
                 break;
             case Clunet.COMMAND_FAN_INFO:
