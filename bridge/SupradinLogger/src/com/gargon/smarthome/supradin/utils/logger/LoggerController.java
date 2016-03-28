@@ -126,6 +126,16 @@ public final class LoggerController {
     public void removePeriodCommandsListener(LoggerControllerMessageListener listener) {
         messageListeners.remove(listener);
     }
+    
+    public boolean send(int dst, int prio, int command, byte[] data) {
+        if (supradinConnection != null) {
+            if (data == null) {
+                data = new byte[]{};
+            }
+            return supradinConnection.sendData(new SupradinDataMessage(dst, prio, command, data));
+        }
+        return false;
+    }
 
     public void shutdown() {
         if (supradinConnection != null) {

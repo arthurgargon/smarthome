@@ -1,10 +1,14 @@
 package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
+import com.gargon.smarthome.supradin.utils.http.SendCallback;
+import com.gargon.smarthome.supradin.utils.http.SendHTTPHandler;
 import com.gargon.smarthome.supradin.utils.logger.LoggerController;
 import com.gargon.smarthome.supradin.utils.logger.ConfigReader;
 import com.gargon.smarthome.supradin.utils.logger.RealTimeSupradinDataMessage;
 import com.gargon.smarthome.supradin.utils.logger.listeners.LoggerControllerMessageListener;
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -30,8 +34,13 @@ public class SupradinLogger {
 
     //Queries
     private static final String INSERT_QUERY = "insert into sniffs (s_time, src, dst, cmd, data, interpretation) values (?, ?, ?, ?, ?, ?)";
+    
+    //HTTP
+    private static final String HTTP_SEND_URI = "/send";
+    private static final String HTTP_PORT = "/send";
 
     private static LoggerController controller = null;
+    private static HttpServer httpServer = null;
 
     private static Connection dbConnection = null;
     private static PreparedStatement preparedStmt = null;
@@ -77,9 +86,27 @@ public class SupradinLogger {
                         }
                     }
                 });
+                
+                //http server
+                httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
+                httpServer.createContext(HTTP_SEND_URI, new SendHTTPHandler(new SendCallback() {
+                    @Override
+                    public boolean send(int dst, int prio, int command, byte[] data) {
+                        return controller.send(dst, prio, command, data);
+                    }
+                }));
+                
+                httpServer.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
+                httpServer.start();
+                
 
                 Runtime.getRuntime().addShutdownHook(new Thread() {
                     public void run() {
+                        
+                         if (httpServer != null){
+                            httpServer.stop(1);
+                        }
+
                         if (controller != null) {
                             controller.shutdown();
                         }
@@ -91,7 +118,8 @@ public class SupradinLogger {
                                 Logger.getLogger(SupradinLogger.class.getName()).log(Level.SEVERE, "connection closing error", ex);
                             }
                         }
-
+                        
+                       
                         Logger.getLogger(SupradinLogger.class.getName()).log(Level.INFO, "SupradinKeeper closed");
                     }
                 });
