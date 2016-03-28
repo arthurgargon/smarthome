@@ -1,0 +1,100 @@
+Настройка ПО для видеокамеры usbtv007 (easyCap), трансляции по UDP, TCP, Motion.
+
+Gациент # 1: rpi, ip 192.168.1.20
+поддержка usbtv007 идет в raspbian по дефолту
+ставим gstreamer 1.0, можно даже скомпилить последнюю версию из git, но долго (скрипт gitgstreamer.sh)
+
+sudo apt-get install gstreamer1.0- ... все модули 
+проверить наличие omx энкодера - это аппаратная поддержка h264 энкодинга:
+
+gst-inspect-1.0 | grep omx
+
+должен присутствовать
+omx:  omxh264enc: OpenMAX H.264 Video Encoder
+
+проверяем работоспособность gstreamer (смотреть примеры в приложении)
+
+далее добавляем gstreamer вещание в автозапуск:
+
+sudo nano /etc/rc.local
+
+и добавляем перед exit0
+
+gst-launch-1.0 -v \
+v4l2src device=/dev/video0 norm=NTSC-M ! \
+videoconvert ! \
+omxh264enc target-bitrate=900000 control-rate=variable-skip-frames ! \
+tee name=split \
+split. ! queue ! rtph264pay config-interval=1 pt=96 ! multiudpsink clients=192.168.1.9:5000,192.168.10.1:5000 sync=false \
+split. ! queue ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host=192.168.1.20 port=5000 sync=false
+
+
+При таких настройках идет вещание исходного рав потока с камеры пережатой аппаратно в h264
+по UDP на 2 адреса (192.168.1.9:5000 - планшет в ванной, 192.168.10.1:5000 - aws сервер)
+по TCP для всех желающих
+
+по UDP работает абсолютно без тормозов, но только по TCP есть возможность подключиться с любого клиента.
+Подключаемся с android программой Raspberry Pi camera viewer (позволяющей смотреть любой gstreamer pipeline)
+
+Следует отметить, что вещание ведется перевернутой картинкой. Выполнение этой операции на RPI приводит к увеличению использования CPU на 20% и приводит к критическим значениям ~ 95% и всеобщим тормозам. Так что картинку переварачивают клиенты сами.
+
+При указанных параметрах CPU usage должен равняться 75-80%, overclock medium
+
+
+Пациент #2: amazon aws EC2.
+Итак разворачиваем ubuntu на EC2 (у нас есть год халявы, единственное ограничение на исходящий трафик 15 Гб)
+ставим pptpd (см настройка pptd отдельно)
+ставим по аналогии gstreamer, ставим motion
+
+
+gstreamer принимает поток по UDP и ретранислирует его в v4loopback устройство из которого уже сосет данные motion:
+
+ставим loopback (http://kubuntu.ru/node/10900):
+
+sudo apt-get install v4l2loopback-dkms
+modprobe v4l2loopback
+
+После чего должно появиться новое устройство, у меня оно называется /dev/video1, так как /dev/video0 - это камера (у вас нумерация может быть другой, учитываем это)
+Что бы не набирать эту команду каждый раз после загрузки, сделаем так, что бы модуль грузился автоматом
+sudo nano /etc/modules
+добавляем строку
+v4l2loopback
+
+
+далее правим автозагрузку 
+sudo nano /etc/rc.local
+
+добавляем:
+
+#mount yandex cloud disk
+/usr/bin/expect /home/ubuntu/script/yandex
+
+motion
+
+gst-launch-1.0 -v udpsrc  port=5000 ! application/x-rtp,clock-rate=90000,payload=96 ! \
+rtph264depay ! avdec_h264 ! \
+videoscale ! 'video/x-raw,width=720,height=480' ! \
+videoconvert ! videoflip method=rotate-180 ! \
+v4l2sink device=/dev/video0  sync=false
+
+/sbin/route add -net 192.168.1.0 netmask 255.255.255.0 gw 192.168.10.10 metric 1
+
+exit 0
+
+Конфиг от motion и папка script в приложении
+
+motion сам копирует только что созданные файлы в облако (yandex disk)
+и через http интерфейс пуляет сообщения в CLUNET (натроены события в конфиге)
+
+
+Отдельно про порядок запуска:
+Итак имеем проблемы с запуском 2-ух экземпляров gst-launch на 2-ух машинах (rpi, aws) и их обмен через udp.
+Несмотря на то, что оба запуска процесса сделаны в автозапуске имеет значение порядок запуска:
+1. Сначала aws (запуск сделан в /etc/rc.local), потом rpi (запуск сделан в /etc/rc.local)
+2. Reboot rpi допустИм при рабочем aws. upd: НЕТ motion падает - запускать sudo motion
+3. После reboot aws, нужно сделать reboot rpi
+
+Полезные команды:
+Остановить motion -> sudo service motion stop
+Запустить motion -> sudo morion
+Поиск запущенных gst-launch -> ps aux | grep gst-launch

@@ -1,0 +1,7 @@
+#!/usr/bin/expect
+spawn mount.davfs https://webdav.yandex.ru /mnt/yandex.disk/
+expect "Username:"
+send "a-gargon@yandex.ru\r"
+expect "Password:"
+send "UjhbyfGhfcrjdmZ\r"
+expect eof
