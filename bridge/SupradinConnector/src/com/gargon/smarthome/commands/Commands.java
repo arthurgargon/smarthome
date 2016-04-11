@@ -33,9 +33,9 @@ public class Commands {
     public static final int RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID = 3;
     
     
-    private static final int RELAY_1_WAITING_RESPONSE_TIMEOUT  = 200; //ms
-    private static final int RELAY_2_WAITING_RESPONSE_TIMEOUT  = 200; //ms
-    private static final int AUDIOBOX_WAITING_RESPONSE_TIMEOUT = 150; //ms
+    private static final int RELAY_1_WAITING_RESPONSE_TIMEOUT  = 500; //ms
+    private static final int RELAY_2_WAITING_RESPONSE_TIMEOUT  = 500; //ms
+    private static final int AUDIOBOX_WAITING_RESPONSE_TIMEOUT = 500; //ms
 
     private static final int NUM_ATTEMPTS_COMMAND = 5;
     private static final int NUM_ATTEMPTS_STATE = 2;
