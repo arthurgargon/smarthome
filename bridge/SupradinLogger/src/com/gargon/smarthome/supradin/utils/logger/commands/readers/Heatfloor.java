@@ -12,7 +12,7 @@ public class Heatfloor implements Reader {
 
     @Override
     public Map<String, Object> perform(SupradinDataMessage supradin) {
-        Map<String, Byte> v = ClunetDictionary.heatfloorInfo(supradin.getData());
+        Map<String, Integer> v = ClunetDictionary.heatfloorInfo(supradin.getData()); 
         if (v != null) {
             return (Map) v;
         }

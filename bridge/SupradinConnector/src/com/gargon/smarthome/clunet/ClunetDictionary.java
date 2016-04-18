@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -127,7 +128,10 @@ public class ClunetDictionary {
     
     private static Float ds18b20Temperature(byte[] value, int startIndex) {
         if (value != null) {
-            return (((value[startIndex+1] & 0xFF) << 8) | (value[startIndex] & 0xFF)) / 10f;
+            int v = ((value[startIndex+1] & 0xFF) << 8) | (value[startIndex] & 0xFF);
+            if (v != 0xFFFF){
+                return v / 10f;
+            }
         }
         return null;
     }
@@ -184,16 +188,17 @@ public class ClunetDictionary {
     }
     
     /*Краткая информация о состоянии теплого пола, в консоле используется полная */
-    public static Map<String, Byte> heatfloorInfo(byte[] value) {
+    public static Map<String, Integer> heatfloorInfo(byte[] value) {
         try {
-            Map<String, Byte> r = null;
-            if (value.length > 0) {
+            Map<String, Integer> r = null;
+            if (value.length > 0 
+                    && value[0] >=0 && value[0]<8) {
                 r = new HashMap();
                 int cnt = value[0];
                 if (value.length == cnt * 6 + 1) {
                     for (int i = 0; i < cnt; i++) {
                         int index = i * 6 + 1;
-                        r.put(String.valueOf(value[index]), value[index + 1]);
+                        r.put(String.valueOf(i), ((value[index+0] & 0xFF) << 8) | (value[index+1] & 0xFF)); //канал -> (режим | состояние)
                     }
                 }
             }
@@ -305,7 +310,7 @@ public class ClunetDictionary {
                 Map<String, Float> t = temperatureInfo(value);
                 if (t != null){
                     for (Map.Entry<String, Float> entry : t.entrySet()){
-                        response += String.format("Температура на датчике %s: %.01f °C; ", entry.getKey(), entry.getValue());
+                        response += String.format(Locale.ENGLISH, "T[%s]=%.01f°C; ", entry.getKey(), entry.getValue());
                     }
                 }
                 return response;
@@ -321,12 +326,14 @@ public class ClunetDictionary {
             case Clunet.COMMAND_HUMIDITY_INFO:
                 Float h = humidityInfo(value);
                 if (h != null){
-                    return String.format("Влажность: %.01f %%", h);
+                    return String.format(Locale.ENGLISH, "H=%.01f%%", h);
                 }
                 break;
             case Clunet.COMMAND_MOTION_INFO:
-                if (value.length == 1) {
-                    return value[0] == 1 ? "Обнаружено движение" : "Движение отсутствует";
+                if (value.length == 2) {
+                    response = value[0] == 1 ? "Обнаружено движение" : "Движение отсутствует";
+                    response += " (локация "+value[1]+")";
+                    return response;
                 }
                 break;
             case Clunet.COMMAND_DOORS_INFO:       
@@ -342,7 +349,7 @@ public class ClunetDictionary {
             case Clunet.COMMAND_LIGHT_LEVEL_INFO:
                 int[] ll = lightLevelInfo(value);
                 if (ll != null) {
-                    return String.format("Уровень освещенности %s (%d %%)", ll[0] == 1 ? "высокий" : "низкий", ll[1]);
+                    return String.format("Уровень освещенности %s (%d%%)", ll[0] == 1 ? "высокий" : "низкий", ll[1]);
                 }
                 break;
             case Clunet.COMMAND_HEATFLOOR_INFO:
@@ -414,14 +421,14 @@ public class ClunetDictionary {
                                         Float sensorT = ds18b20Temperature(value, index + 2);
                                         String sensorTStr = "-";
                                         if (sensorT != null) {
-                                            sensorTStr = String.format("%.01f°C", sensorT);
+                                            sensorTStr = String.format(Locale.ENGLISH, "%.01f°C", sensorT);
                                         }
                                         Float settingT = ds18b20Temperature(value, index + 4);
                                         String settingTStr = "-";
                                         if (settingT != null) {
-                                            settingTStr = String.format("%.01f°C", settingT);
+                                            settingTStr = String.format(Locale.ENGLISH, "%.01f°C", settingT);
                                         }
-                                        response += String.format(" (%s, %s/%s)", solution, sensorTStr, settingTStr);
+                                        response += String.format(" [%s (%s/%s)]", solution, sensorTStr, settingTStr);
                                     }
                                     response += "; ";
                                 }
