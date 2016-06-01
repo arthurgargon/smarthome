@@ -3,51 +3,32 @@ package com.gargon.smarthome.supradin.utils.http;
 import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
  * @author gargon
  */
-public class SendHTTPHandler implements HttpHandler {
-
-    private static final String PARAM_DST = "dst";
-    private static final String PARAM_PRI = "pri";
-    private static final String PARAM_CMD = "cmd";
-    private static final String PARAM_DAT = "dat";
-
-    private final SendCallback callback;
+public class SendHTTPHandler extends SupradinHTTPHandler {
     
-    public SendHTTPHandler(SendCallback callback) {
+    public static final String URI = "/send";
+    
+    protected final SendHTTPCallback callback;
+    
+    public SendHTTPHandler(SendHTTPCallback callback) {
+        super(URI);
         this.callback = callback;
     }
     
+    @Override
     public void handle(HttpExchange t) throws IOException {
-        Map<String, String> params = new HashMap<String, String>();
-
-        String query = t.getRequestURI().getQuery();
-        if (query != null) {
-            try {
-                for (String param : query.split("&")) {
-                    String pair[] = param.split("=");
-                    if (pair.length > 1) {
-                        params.put(pair[0], pair[1]);
-                    } else {
-                        params.put(pair[0], "");
-                    }
-                }
-            } catch (Exception e) {
-                params.clear();
-                //wrong query uri
-            }
-        }
+        Map<String, String> params = parseParams(t);
 
         //try to parse params
-        String response;
+        String response = "Error while sending";
+        int responseCode = 500;
+        
         try {
             int dst = Integer.parseInt(params.get(PARAM_DST));
             int pri = Integer.parseInt(params.get(PARAM_PRI));
@@ -60,38 +41,38 @@ public class SendHTTPHandler implements HttpHandler {
 
             //send command 
             try {
-                callback.send(dst, pri, cmd, DataFormat.hexToByteArray(hexData));
-                response = "Ok";
+                if (callback.send(dst, pri, cmd, DataFormat.hexToByteArray(hexData))) {
+                    response = "Ok";
+                    responseCode = 200;
+                }
             } catch (Exception e) {
-                response = "Error while sending";
             }
-
+            
         } catch (Exception e) {
-            response = "Wrong request format:"+
-                    "\n\n\nusage: http://HOST:PORT"+t.getRequestURI().getPath()+"?"+PARAM_DST+"={dst_id}&"+PARAM_PRI+"={priority}&"+PARAM_CMD+"={command_id}[&"+PARAM_DAT+"={hex data}]"+
-                    "\n\ndst_id = {";
-            for (Map.Entry<Integer,String> entry : ClunetDictionary.getDevicesList().entrySet()){
-                response += entry.getValue()+" (" + entry.getKey() + "), ";
+            response = "Wrong request format!"
+                    + "\n\n\nusage: http://HOST:PORT" + URI + "?" + PARAM_DST + "={dst_id}&" + PARAM_PRI + "={priority}&" + PARAM_CMD + "={command_id}[&" + PARAM_DAT + "={hex data}]"
+                    + "\n\ndst_id = {";
+            for (Map.Entry<Integer, String> entry : ClunetDictionary.getDevicesList().entrySet()) {
+                response += entry.getValue() + " (" + entry.getKey() + "), ";
             }
             
             response += "}";
             response += "\n\npriority = {";
-            for (Map.Entry<Integer,String> entry : ClunetDictionary.getPrioritiesList().entrySet()){
-                response += entry.getValue()+" (" + entry.getKey() + "), ";
+            for (Map.Entry<Integer, String> entry : ClunetDictionary.getPrioritiesList().entrySet()) {
+                response += entry.getValue() + " (" + entry.getKey() + "), ";
             }
             response += "}";
             response += "\n\ncommand_id = {";
-            for (Map.Entry<Integer,String> entry : ClunetDictionary.getCommandsList().entrySet()){
-                response += entry.getValue()+" (" + entry.getKey() + "), ";
+            for (Map.Entry<Integer, String> entry : ClunetDictionary.getCommandsList().entrySet()) {
+                response += entry.getValue() + " (" + entry.getKey() + "), ";
             }
             response += "}";
+            
+            responseCode = 400;
         }
-
-        t.sendResponseHeaders(200, response.length());
-        OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
-
+        
+        sendResponse(t, responseCode, response);
+        
     }
 
 }

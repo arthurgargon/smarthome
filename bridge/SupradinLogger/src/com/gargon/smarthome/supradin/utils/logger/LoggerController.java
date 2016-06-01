@@ -2,6 +2,7 @@ package com.gargon.smarthome.supradin.utils.logger;
 
 import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.supradin.SupradinConnection;
+import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.utils.logger.listeners.LoggerControllerMessageListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
@@ -135,6 +136,26 @@ public final class LoggerController {
             return supradinConnection.sendData(new SupradinDataMessage(dst, prio, command, data));
         }
         return false;
+    }
+
+    public byte[] ask(int dst, int prio, int command, byte[] data,
+            final int rsrc, final int rcmd, int rtimeout) {
+        if (supradinConnection != null) {
+            if (data == null) {
+                data = new byte[]{};
+            }
+            SupradinDataMessage m = supradinConnection.sendDataAndWaitResponse(new SupradinDataMessage(dst, prio, command, data),
+                    new SupradinConnectionResponseFilter() {
+                @Override
+                public boolean filter(SupradinDataMessage supradinRecieved) {
+                    return supradinRecieved.getSrc() == rsrc && supradinRecieved.getCommand() == rcmd;
+                }
+            }, rtimeout);
+            if (m != null) {
+                return m.getData();
+            }
+        }
+        return null;
     }
 
     public void shutdown() {

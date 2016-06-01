@@ -1,7 +1,9 @@
 package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
-import com.gargon.smarthome.supradin.utils.http.SendCallback;
+import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import com.gargon.smarthome.supradin.utils.http.AskHTTPCallback;
+import com.gargon.smarthome.supradin.utils.http.AskHTTPHandler;
 import com.gargon.smarthome.supradin.utils.http.SendHTTPHandler;
 import com.gargon.smarthome.supradin.utils.logger.LoggerController;
 import com.gargon.smarthome.supradin.utils.logger.ConfigReader;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
+import com.gargon.smarthome.supradin.utils.http.SendHTTPCallback;
 
 /**
  *
@@ -36,8 +39,7 @@ public class SupradinLogger {
     private static final String INSERT_QUERY = "insert into sniffs (s_time, src, dst, cmd, data, interpretation) values (?, ?, ?, ?, ?, ?)";
     
     //HTTP
-    private static final String HTTP_SEND_URI = "/send";
-    private static final String HTTP_PORT = "/send";
+    private static final int HTTP_SERVER_PORT = 8000;
 
     private static LoggerController controller = null;
     private static HttpServer httpServer = null;
@@ -88,11 +90,18 @@ public class SupradinLogger {
                 });
                 
                 //http server
-                httpServer = HttpServer.create(new InetSocketAddress(8000), 0);
-                httpServer.createContext(HTTP_SEND_URI, new SendHTTPHandler(new SendCallback() {
+                httpServer = HttpServer.create(new InetSocketAddress(HTTP_SERVER_PORT), 0);
+                httpServer.createContext(SendHTTPHandler.URI, new SendHTTPHandler(new SendHTTPCallback() {
                     @Override
                     public boolean send(int dst, int prio, int command, byte[] data) {
                         return controller.send(dst, prio, command, data);
+                    }
+                }));
+                httpServer.createContext(AskHTTPHandler.URI, new AskHTTPHandler(new AskHTTPCallback() {
+                    @Override
+                    public byte[] ask(int dst, int prio, int command, byte[] data,
+                            int rsrc, int rcmd, int rtimeout) {
+                        return controller.ask(dst, prio, command, data, rsrc, rcmd, rtimeout);
                     }
                 }));
                 
