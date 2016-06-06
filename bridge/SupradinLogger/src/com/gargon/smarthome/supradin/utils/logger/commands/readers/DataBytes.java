@@ -52,12 +52,12 @@ public class DataBytes implements Reader {
 
             String id = null;
             if (idByte1 > 0) {
-                id = DataFormat.bytesToHex(Arrays.copyOfRange(supradin.getData(), idByte0, idByte1));
+                id = DataFormat.bytesToHex(Arrays.copyOfRange(supradin.getData(), idByte0, idByte1+1));
             }
 
             Object value = null;
             if (valueByte1 > 0) {
-                value = DataFormat.bytesToHex(Arrays.copyOfRange(supradin.getData(), valueByte0, valueByte1));
+                value = DataFormat.bytesToHex(Arrays.copyOfRange(supradin.getData(), valueByte0, valueByte1+1));
             }
 
             Map<String, Object> r = new HashMap<>();
