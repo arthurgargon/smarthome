@@ -314,19 +314,19 @@ public class SupradinConsole extends javax.swing.JFrame {
             @Override
             public void dataRecieved(SupradinConnection connection, SupradinDataMessage supradin) {
 
-                String src = DataFormat.byteToHex(supradin.getSrc());
+                String src = "0x" + DataFormat.byteToHex(supradin.getSrc());
                 String srcName = ClunetDictionary.getDeviceById(supradin.getSrc());
                 if (srcName != null) {
                     src += " - " + srcName;
                 }
 
-                String rcv = DataFormat.byteToHex(supradin.getDst());
+                String rcv = "0x" +DataFormat.byteToHex(supradin.getDst());
                 String rcvName = ClunetDictionary.getDeviceById(supradin.getDst());
                 if (rcvName != null) {
                     rcv += " - " + rcvName;
                 }
 
-                String cmd = DataFormat.byteToHex(supradin.getCommand());
+                String cmd = "0x" +DataFormat.byteToHex(supradin.getCommand());
                 String cmdName = ClunetDictionary.getCommandById(supradin.getCommand());
                 if (cmdName != null) {
                     cmd += " - " + cmdName;
@@ -1483,7 +1483,7 @@ class ComboBoxItem {
 
     @Override
     public String toString() {
-        return String.format("%s - %s", DataFormat.byteToHex(id), value);
+        return String.format("0x%s - %s", DataFormat.byteToHex(id), value);
     }
 }
 
