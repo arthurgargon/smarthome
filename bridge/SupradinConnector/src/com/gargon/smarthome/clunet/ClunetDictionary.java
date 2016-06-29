@@ -60,6 +60,8 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_EQUALIZER, "Equalizer");
         put(Clunet.COMMAND_EQUALIZER_INFO, "EqualizerInfo");
         
+        put(Clunet.COMMAND_POWER, "Power");
+        put(Clunet.COMMAND_POWER_INFO, "PowerInfo");
         put(Clunet.COMMAND_SWITCH, "Switch");
         put(Clunet.COMMAND_SWITCH_INFO, "SwitchInfo");
         put(Clunet.COMMAND_BUTTON, "Button");
@@ -280,6 +282,10 @@ public class ClunetDictionary {
                 return String.format("Обнаружено устройство: %s", new String(value));
             case Clunet.COMMAND_BOOT_COMPLETED:
                 return String.format("Устройство перезагружено");
+            case Clunet.COMMAND_POWER_INFO:
+                if (value.length == 1){
+                    return String.format("Устройство %s", value[0] == 1 ? "включено" : "отключено");
+                }
             case Clunet.COMMAND_SWITCH_INFO:
                 if (value.length == 1){
                     if (value[0] == 0){

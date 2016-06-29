@@ -70,9 +70,15 @@ public class Clunet {
     /* Сообщение о состоянии эквалайзера*/
     public final static int COMMAND_EQUALIZER_INFO = 0x19;
 
+    /* Команда управления включением/выключением устройства*/
+    public final static int COMMAND_POWER = 0x1E;
+    
+    /* Команда запроса состояния (вкл/выкл) устройства*/
+    public final static int COMMAND_POWER_INFO = 0x1F;
+    
     /* Команда управления выключателями/реле*/
     public final static int COMMAND_SWITCH = 0x20;
-
+    
     /* Сообщение о состоянии всех выключателей устройства в виде битовой маски*/
     public final static int COMMAND_SWITCH_INFO = 0x21;
     
