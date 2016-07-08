@@ -21,6 +21,23 @@ public class SupradinFlasher {
         System.out.println(message);
     }
 
+    private static int firmwareMaxSize(String chipName) {
+        switch (chipName) {
+            case "a8":
+                return (0x1FFF - 512 * 2);
+            case "a16":
+                return (0x3FFF - 512 * 2);
+            case "a32":
+                return (0x7FFF - 512 * 2);
+            case "a64":
+                return (0xFFFF - 512 * 2);
+            case "a128":
+                return (0x1FFFF - 512 * 2);
+        }
+
+        throw new IllegalArgumentException("Chip type not supported");
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -29,6 +46,8 @@ public class SupradinFlasher {
         String firmwarePath = null;
         int deviceId = -1;
         int bootTimeout = BOOTLOADER_TIMEOUT;
+
+        int firmwareMaxSize = -1;
 
         String supradinHost = SupradinConnection.SUPRADIN_IP;
         int supradinControlPort = SupradinConnection.SUPRADIN_CONTROL_PORT;
@@ -57,6 +76,8 @@ public class SupradinFlasher {
             options.addOption(new Option("scp", true, "Supradin control port. " + SupradinConnection.SUPRADIN_CONTROL_PORT + ", by default."));
             options.addOption(new Option("sdp", true, "Supradin data port. " + SupradinConnection.SUPRADIN_DATA_PORT + ", by default."));
 
+            options.addOption(new Option("a", true, "Chip name (a8, a16, a32, a64, a128). a8, by default. To limit firmware size and not to damage bootloader."));
+
             a = parser.parse(options, args);
 
             try {
@@ -77,6 +98,13 @@ public class SupradinFlasher {
                 if (a.hasOption("sdp")) {
                     supradinDataPort = Integer.parseInt(a.getOptionValue("sdp"));
                 }
+
+                String chipName = "a8";
+                if (a.hasOption("a")) {
+                    chipName = a.getOptionValue("a");
+                }
+                firmwareMaxSize = firmwareMaxSize(chipName);
+
             } catch (Exception e) {
                 System.out.println("Incorrect types of arguments.  Reason: " + e.getMessage());
                 ea = true;
@@ -101,8 +129,8 @@ public class SupradinFlasher {
             log("Connecting to " + connection.getHost() + "...");
             if (connection.connect()) {
                 log("Connected");
-                Clunet.sendFirmware(connection, deviceId, bootTimeout, firmwarePath, System.out);
-            }else{
+                Clunet.sendFirmware(connection, deviceId, bootTimeout, firmwarePath, firmwareMaxSize, System.out);
+            } else {
                 log("Unable to connect");
             }
         } finally {

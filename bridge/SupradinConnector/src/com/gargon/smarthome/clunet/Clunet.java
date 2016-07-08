@@ -335,12 +335,18 @@ public class Clunet {
     
     /*
         set bootTimeout = -1, if you do not need to restart a device
+        set firmwareMaxSize = -1, if you do not need to check firmware size
     */
-    public static boolean sendFirmware(SupradinConnection conn, final int address, final int bootTimeout, final String filePath, PrintStream log) {
+    public static boolean sendFirmware(SupradinConnection conn, final int address, final int bootTimeout, 
+            final String filePath, int firmwareMaxSize,
+            PrintStream log) {
         if (conn != null) {
             IntelHexReader hexReader = new IntelHexReader();
             log(log, "Loading HEX");
             if (hexReader.read(filePath)) {
+                
+                if (firmwareMaxSize < 0 || firmwareMaxSize >= hexReader.getLength()){
+                
                 log(log, "Loaded " + hexReader.getLength() + " bytes");
                 SupradinConnectionResponseFilter bootControlFilter = new SupradinConnectionResponseFilter() {
 
@@ -428,6 +434,9 @@ public class Clunet {
                 } else {
                     log(log, "Device does not reply");
                 }
+                } else{
+                   log(log, "Too big firware size ("+hexReader.getLength()+" bytes, but only "+firmwareMaxSize+" bytes allowable). Check chip type or reduce firmware size"); 
+                }
             } else {
                 log(log, "Invalid HEX");
             }
@@ -438,7 +447,5 @@ public class Clunet {
         return false;
     }
     
-    public static boolean sendFirmware(SupradinConnection conn, final int address, final int bootTimeout, final String filePath) {
-        return sendFirmware(conn, address, bootTimeout, filePath, null);
-    }
+   
 }
