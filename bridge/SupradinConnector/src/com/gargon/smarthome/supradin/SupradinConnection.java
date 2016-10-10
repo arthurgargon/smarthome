@@ -1,6 +1,5 @@
 package com.gargon.smarthome.supradin;
 
-import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import com.gargon.smarthome.supradin.messages.SupradinControlMessage;
 import com.gargon.smarthome.supradin.socket.SupradinSocket;
