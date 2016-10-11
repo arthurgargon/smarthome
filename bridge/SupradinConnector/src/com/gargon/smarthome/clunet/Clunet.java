@@ -69,6 +69,12 @@ public class Clunet {
     
     /* Сообщение о состоянии эквалайзера*/
     public final static int COMMAND_EQUALIZER_INFO = 0x19;
+    
+    /* Команда управления FM-приемником*/
+    public final static int COMMAND_FM = 0x1C;
+    
+    /* Сообщение о состоянии FM-приемника*/
+    public final static int COMMAND_FM_INFO = 0x1D;
 
     /* Команда управления включением/выключением устройства*/
     public final static int COMMAND_POWER = 0x1E;

@@ -60,6 +60,9 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_EQUALIZER, "Equalizer");
         put(Clunet.COMMAND_EQUALIZER_INFO, "EqualizerInfo");
         
+        put(Clunet.COMMAND_FM, "FM");
+        put(Clunet.COMMAND_FM_INFO, "FMInfo");
+        
         put(Clunet.COMMAND_POWER, "Power");
         put(Clunet.COMMAND_POWER_INFO, "PowerInfo");
         put(Clunet.COMMAND_SWITCH, "Switch");
