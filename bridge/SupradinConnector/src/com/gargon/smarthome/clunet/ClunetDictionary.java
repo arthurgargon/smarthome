@@ -278,6 +278,40 @@ public class ClunetDictionary {
     }
     
     
+    public static String fmInfo(byte[] value) {
+        try {
+            String r = null;
+            switch (value[0]){
+                case 0x00:  //channel info
+                    if (value.length == 6){
+                        r = String.format(Locale.ROOT, "FM: канал=%s; частота=%.2f МГц; уровень=%d%%; %s", 
+                                value[1] < 0 ? "-" : (value[1]+1), 
+                                (((value[3] & 0xFF) << 8) | (value[2] & 0xFF)) / 100f,
+                                100*value[4]/15,
+                                value[5]>0 ? "Стерео" : ""
+                                );
+                    }
+                    break;
+                case 0x01:  //state info
+                    if (value.length == 6){
+                        r = String.format("FM: standby=%s; mute=%s; mono=%s; hcc=%s; snc=%s", 
+                                value[1]>0 ? "on" : "off",
+                                value[2]>0 ? "on" : "off",
+                                value[3]>0 ? "on" : "off",
+                                value[4]>0 ? "on" : "off",
+                                value[5]>0 ? "on" : "off");
+                    }
+                    break;
+                case 0x02:  //search info
+                    break;
+            }
+            return r;
+
+        } catch (Exception e) {
+        }
+        return null;
+    }
+    
    
     public static String toString(int commandId, byte[] value) {
         switch (commandId) {
@@ -319,7 +353,7 @@ public class ClunetDictionary {
                 Map<String, Float> t = temperatureInfo(value);
                 if (t != null){
                     for (Map.Entry<String, Float> entry : t.entrySet()){
-                        response += String.format(Locale.ENGLISH, "T[%s]=%.01f°C; ", entry.getKey(), entry.getValue());
+                        response += String.format(Locale.ROOT, "T[%s]=%.01f°C; ", entry.getKey(), entry.getValue());
                     }
                 }
                 return response;
@@ -335,7 +369,7 @@ public class ClunetDictionary {
             case Clunet.COMMAND_HUMIDITY_INFO:
                 Float h = humidityInfo(value);
                 if (h != null){
-                    return String.format(Locale.ENGLISH, "H=%.01f%%", h);
+                    return String.format(Locale.ROOT, "H=%.01f%%", h);
                 }
                 break;
             case Clunet.COMMAND_MOTION_INFO:
@@ -430,12 +464,12 @@ public class ClunetDictionary {
                                         Float sensorT = ds18b20Temperature(value, index + 2);
                                         String sensorTStr = "-";
                                         if (sensorT != null) {
-                                            sensorTStr = String.format(Locale.ENGLISH, "%.01f°C", sensorT);
+                                            sensorTStr = String.format(Locale.ROOT, "%.01f°C", sensorT);
                                         }
                                         Float settingT = ds18b20Temperature(value, index + 4);
                                         String settingTStr = "-";
                                         if (settingT != null) {
-                                            settingTStr = String.format(Locale.ENGLISH, "%.01f°C", settingT);
+                                            settingTStr = String.format(Locale.ROOT, "%.01f°C", settingT);
                                         }
                                         response += String.format(" [%s (%s/%s)]", solution, sensorTStr, settingTStr);
                                     }
@@ -493,6 +527,8 @@ public class ClunetDictionary {
                     return String.format("Эквалайзер: gain: %d dB; treble: %d dB; bass: %d dB; ", value[0], value[1], value[2]);
                 }
             break;
+            case Clunet.COMMAND_FM_INFO:
+                return fmInfo(value);
         }
         return null;
     }

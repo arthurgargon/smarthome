@@ -603,6 +603,23 @@ public class Commands {
         return false;
     }
 
+    public static boolean nextFMStationInRoom(SupradinConnection connection, final boolean up){
+        return Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_AUDIOBOX,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_FM,
+                    new byte[]{(byte) (up ? 0x02 : 0x03)},
+                    new SupradinConnectionResponseFilter() {
+
+                        @Override
+                        public boolean filter(SupradinDataMessage supradinRecieved) {
+                            return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBOX
+                            && supradinRecieved.getCommand() == Clunet.COMMAND_FM_INFO
+                            && supradinRecieved.getData().length == 6;
+                        }
+                    }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+    }
+    
 
       public static Integer checkAndroidInBathtroomCommand(SupradinDataMessage message) {
         if(message != null) {
