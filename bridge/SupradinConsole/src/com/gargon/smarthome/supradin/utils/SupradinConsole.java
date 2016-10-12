@@ -80,6 +80,8 @@ public class SupradinConsole extends javax.swing.JFrame {
     private static final KeyStroke ksLightMirroredBoxBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F6, Event.CTRL_MASK);
     private static final KeyStroke ksSwitchFanBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F7, Event.CTRL_MASK);
     
+    private static final KeyStroke ksFMNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK);
+    private static final KeyStroke ksFMPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK);
     
     private static final String APP_TRAY_TOOLTIP = "SupradinConsole";
 
@@ -228,7 +230,8 @@ public class SupradinConsole extends javax.swing.JFrame {
             miSoundRoomSourceFM.setAccelerator(ksAudioSourceRoomFM);
             JIntellitype.getInstance().registerSwingHotKey(21, ksAudioSourceRoomFM.getModifiers(), ksAudioSourceRoomFM.getKeyCode());
             
-            
+            JIntellitype.getInstance().registerSwingHotKey(22, ksFMNextStation.getModifiers(), ksFMNextStation.getKeyCode());
+            JIntellitype.getInstance().registerSwingHotKey(23, ksFMPrevStation.getModifiers(), ksFMPrevStation.getKeyCode());
             
 
             JIntellitype.getInstance().addHotKeyListener(new HotkeyListener() {
@@ -282,6 +285,13 @@ public class SupradinConsole extends javax.swing.JFrame {
                             break;
                         case 21:
                             miSoundRoomSourceFMActionPerformed(null);
+                            break;
+                            
+                        case 22:
+                            Commands.nextFMStationInRoom(connection, true);
+                            break;
+                        case 23:
+                            Commands.nextFMStationInRoom(connection, false);
                             break;
                     }
                 }
