@@ -80,8 +80,8 @@ public class SupradinConsole extends javax.swing.JFrame {
     private static final KeyStroke ksAudioSourceRoomBT = KeyStroke.getKeyStroke(KeyEvent.VK_3, Event.CTRL_MASK);
     private static final KeyStroke ksAudioSourceRoomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.CTRL_MASK);
     
-    private static final KeyStroke ksAudioSourceBathroomPad = KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.ALT_MASK);
-    private static final KeyStroke ksAudioSourceBathroomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.ALT_MASK);
+    private static final KeyStroke ksAudioSourceBathroomPad = KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK + Event.ALT_MASK);
+    private static final KeyStroke ksAudioSourceBathroomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.CTRL_MASK + Event.ALT_MASK);
     
     private static final KeyStroke ksLightCloackroom = KeyStroke.getKeyStroke(KeyEvent.VK_F5, Event.CTRL_MASK);
     private static final KeyStroke ksLightMirroredBoxBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F6, Event.CTRL_MASK);
@@ -89,8 +89,8 @@ public class SupradinConsole extends javax.swing.JFrame {
     
     private static final KeyStroke ksFMRoomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK);
     private static final KeyStroke ksFMRoomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK);
-    private static final KeyStroke ksFMBathroomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.ALT_MASK);
-    private static final KeyStroke ksFMBathroomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.ALT_MASK);
+    private static final KeyStroke ksFMBathroomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK + Event.ALT_MASK);
+    private static final KeyStroke ksFMBathroomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK + Event.ALT_MASK);
     
     private static final String APP_TRAY_TOOLTIP = "SupradinConsole";
 
