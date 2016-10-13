@@ -3,6 +3,7 @@ package com.gargon.smarthome.supradin.utils;
 import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.clunet.ClunetDictionary;
+import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
 import com.gargon.smarthome.supradin.SupradinConnection;
@@ -22,18 +23,22 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
@@ -58,8 +64,6 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 public class SupradinConsole extends javax.swing.JFrame {
-    
-    private static final Logger LOG = Logger.getLogger(SupradinConsole.class.getName());
     
     private static final KeyStroke ksMuteRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, Event.CTRL_MASK);
     
@@ -76,12 +80,17 @@ public class SupradinConsole extends javax.swing.JFrame {
     private static final KeyStroke ksAudioSourceRoomBT = KeyStroke.getKeyStroke(KeyEvent.VK_3, Event.CTRL_MASK);
     private static final KeyStroke ksAudioSourceRoomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.CTRL_MASK);
     
+    private static final KeyStroke ksAudioSourceBathroomPad = KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.ALT_MASK);
+    private static final KeyStroke ksAudioSourceBathroomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.ALT_MASK);
+    
     private static final KeyStroke ksLightCloackroom = KeyStroke.getKeyStroke(KeyEvent.VK_F5, Event.CTRL_MASK);
     private static final KeyStroke ksLightMirroredBoxBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F6, Event.CTRL_MASK);
     private static final KeyStroke ksSwitchFanBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F7, Event.CTRL_MASK);
     
-    private static final KeyStroke ksFMNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK);
-    private static final KeyStroke ksFMPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK);
+    private static final KeyStroke ksFMRoomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK);
+    private static final KeyStroke ksFMRoomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK);
+    private static final KeyStroke ksFMBathroomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.ALT_MASK);
+    private static final KeyStroke ksFMBathroomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.ALT_MASK);
     
     private static final String APP_TRAY_TOOLTIP = "SupradinConsole";
 
@@ -99,6 +108,57 @@ public class SupradinConsole extends javax.swing.JFrame {
 
     public SupradinConsole() {
         initComponents();
+        
+        
+        
+        //load fm dictionary
+        try {
+            Properties fmProp = new Properties();
+            InputStream stream = FMDictionary.class.getResourceAsStream("resources/fm/Samara.properties");
+            fmProp.load(stream);
+
+            Map<Float, String> stationList = new HashMap();
+            for (String key : fmProp.stringPropertyNames()) {
+                try {
+                    stationList.put(Float.parseFloat(key), fmProp.getProperty(key));
+                } catch (Exception e) {
+                    System.out.println("Can't read prop as station frequency: '" + key + "'");
+                }
+            }
+
+            FMDictionary.init(stationList);
+            
+            //complete popup menu
+            FMDictionary fmDictionary = FMDictionary.getInstance();
+            if (fmDictionary != null) {
+                for (final Map.Entry<Float, String> entry : fmDictionary.getStationList().entrySet()) {
+                    //room
+                    JMenuItem miStationRoom = new JMenuItem(entry.getValue());
+
+                    miStationRoom.addActionListener(new java.awt.event.ActionListener() {
+                        @Override
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            Commands.selectFMFrequencyInRoom(connection, entry.getKey());
+                        }
+                    });
+                    mnSoundRoomFMStations.add(miStationRoom);
+
+                    //bathroom
+                    JMenuItem miStationBathroom = new JMenuItem(entry.getValue());
+
+                    miStationBathroom.addActionListener(new java.awt.event.ActionListener() {
+                        @Override
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            Commands.selectFMFrequencyInBathroom(connection, entry.getKey());
+                        }
+                    });
+                    mnSoundBathroomFMStations.add(miStationBathroom);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Can't load fm stations list: " + e.getMessage());
+        }
         
         
         //filter lists implementation
@@ -230,8 +290,20 @@ public class SupradinConsole extends javax.swing.JFrame {
             miSoundRoomSourceFM.setAccelerator(ksAudioSourceRoomFM);
             JIntellitype.getInstance().registerSwingHotKey(21, ksAudioSourceRoomFM.getModifiers(), ksAudioSourceRoomFM.getKeyCode());
             
-            JIntellitype.getInstance().registerSwingHotKey(22, ksFMNextStation.getModifiers(), ksFMNextStation.getKeyCode());
-            JIntellitype.getInstance().registerSwingHotKey(23, ksFMPrevStation.getModifiers(), ksFMPrevStation.getKeyCode());
+            miSoundBathroomSourcePad.setAccelerator(ksAudioSourceBathroomPad);
+            JIntellitype.getInstance().registerSwingHotKey(22, ksAudioSourceBathroomPad.getModifiers(), ksAudioSourceBathroomPad.getKeyCode());
+            miSoundBathroomSourceFM.setAccelerator(ksAudioSourceBathroomFM);
+            JIntellitype.getInstance().registerSwingHotKey(23, ksAudioSourceBathroomFM.getModifiers(), ksAudioSourceBathroomFM.getKeyCode());
+            
+            miSoundRoomFMNextStation.setAccelerator(ksFMRoomNextStation);
+            JIntellitype.getInstance().registerSwingHotKey(24, ksFMRoomNextStation.getModifiers(), ksFMRoomNextStation.getKeyCode());
+            miSoundRoomFMPrevStation.setAccelerator(ksFMRoomPrevStation);
+            JIntellitype.getInstance().registerSwingHotKey(25, ksFMRoomPrevStation.getModifiers(), ksFMRoomPrevStation.getKeyCode());
+            
+            miSoundBathroomFMNextStation.setAccelerator(ksFMBathroomNextStation);
+            JIntellitype.getInstance().registerSwingHotKey(26, ksFMBathroomNextStation.getModifiers(), ksFMBathroomNextStation.getKeyCode());
+            miSoundBathroomFMPrevStation.setAccelerator(ksFMBathroomPrevStation);
+            JIntellitype.getInstance().registerSwingHotKey(27, ksFMBathroomPrevStation.getModifiers(), ksFMBathroomPrevStation.getKeyCode());
             
 
             JIntellitype.getInstance().addHotKeyListener(new HotkeyListener() {
@@ -286,12 +358,26 @@ public class SupradinConsole extends javax.swing.JFrame {
                         case 21:
                             miSoundRoomSourceFMActionPerformed(null);
                             break;
-                            
+                        
                         case 22:
-                            Commands.nextFMStationInRoom(connection, true);
+                            miSoundBathroomSourcePadActionPerformed(null);
                             break;
                         case 23:
-                            Commands.nextFMStationInRoom(connection, false);
+                            miSoundBathroomSourceFMActionPerformed(null);
+                            break;
+                            
+                        case 24:
+                            miSoundRoomFMNextStationActionPerformed(null);
+                            break;
+                        case 25:
+                            miSoundRoomFMPrevStationActionPerformed(null);
+                            break;
+                            
+                        case 26:
+                            miSoundBathroomFMNextStationActionPerformed(null);
+                            break;
+                        case 27:
+                            miSoundBathroomFMPrevStationActionPerformed(null);
                             break;
                     }
                 }
@@ -310,7 +396,6 @@ public class SupradinConsole extends javax.swing.JFrame {
             setVisible(true);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         }
-        
         
         
         //establish connection
@@ -402,14 +487,36 @@ public class SupradinConsole extends javax.swing.JFrame {
         miShowConsole = new javax.swing.JMenuItem();
         mnSound = new javax.swing.JMenu();
         mnSoundRoom = new javax.swing.JMenu();
-        miSoundRoomIncVolume = new javax.swing.JMenuItem();
-        miSoundRoomDecVolume = new javax.swing.JMenuItem();
-        miSoundRoomMute = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         mnSoundRoomSource = new javax.swing.JMenu();
         miSoundRoomSourcePC = new javax.swing.JMenuItem();
         miSoundRoomSourceBT = new javax.swing.JMenuItem();
         miSoundRoomSourceFM = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        mnSoundRoomFM = new javax.swing.JMenu();
+        miSoundRoomFMPrevStation = new javax.swing.JMenuItem();
+        miSoundRoomFMNextStation = new javax.swing.JMenuItem();
+        mnSoundRoomFMStations = new javax.swing.JMenu();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
+        miSoundRoomFMWriteStationsToEEPROM = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        miSoundRoomIncVolume = new javax.swing.JMenuItem();
+        miSoundRoomDecVolume = new javax.swing.JMenuItem();
+        miSoundRoomMute = new javax.swing.JMenuItem();
+        mnSoundRoomBathroom = new javax.swing.JMenu();
+        mnSoundBathroomSource = new javax.swing.JMenu();
+        miSoundBathroomSourcePad = new javax.swing.JMenuItem();
+        miSoundBathroomSourceFM = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        mnSoundBathroomFM = new javax.swing.JMenu();
+        miSoundBathroomFMPrevStation = new javax.swing.JMenuItem();
+        miSoundBathroomFMNextStation = new javax.swing.JMenuItem();
+        mnSoundBathroomFMStations = new javax.swing.JMenu();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
+        miSoundBathroomFMWriteStationsToEEPROM = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        miSoundBathroomIncVolume = new javax.swing.JMenuItem();
+        miSoundBathroomDecVolume = new javax.swing.JMenuItem();
+        miSoundBathroomMute = new javax.swing.JMenuItem();
         mnLight = new javax.swing.JMenu();
         mnLightCloackroom = new javax.swing.JMenu();
         miLightCloackroomOn = new javax.swing.JMenuItem();
@@ -477,36 +584,9 @@ public class SupradinConsole extends javax.swing.JFrame {
 
         mnSoundRoom.setLabel("Комната");
 
-        miSoundRoomIncVolume.setText("Прибавить громкость");
-        miSoundRoomIncVolume.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miSoundRoomIncVolumeActionPerformed(evt);
-            }
-        });
-        mnSoundRoom.add(miSoundRoomIncVolume);
-
-        miSoundRoomDecVolume.setText("Убавить громкость");
-        miSoundRoomDecVolume.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miSoundRoomDecVolumeActionPerformed(evt);
-            }
-        });
-        mnSoundRoom.add(miSoundRoomDecVolume);
-
-        miSoundRoomMute.setText("Выключить звук");
-        miSoundRoomMute.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miSoundRoomMuteActionPerformed(evt);
-            }
-        });
-        mnSoundRoom.add(miSoundRoomMute);
-        mnSoundRoom.add(jSeparator2);
-
         mnSoundRoomSource.setText("Источник сигнала");
-        mnSoundRoomSource.setToolTipText("");
 
         miSoundRoomSourcePC.setText("Компьютер");
-        miSoundRoomSourcePC.setToolTipText("");
         miSoundRoomSourcePC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miSoundRoomSourcePCActionPerformed(evt);
@@ -531,9 +611,149 @@ public class SupradinConsole extends javax.swing.JFrame {
         mnSoundRoomSource.add(miSoundRoomSourceFM);
 
         mnSoundRoom.add(mnSoundRoomSource);
+        mnSoundRoom.add(jSeparator2);
+
+        mnSoundRoomFM.setText("FM-приемник");
+
+        miSoundRoomFMPrevStation.setText("Предыдущая станция");
+        miSoundRoomFMPrevStation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomFMPrevStationActionPerformed(evt);
+            }
+        });
+        mnSoundRoomFM.add(miSoundRoomFMPrevStation);
+
+        miSoundRoomFMNextStation.setText("Следующая станция");
+        miSoundRoomFMNextStation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomFMNextStationActionPerformed(evt);
+            }
+        });
+        mnSoundRoomFM.add(miSoundRoomFMNextStation);
+
+        mnSoundRoomFMStations.setText("Станция");
+        mnSoundRoomFM.add(mnSoundRoomFMStations);
+        mnSoundRoomFM.add(jSeparator8);
+
+        miSoundRoomFMWriteStationsToEEPROM.setText("Записать станции (+Ctrl)");
+        miSoundRoomFMWriteStationsToEEPROM.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomFMWriteStationsToEEPROMActionPerformed(evt);
+            }
+        });
+        mnSoundRoomFM.add(miSoundRoomFMWriteStationsToEEPROM);
+
+        mnSoundRoom.add(mnSoundRoomFM);
+        mnSoundRoom.add(jSeparator5);
+
+        miSoundRoomIncVolume.setText("Прибавить громкость");
+        miSoundRoomIncVolume.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomIncVolumeActionPerformed(evt);
+            }
+        });
+        mnSoundRoom.add(miSoundRoomIncVolume);
+
+        miSoundRoomDecVolume.setText("Убавить громкость");
+        miSoundRoomDecVolume.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomDecVolumeActionPerformed(evt);
+            }
+        });
+        mnSoundRoom.add(miSoundRoomDecVolume);
+
+        miSoundRoomMute.setText("Выключить звук");
+        miSoundRoomMute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundRoomMuteActionPerformed(evt);
+            }
+        });
+        mnSoundRoom.add(miSoundRoomMute);
 
         mnSound.add(mnSoundRoom);
         mnSoundRoom.getAccessibleContext().setAccessibleDescription("");
+
+        mnSoundRoomBathroom.setText("Ванная");
+
+        mnSoundBathroomSource.setText("Источник сигнала");
+
+        miSoundBathroomSourcePad.setText("Планшет");
+        miSoundBathroomSourcePad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomSourcePadActionPerformed(evt);
+            }
+        });
+        mnSoundBathroomSource.add(miSoundBathroomSourcePad);
+
+        miSoundBathroomSourceFM.setText("FM-приемник");
+        miSoundBathroomSourceFM.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomSourceFMActionPerformed(evt);
+            }
+        });
+        mnSoundBathroomSource.add(miSoundBathroomSourceFM);
+
+        mnSoundRoomBathroom.add(mnSoundBathroomSource);
+        mnSoundRoomBathroom.add(jSeparator6);
+
+        mnSoundBathroomFM.setText("FM-приемник");
+
+        miSoundBathroomFMPrevStation.setText("Предыдущая станция");
+        miSoundBathroomFMPrevStation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomFMPrevStationActionPerformed(evt);
+            }
+        });
+        mnSoundBathroomFM.add(miSoundBathroomFMPrevStation);
+
+        miSoundBathroomFMNextStation.setText("Следующая станция");
+        miSoundBathroomFMNextStation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomFMNextStationActionPerformed(evt);
+            }
+        });
+        mnSoundBathroomFM.add(miSoundBathroomFMNextStation);
+
+        mnSoundBathroomFMStations.setText("Станция");
+        mnSoundBathroomFM.add(mnSoundBathroomFMStations);
+        mnSoundBathroomFM.add(jSeparator9);
+
+        miSoundBathroomFMWriteStationsToEEPROM.setText("Записать станции (+Ctrl)");
+        miSoundBathroomFMWriteStationsToEEPROM.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomFMWriteStationsToEEPROMActionPerformed(evt);
+            }
+        });
+        mnSoundBathroomFM.add(miSoundBathroomFMWriteStationsToEEPROM);
+
+        mnSoundRoomBathroom.add(mnSoundBathroomFM);
+        mnSoundRoomBathroom.add(jSeparator7);
+
+        miSoundBathroomIncVolume.setText("Прибавить громкость");
+        miSoundBathroomIncVolume.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomIncVolumeActionPerformed(evt);
+            }
+        });
+        mnSoundRoomBathroom.add(miSoundBathroomIncVolume);
+
+        miSoundBathroomDecVolume.setText("Убавить громкость");
+        miSoundBathroomDecVolume.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomDecVolumeActionPerformed(evt);
+            }
+        });
+        mnSoundRoomBathroom.add(miSoundBathroomDecVolume);
+
+        miSoundBathroomMute.setText("Выключить звук");
+        miSoundBathroomMute.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSoundBathroomMuteActionPerformed(evt);
+            }
+        });
+        mnSoundRoomBathroom.add(miSoundBathroomMute);
+
+        mnSound.add(mnSoundRoomBathroom);
 
         pmTray.add(mnSound);
 
@@ -961,7 +1181,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(btSearchDevices)
                     .add(lbNumDevices, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(lbNumMessages, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(lbNumMessages))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1067,7 +1287,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundRoomSourceBTActionPerformed
 
     private void miSoundRoomSourceFMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomSourceFMActionPerformed
-       Commands.selectSourceOfSoundInRoom(connection, Commands.ROOM_AUDIOSOURCE_RADIO);
+       Commands.selectSourceOfSoundInRoom(connection, Commands.ROOM_AUDIOSOURCE_FM);
     }//GEN-LAST:event_miSoundRoomSourceFMActionPerformed
 
     private void miLightBathroomOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightBathroomOnActionPerformed
@@ -1267,6 +1487,54 @@ public class SupradinConsole extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_edDataKeyPressed
 
+    private void miSoundBathroomSourceFMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomSourceFMActionPerformed
+       Commands.selectSourceOfSoundInBathroom(connection, Commands.BATHROOM_AUDIOSOURCE_FM);
+    }//GEN-LAST:event_miSoundBathroomSourceFMActionPerformed
+
+    private void miSoundBathroomIncVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomIncVolumeActionPerformed
+        Commands.changeVolumeOfSoundInBathroom(connection, true);
+    }//GEN-LAST:event_miSoundBathroomIncVolumeActionPerformed
+
+    private void miSoundBathroomDecVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomDecVolumeActionPerformed
+        Commands.changeVolumeOfSoundInBathroom(connection, false);
+    }//GEN-LAST:event_miSoundBathroomDecVolumeActionPerformed
+
+    private void miSoundBathroomMuteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomMuteActionPerformed
+        Commands.muteInBathroom(connection);
+    }//GEN-LAST:event_miSoundBathroomMuteActionPerformed
+
+    private void miSoundBathroomSourcePadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomSourcePadActionPerformed
+        Commands.selectSourceOfSoundInBathroom(connection, Commands.BATHROOM_AUDIOSOURCE_PAD);
+    }//GEN-LAST:event_miSoundBathroomSourcePadActionPerformed
+
+    private void miSoundRoomFMPrevStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMPrevStationActionPerformed
+        Commands.nextFMStationInRoom(connection, false);
+    }//GEN-LAST:event_miSoundRoomFMPrevStationActionPerformed
+
+    private void miSoundRoomFMNextStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMNextStationActionPerformed
+        Commands.nextFMStationInRoom(connection, true);
+    }//GEN-LAST:event_miSoundRoomFMNextStationActionPerformed
+
+    private void miSoundRoomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
+        if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK){
+            Commands.writeFMStationsTOEEPROMInRoom(connection);
+        }
+    }//GEN-LAST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
+
+    private void miSoundBathroomFMPrevStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMPrevStationActionPerformed
+        Commands.nextFMStationInBathroom(connection, false);
+    }//GEN-LAST:event_miSoundBathroomFMPrevStationActionPerformed
+
+    private void miSoundBathroomFMNextStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMNextStationActionPerformed
+        Commands.nextFMStationInBathroom(connection, true);
+    }//GEN-LAST:event_miSoundBathroomFMNextStationActionPerformed
+
+    private void miSoundBathroomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
+       if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK){
+            Commands.writeFMStationsTOEEPROMInBathroom(connection);
+       }
+    }//GEN-LAST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
+
     private void trayImageFree() {
         if (tray != null && trayIcon != null){
             tray.remove(trayIcon);
@@ -1413,6 +1681,11 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JLabel lbAddress;
     private javax.swing.JLabel lbCommand;
     private javax.swing.JLabel lbData;
@@ -1431,7 +1704,18 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JMenuItem miLightCloackroomOff;
     private javax.swing.JMenuItem miLightCloackroomOn;
     private javax.swing.JMenuItem miShowConsole;
+    private javax.swing.JMenuItem miSoundBathroomDecVolume;
+    private javax.swing.JMenuItem miSoundBathroomFMNextStation;
+    private javax.swing.JMenuItem miSoundBathroomFMPrevStation;
+    private javax.swing.JMenuItem miSoundBathroomFMWriteStationsToEEPROM;
+    private javax.swing.JMenuItem miSoundBathroomIncVolume;
+    private javax.swing.JMenuItem miSoundBathroomMute;
+    private javax.swing.JMenuItem miSoundBathroomSourceFM;
+    private javax.swing.JMenuItem miSoundBathroomSourcePad;
     private javax.swing.JMenuItem miSoundRoomDecVolume;
+    private javax.swing.JMenuItem miSoundRoomFMNextStation;
+    private javax.swing.JMenuItem miSoundRoomFMPrevStation;
+    private javax.swing.JMenuItem miSoundRoomFMWriteStationsToEEPROM;
     private javax.swing.JMenuItem miSoundRoomIncVolume;
     private javax.swing.JMenuItem miSoundRoomMute;
     private javax.swing.JMenuItem miSoundRoomSourceBT;
@@ -1445,7 +1729,13 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JMenu mnLightBathroom;
     private javax.swing.JMenu mnLightCloackroom;
     private javax.swing.JMenu mnSound;
+    private javax.swing.JMenu mnSoundBathroomFM;
+    private javax.swing.JMenu mnSoundBathroomFMStations;
+    private javax.swing.JMenu mnSoundBathroomSource;
     private javax.swing.JMenu mnSoundRoom;
+    private javax.swing.JMenu mnSoundRoomBathroom;
+    private javax.swing.JMenu mnSoundRoomFM;
+    private javax.swing.JMenu mnSoundRoomFMStations;
     private javax.swing.JMenu mnSoundRoomSource;
     private javax.swing.JPopupMenu pmMain;
     private javax.swing.JPopupMenu pmTray;

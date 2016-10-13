@@ -32,6 +32,79 @@
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
               </AccessibilityProperties>
               <SubComponents>
+                <Menu class="javax.swing.JMenu" name="mnSoundRoomSource">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&#x418;&#x441;&#x442;&#x43e;&#x447;&#x43d;&#x438;&#x43a; &#x441;&#x438;&#x433;&#x43d;&#x430;&#x43b;&#x430;"/>
+                  </Properties>
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourcePC">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x41a;&#x43e;&#x43c;&#x43f;&#x44c;&#x44e;&#x442;&#x435;&#x440;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourcePCActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourceBT">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Bluetooth"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourceBTActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourceFM">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="FM-&#x43f;&#x440;&#x438;&#x435;&#x43c;&#x43d;&#x438;&#x43a;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourceFMActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
+                <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
+                </MenuItem>
+                <Menu class="javax.swing.JMenu" name="mnSoundRoomFM">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="FM-&#x43f;&#x440;&#x438;&#x435;&#x43c;&#x43d;&#x438;&#x43a;"/>
+                  </Properties>
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomFMPrevStation">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x41f;&#x440;&#x435;&#x434;&#x44b;&#x434;&#x443;&#x449;&#x430;&#x44f; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomFMPrevStationActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomFMNextStation">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x421;&#x43b;&#x435;&#x434;&#x443;&#x44e;&#x449;&#x430;&#x44f; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomFMNextStationActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <Menu class="javax.swing.JMenu" name="mnSoundRoomFMStations">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x421;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                    </Menu>
+                    <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator8">
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomFMWriteStationsToEEPROM">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x417;&#x430;&#x43f;&#x438;&#x441;&#x430;&#x442;&#x44c; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x438; (+Ctrl)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomFMWriteStationsToEEPROMActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
+                <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator5">
+                </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomIncVolume">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="&#x41f;&#x440;&#x438;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x433;&#x440;&#x43e;&#x43c;&#x43a;&#x43e;&#x441;&#x442;&#x44c;"/>
@@ -56,41 +129,102 @@
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomMuteActionPerformed"/>
                   </Events>
                 </MenuItem>
-                <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
-                </MenuItem>
-                <Menu class="javax.swing.JMenu" name="mnSoundRoomSource">
+              </SubComponents>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="mnSoundRoomBathroom">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&#x412;&#x430;&#x43d;&#x43d;&#x430;&#x44f;"/>
+              </Properties>
+              <SubComponents>
+                <Menu class="javax.swing.JMenu" name="mnSoundBathroomSource">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="&#x418;&#x441;&#x442;&#x43e;&#x447;&#x43d;&#x438;&#x43a; &#x441;&#x438;&#x433;&#x43d;&#x430;&#x43b;&#x430;"/>
-                    <Property name="toolTipText" type="java.lang.String" value=""/>
                   </Properties>
                   <SubComponents>
-                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourcePC">
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomSourcePad">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&#x41a;&#x43e;&#x43c;&#x43f;&#x44c;&#x44e;&#x442;&#x435;&#x440;"/>
-                        <Property name="toolTipText" type="java.lang.String" value=""/>
+                        <Property name="text" type="java.lang.String" value="&#x41f;&#x43b;&#x430;&#x43d;&#x448;&#x435;&#x442;"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourcePCActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomSourcePadActionPerformed"/>
                       </Events>
                     </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourceBT">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Bluetooth"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourceBTActionPerformed"/>
-                      </Events>
-                    </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="miSoundRoomSourceFM">
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomSourceFM">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="FM-&#x43f;&#x440;&#x438;&#x435;&#x43c;&#x43d;&#x438;&#x43a;"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundRoomSourceFMActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomSourceFMActionPerformed"/>
                       </Events>
                     </MenuItem>
                   </SubComponents>
                 </Menu>
+                <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
+                </MenuItem>
+                <Menu class="javax.swing.JMenu" name="mnSoundBathroomFM">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="FM-&#x43f;&#x440;&#x438;&#x435;&#x43c;&#x43d;&#x438;&#x43a;"/>
+                  </Properties>
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomFMPrevStation">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x41f;&#x440;&#x435;&#x434;&#x44b;&#x434;&#x443;&#x449;&#x430;&#x44f; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomFMPrevStationActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomFMNextStation">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x421;&#x43b;&#x435;&#x434;&#x443;&#x44e;&#x449;&#x430;&#x44f; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomFMNextStationActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <Menu class="javax.swing.JMenu" name="mnSoundBathroomFMStations">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x421;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x44f;"/>
+                      </Properties>
+                    </Menu>
+                    <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator9">
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomFMWriteStationsToEEPROM">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x417;&#x430;&#x43f;&#x438;&#x441;&#x430;&#x442;&#x44c; &#x441;&#x442;&#x430;&#x43d;&#x446;&#x438;&#x438; (+Ctrl)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomFMWriteStationsToEEPROMActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
+                <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomIncVolume">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&#x41f;&#x440;&#x438;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x433;&#x440;&#x43e;&#x43c;&#x43a;&#x43e;&#x441;&#x442;&#x44c;"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomIncVolumeActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomDecVolume">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&#x423;&#x431;&#x430;&#x432;&#x438;&#x442;&#x44c; &#x433;&#x440;&#x43e;&#x43c;&#x43a;&#x43e;&#x441;&#x442;&#x44c;"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomDecVolumeActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="miSoundBathroomMute">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x437;&#x432;&#x443;&#x43a;"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miSoundBathroomMuteActionPerformed"/>
+                  </Events>
+                </MenuItem>
               </SubComponents>
             </Menu>
           </SubComponents>
@@ -527,7 +661,7 @@
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="btSearchDevices" min="-2" max="-2" attributes="0"/>
                   <Component id="lbNumDevices" alignment="0" max="32767" attributes="0"/>
-                  <Component id="lbNumMessages" alignment="0" max="32767" attributes="0"/>
+                  <Component id="lbNumMessages" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane1" pref="369" max="32767" attributes="0"/>

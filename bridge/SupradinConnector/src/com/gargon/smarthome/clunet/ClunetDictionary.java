@@ -1,5 +1,6 @@
 package com.gargon.smarthome.clunet;
 
+import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,15 +15,16 @@ import java.util.Map;
  * @author gargon
  */
 public class ClunetDictionary {
+
     
-    private static final Map<Integer, String> priorities = new LinkedHashMap(){{
+    private static final Map<Integer, String> PRIORITIES = new LinkedHashMap(){{
         put(Clunet.PRIORITY_NOTICE, "PRIORITY_NOTICE");
         put(Clunet.PRIORITY_INFO, "PRIORITY_INFO");
         put(Clunet.PRIORITY_MESSAGE, "PRIORITY_MESSAGE");
         put(Clunet.PRIORITY_COMMAND, "PRIORITY_COMMAND");
     }};
     
-    private static final Map<Integer, String> devices = new LinkedHashMap(){{
+    private static final Map<Integer, String> DEVICES = new LinkedHashMap(){{
         put(Clunet.ADDRESS_BROADCAST, "BROADCAST");
         put(Clunet.ADDRESS_SUPRADIN, "Supradin");
         
@@ -38,7 +40,7 @@ public class ClunetDictionary {
         put(Clunet.ADDRESS_WARDROBE, "Wardrobe");
     }};
     
-    private static final Map<Integer, String> commands = new LinkedHashMap(){{
+    private static final Map<Integer, String> COMMANDS = new LinkedHashMap(){{
         put(Clunet.COMMAND_DISCOVERY, "Discovery");
         put(Clunet.COMMAND_DISCOVERY_RESPONSE, "DiscoveryResponse");
         put(Clunet.COMMAND_BOOT_CONTROL, "BootControl");
@@ -101,29 +103,29 @@ public class ClunetDictionary {
     }};
     
     public static Map<Integer, String> getPrioritiesList(){
-        return new LinkedHashMap(priorities);
+        return new LinkedHashMap(PRIORITIES);
     }
     
     public static Map<Integer, String> getDevicesList(){
-        return new LinkedHashMap(devices);
+        return new LinkedHashMap(DEVICES);
     }
     
     public static Map<Integer, String> getCommandsList(){
-        return new LinkedHashMap(commands);
+        return new LinkedHashMap(COMMANDS);
     }
     
     
     
     public static String getPriorityById(int id){
-        return priorities.get(id);
+        return PRIORITIES.get(id);
     }
     
     public static String getDeviceById(int id){
-        return devices.get(id);
+        return DEVICES.get(id);
     }
     
     public static String getCommandById(int id){
-        return commands.get(id);
+        return COMMANDS.get(id);
     }
     
     
@@ -176,7 +178,6 @@ public class ClunetDictionary {
             return null;
         }
     }
-    
     
     public static List<String> oneWireInfo(byte[] value) {
         try {
@@ -277,29 +278,35 @@ public class ClunetDictionary {
         return mode;
     }
     
-    
     public static String fmInfo(byte[] value) {
         try {
             String r = null;
-            switch (value[0]){
+            switch (value[0]) {
                 case 0x00:  //channel info
-                    if (value.length == 6){
-                        r = String.format(Locale.ROOT, "FM: канал=%s; частота=%.2f МГц; уровень=%d%%; %s", 
-                                value[1] < 0 ? "-" : (value[1]+1), 
-                                (((value[3] & 0xFF) << 8) | (value[2] & 0xFF)) / 100f,
-                                100*value[4]/15,
-                                value[5]>0 ? "Стерео" : ""
-                                );
+                    if (value.length == 6) {
+                        float freq = (((value[3] & 0xFF) << 8) | (value[2] & 0xFF)) / 100f;
+                        FMDictionary fmDictionary = FMDictionary.getInstance();
+                        String station = null;
+                        if (fmDictionary != null) {
+                            station = fmDictionary.getStationList().get(freq);
+                        }
+                        r = String.format(Locale.ROOT, "FM: канал=%s; %sчастота=%.2f МГц; уровень=%d%%; %s",
+                                value[1] < 0 ? "-" : (value[1] + 1),
+                                station != null ? "Станция=\"" + station + "\"; " : "",
+                                freq,
+                                100 * value[4] / 15,
+                                value[5] > 0 ? "Стерео" : ""
+                        );
                     }
                     break;
                 case 0x01:  //state info
-                    if (value.length == 6){
-                        r = String.format("FM: standby=%s; mute=%s; mono=%s; hcc=%s; snc=%s", 
-                                value[1]>0 ? "on" : "off",
-                                value[2]>0 ? "on" : "off",
-                                value[3]>0 ? "on" : "off",
-                                value[4]>0 ? "on" : "off",
-                                value[5]>0 ? "on" : "off");
+                    if (value.length == 6) {
+                        r = String.format("FM: standby=%s; mute=%s; mono=%s; hcc=%s; snc=%s",
+                                value[1] > 0 ? "on" : "off",
+                                value[2] > 0 ? "on" : "off",
+                                value[3] > 0 ? "on" : "off",
+                                value[4] > 0 ? "on" : "off",
+                                value[5] > 0 ? "on" : "off");
                     }
                     break;
                 case 0x02:  //search info
@@ -312,7 +319,6 @@ public class ClunetDictionary {
         return null;
     }
     
-   
     public static String toString(int commandId, byte[] value) {
         switch (commandId) {
             case Clunet.COMMAND_DISCOVERY_RESPONSE:

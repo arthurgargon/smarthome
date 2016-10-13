@@ -1,11 +1,12 @@
 package com.gargon.smarthome.commands;
 
 
+import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
-import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import java.util.Map;
 
 /**
  *
@@ -21,7 +22,10 @@ public class Commands {
     public static final int ROOM_AUDIOSOURCE_PC = 1;
     //public static final int ROOM_AUDIOSOURCE_PC = 2;
     public static final int ROOM_AUDIOSOURCE_BLUETOOTH = 3;
-    public static final int ROOM_AUDIOSOURCE_RADIO = 4;
+    public static final int ROOM_AUDIOSOURCE_FM = 4;
+    
+    public static final int BATHROOM_AUDIOSOURCE_PAD = 1;
+    public static final int BATHROOM_AUDIOSOURCE_FM = 4;
 
 
     public static final int RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID = 1;
@@ -36,6 +40,10 @@ public class Commands {
     private static final int RELAY_1_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int RELAY_2_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int AUDIOBOX_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    
+    private static final int AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT = 500; //ms
+    private static final int AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT = 500; //ms
+    private static final int FM_EEPROM_WAITING_RESPONSE_TIMEOUT    = 500; //ms
 
     private static final int NUM_ATTEMPTS_COMMAND = 5;
     private static final int NUM_ATTEMPTS_STATE = 2;
@@ -379,6 +387,33 @@ public class Commands {
                         }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
     }
     
+    
+     /**
+     * Управляет выбором источника аудиосигнла
+     *
+     * @param connection текущее соединение
+     * @param source идентификатор источника сигнала
+     * @return возвращает true, если команда успешно выполнена
+     */
+    private static boolean selectSourceOfSound(SupradinConnection connection, final int address, final int source) {
+        return Clunet.sendResponsible(connection,
+                address,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_CHANNEL,
+                new byte[]{0x00, (byte)source},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == address
+                                && supradinRecieved.getCommand() == Clunet.COMMAND_CHANNEL_INFO
+                                && supradinRecieved.getData().length == 1
+                                && supradinRecieved.getData()[0] == source;
+                    }
+                }, AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+    }
+    
+    
     /**
      * Управляет выбором источника аудиосигнла в комнате
      *
@@ -387,21 +422,18 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean selectSourceOfSoundInRoom(SupradinConnection connection, final int source) {
-        return Clunet.sendResponsible(connection,
-                Clunet.ADDRESS_AUDIOBOX,
-                Clunet.PRIORITY_COMMAND,
-                Clunet.COMMAND_CHANNEL,
-                new byte[]{0x00, (byte)source},
-                new SupradinConnectionResponseFilter() {
-
-                    @Override
-                    public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBOX
-                                && supradinRecieved.getCommand() == Clunet.COMMAND_CHANNEL_INFO
-                                && supradinRecieved.getData().length == 1
-                                && supradinRecieved.getData()[0] == source;
-                    }
-                }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+       return selectSourceOfSound(connection, Clunet.ADDRESS_AUDIOBOX, source);
+    }
+    
+     /**
+     * Управляет выбором источника аудиосигнла в ванной комнате
+     *
+     * @param connection текущее соединение
+     * @param source идентификатор источника сигнала
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean selectSourceOfSoundInBathroom(SupradinConnection connection, final int source) {
+       return selectSourceOfSound(connection, Clunet.ADDRESS_AUDIOBATH, source);
     }
 
     /**
@@ -450,6 +482,31 @@ public class Commands {
     }
 
 
+    /**
+     * Выключает звук
+     *
+     * @param connection текущее соединение
+     * @param address адрес устройства в сети clunet
+     * @return возвращает true, если команда успешно выполнена
+     */
+     public static boolean mute(SupradinConnection connection, final int address) {
+        return Clunet.sendResponsible(connection,
+                address,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_MUTE,
+                new byte[]{0x00}, //пробуем переключить (как с пульта)
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == address
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getData().length == 2
+                        && supradinRecieved.getData()[0] == 0x00;
+                    }
+                }, AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+    }
+
     
     /**
      * Выключает звук в комнате
@@ -458,21 +515,17 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean muteInRoom(SupradinConnection connection) {
-        return Clunet.sendResponsible(connection,
-                Clunet.ADDRESS_AUDIOBOX,
-                Clunet.PRIORITY_COMMAND,
-                Clunet.COMMAND_MUTE,
-                new byte[]{0x00}, //пробуем переключить (как с пульта)
-                new SupradinConnectionResponseFilter() {
-
-                    @Override
-                    public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBOX
-                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
-                        && supradinRecieved.getData().length == 2
-                        && supradinRecieved.getData()[0] == 0x00;
-                    }
-                }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+       return mute(connection, Clunet.ADDRESS_AUDIOBOX);
+    }
+    
+      /**
+     * Выключает звук в ванной комнате
+     *
+     * @param connection текущее соединение
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean muteInBathroom(SupradinConnection connection) {
+       return mute(connection, Clunet.ADDRESS_AUDIOBATH);
     }
 
 
@@ -501,7 +554,29 @@ public class Commands {
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
     }
     
-    
+    /**
+     * Изменяет уровень громкости звука
+     *
+     * @param connection текущее соединение
+     * @param inc признак задает увеличение или уменьшение уровня громкости
+     * @return возвращает true, если команда успешно выполнена
+     */
+    private static boolean changeVolumeOfSound(SupradinConnection connection, final int address, final boolean inc) {
+        return Clunet.sendResponsible(connection,
+                address,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_VOLUME,
+                new byte[]{(byte)(inc ? 0x02 : 0x03)},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == address
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getData().length == 2;
+                    }
+                }, AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+    }
     
     /**
      * Изменяет уровень громкости звука в комнате
@@ -511,20 +586,18 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean changeVolumeOfSoundInRoom(SupradinConnection connection, final boolean inc) {
-        return Clunet.sendResponsible(connection,
-                Clunet.ADDRESS_AUDIOBOX,
-                Clunet.PRIORITY_COMMAND,
-                Clunet.COMMAND_VOLUME,
-                new byte[]{(byte)(inc ? 0x02 : 0x03)},
-                new SupradinConnectionResponseFilter() {
-
-                    @Override
-                    public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBOX
-                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
-                        && supradinRecieved.getData().length == 2;
-                    }
-                }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+        return changeVolumeOfSound(connection, Clunet.ADDRESS_AUDIOBOX, inc);
+    }
+    
+     /**
+     * Изменяет уровень громкости звука в ванной комнате
+     *
+     * @param connection текущее соединение
+     * @param inc признак задает увеличение или уменьшение уровня громкости
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean changeVolumeOfSoundInBathroom(SupradinConnection connection, final boolean inc) {
+        return changeVolumeOfSound(connection, Clunet.ADDRESS_AUDIOBATH, inc);
     }
   
     /**
@@ -598,14 +671,15 @@ public class Commands {
                             && supradinRecieved.getCommand() == Clunet.COMMAND_EQUALIZER_INFO
                             && supradinRecieved.getData().length == 3;
                         }
-                    }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+                    }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
         }
         return false;
     }
 
-    public static boolean nextFMStationInRoom(SupradinConnection connection, final boolean up){
+    
+    private static boolean nextFMStation(SupradinConnection connection, final int address, final boolean up){
         return Clunet.sendResponsible(connection,
-                Clunet.ADDRESS_AUDIOBOX,
+                address,
                 Clunet.PRIORITY_COMMAND,
                 Clunet.COMMAND_FM,
                     new byte[]{(byte) (up ? 0x02 : 0x03)},
@@ -613,30 +687,121 @@ public class Commands {
 
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
-                            return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBOX
+                            return supradinRecieved.getSrc() == address
                             && supradinRecieved.getCommand() == Clunet.COMMAND_FM_INFO
                             && supradinRecieved.getData().length == 6;
                         }
-                    }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+                    }, AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
     }
     
+    public static boolean nextFMStationInRoom(SupradinConnection connection, final boolean up){
+        return nextFMStation(connection, Clunet.ADDRESS_AUDIOBOX, up);
+    }
+    
+    public static boolean nextFMStationInBathroom(SupradinConnection connection, final boolean up){
+        return nextFMStation(connection, Clunet.ADDRESS_AUDIOBATH, up);
+    }
+    
+    private static boolean selectFMFrequency(SupradinConnection connection, final int address, float frequency) {
+        int freq = (int)(frequency * 100);
+        final byte byte1 = (byte)(freq & 0xFF);
+        final byte byte2 = (byte)((freq >> 8) & 0xFF);
+        return Clunet.sendResponsible(connection,
+                address,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_FM,
+                new byte[]{(byte) 0x00, byte1, byte2},
+                new SupradinConnectionResponseFilter() {
 
-      public static Integer checkAndroidInBathtroomCommand(SupradinDataMessage message) {
-        if(message != null) {
-            switch(message.getCommand()) {
-            case Clunet.COMMAND_LIGHT_LEVEL_INFO:
-                if(message.getSrc() == Clunet.ADDRESS_BATH_SENSORS && message.getData().length == 2) {
-                    return message.getData()[0] == 1 ? 1 : 0;
-                }
-                break;
-            case Clunet.COMMAND_ANDROID:
-                if(message.getData().length == 1) {
-                    return (int) message.getData()[0];
-                }
+            @Override
+            public boolean filter(SupradinDataMessage supradinRecieved) {
+                return supradinRecieved.getSrc() == address
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_FM_INFO
+                        && supradinRecieved.getData().length == 6
+                        && supradinRecieved.getData()[0] == 0x00
+                        && supradinRecieved.getData()[2] == byte1
+                        && supradinRecieved.getData()[3] == byte2;
+            }
+        }, AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+    }
+    
+    public static boolean selectFMFrequencyInRoom(SupradinConnection connection, float frequency){
+        return selectFMFrequency(connection, Clunet.ADDRESS_AUDIOBOX, frequency);
+    }
+    
+    public static boolean selectFMFrequencyInBathroom(SupradinConnection connection, float frequency){
+        return selectFMFrequency(connection, Clunet.ADDRESS_AUDIOBATH, frequency);
+    }
+
+    public static Integer checkAndroidInBathtroomCommand(SupradinDataMessage message) {
+        if (message != null) {
+            switch (message.getCommand()) {
+                case Clunet.COMMAND_LIGHT_LEVEL_INFO:
+                    if (message.getSrc() == Clunet.ADDRESS_BATH_SENSORS && message.getData().length == 2) {
+                        return message.getData()[0] == 1 ? 1 : 0;
+                    }
+                    break;
+                case Clunet.COMMAND_ANDROID:
+                    if (message.getData().length == 1) {
+                        return (int) message.getData()[0];
+                    }
             }
         }
 
         return null;
     }
+    
+    private static int writeFMStationsToEEPROM(SupradinConnection connection, final int address) {
+        FMDictionary fmDict = FMDictionary.getInstance();
+        if (fmDict != null) {
+            //стираем
+            if (Clunet.sendResponsible(connection,
+                    address,
+                    Clunet.PRIORITY_COMMAND,
+                    Clunet.COMMAND_FM, new byte[]{(byte) 0xEE, (byte) 0xEE, (byte) 0xFF},
+                    new SupradinConnectionResponseFilter() {
+                @Override
+                public boolean filter(SupradinDataMessage supradinRecieved) {
+                    return supradinRecieved.getSrc() == address
+                            && supradinRecieved.getCommand() == Clunet.COMMAND_FM_INFO
+                            && supradinRecieved.getData().length == 2
+                            && supradinRecieved.getData()[0] == (byte)0xEE
+                            && supradinRecieved.getData()[1] == (byte)0x01;
+                }
+            }, FM_EEPROM_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null) {
 
+                //пишем
+                int i = 0;
+                for (Map.Entry<Float, String> entry : fmDict.getStationList().entrySet()) {
+
+                    int freq = (int) (entry.getKey() * 100);
+
+                    Clunet.sendResponsible(connection,
+                            address,
+                            Clunet.PRIORITY_COMMAND,
+                            Clunet.COMMAND_FM, new byte[]{(byte) 0xED, (byte) i++, (byte) (freq & 0xFF), (byte) ((freq >> 8) & 0xFF)},
+                            new SupradinConnectionResponseFilter() {
+                        @Override
+                        public boolean filter(SupradinDataMessage supradinRecieved) {
+                            return supradinRecieved.getSrc() == address
+                                    && supradinRecieved.getCommand() == Clunet.COMMAND_FM_INFO
+                                    && supradinRecieved.getData().length == 2
+                                    && supradinRecieved.getData()[0] == (byte)0xED;
+                        }
+                    }, FM_EEPROM_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND);
+                }
+
+            }
+        }
+        return -1;
+    }
+
+    public static int writeFMStationsTOEEPROMInRoom(SupradinConnection connection){
+        return writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBOX);
+    }
+    
+    public static int writeFMStationsTOEEPROMInBathroom(SupradinConnection connection){
+        return writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBATH);
+    }
+    
 }
