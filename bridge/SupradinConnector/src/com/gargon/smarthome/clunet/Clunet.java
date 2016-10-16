@@ -149,6 +149,12 @@ public class Clunet {
     /* Сообщает о состоянии произвольного устройства */
     public final static int COMMAND_DEVICE_STATE_INFO = 0x71;
     
+    /* Сообщает о  о нажатии кнопки на ПДУ */
+    public final static int COMMAND_RC_BUTTON_PRESSED = 0x75;
+    
+    /* Эмулирует нажтие кнопки на ПДУ */
+    //public final static int CLUNET_COMMAND_RC_BUTTON_SEND = 0x76;
+    
      /* Команда блокирования*/
     public final static int COMMAND_ANDROID = 0xA0;
 
