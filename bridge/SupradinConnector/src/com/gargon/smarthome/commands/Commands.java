@@ -745,6 +745,18 @@ public class Commands {
                     if (message.getData().length == 1) {
                         return (int) message.getData()[0];
                     }
+                    break;
+                case Clunet.COMMAND_RC_BUTTON_PRESSED:
+                    if (message.getData().length == 3){
+                        if (message.getData()[0] == 0x00 && message.getData()[1] == 0x00){
+                            switch (message.getData()[2]){
+                                case 0x42:
+                                    return 0x02;
+                                case 0x52:
+                                    return 0x0A;
+                            }
+                        }
+                    }
             }
         }
 
