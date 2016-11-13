@@ -4,6 +4,7 @@ import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.FMDictionary;
+import com.gargon.smarthome.HeatFloorDictionary;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
 import com.gargon.smarthome.supradin.SupradinConnection;
@@ -155,6 +156,63 @@ public class SupradinConsole extends javax.swing.JFrame {
                     mnSoundBathroomFMStations.add(miStationBathroom);
                 }
             }
+            
+        } catch (Exception e) {
+            System.out.println("Can't load fm stations list: " + e.getMessage());
+        }
+        
+
+        //load heatfloor programs
+        try {
+            Properties hfProp = new Properties();
+            InputStream stream = FMDictionary.class.getResourceAsStream("resources/heatfloor/Programs.properties");
+            hfProp.load(stream);
+
+            Map<Integer, Integer[]> programList = new HashMap();
+            for (String key : hfProp.stringPropertyNames()) {
+                try {
+                    String value = hfProp.getProperty(key);
+                    String[] s_values = value.split(";");
+                    List<Integer> list = new ArrayList(s_values.length);
+                    for (String s : s_values){
+                        list.add(Integer.parseInt(s));
+                    }
+                    
+                    programList.put(Integer.parseInt(key), list.toArray(new Integer[]{}));
+                } catch (Exception e) {
+                    System.out.println("Can't read prop as station frequency: '" + key + "'");
+                }
+            }
+
+            HeatFloorDictionary.init(programList);
+            
+            //complete popup menu
+//            FMDictionary fmDictionary = FMDictionary.getInstance();
+//            if (fmDictionary != null) {
+//                for (final Map.Entry<Float, String> entry : fmDictionary.getStationList().entrySet()) {
+//                    //room
+//                    JMenuItem miStationRoom = new JMenuItem(entry.getValue());
+//
+//                    miStationRoom.addActionListener(new java.awt.event.ActionListener() {
+//                        @Override
+//                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                            Commands.selectFMFrequencyInRoom(connection, entry.getKey());
+//                        }
+//                    });
+//                    mnSoundRoomFMStations.add(miStationRoom);
+//
+//                    //bathroom
+//                    JMenuItem miStationBathroom = new JMenuItem(entry.getValue());
+//
+//                    miStationBathroom.addActionListener(new java.awt.event.ActionListener() {
+//                        @Override
+//                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                            Commands.selectFMFrequencyInBathroom(connection, entry.getKey());
+//                        }
+//                    });
+//                    mnSoundBathroomFMStations.add(miStationBathroom);
+//                }
+//            }
             
         } catch (Exception e) {
             System.out.println("Can't load fm stations list: " + e.getMessage());

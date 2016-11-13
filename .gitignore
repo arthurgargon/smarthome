@@ -11,6 +11,8 @@ Debug
 help
 release
 
+test
+
 # temporary ignore android project commits
 monitor
 
