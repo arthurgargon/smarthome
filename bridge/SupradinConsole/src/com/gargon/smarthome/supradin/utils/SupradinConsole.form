@@ -287,28 +287,70 @@
             <Property name="text" type="java.lang.String" value="&#x41a;&#x43b;&#x438;&#x43c;&#x430;&#x442;"/>
           </Properties>
           <SubComponents>
-            <Menu class="javax.swing.JMenu" name="mnFanBathroom">
+            <Menu class="javax.swing.JMenu" name="mnClimateBathroom">
               <Properties>
-                <Property name="text" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440;"/>
-                <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
+                <Property name="text" type="java.lang.String" value="&#x412;&#x430;&#x43d;&#x43d;&#x430;&#x44f;"/>
               </Properties>
               <SubComponents>
-                <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOn">
+                <Menu class="javax.swing.JMenu" name="mnFanBathroom">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                    <Property name="text" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440;"/>
+                    <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOnActionPerformed"/>
-                  </Events>
-                </MenuItem>
-                <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOff">
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOn">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                        <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOnActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOff">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                        <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOffActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
+              </SubComponents>
+            </Menu>
+            <Menu class="javax.swing.JMenu" name="mnClimateKitchen">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&#x41a;&#x443;&#x445;&#x43d;&#x44f;"/>
+              </Properties>
+              <SubComponents>
+                <Menu class="javax.swing.JMenu" name="mnFanKitchen">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                    <Property name="text" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440;"/>
+                    <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x43d;&#x430; &#x43a;&#x443;&#x445;&#x43d;&#x435;"/>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOffActionPerformed"/>
-                  </Events>
-                </MenuItem>
+                  <SubComponents>
+                    <MenuItem class="javax.swing.JMenuItem" name="mnFanKitchenOn">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                        <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x43d;&#x430; &#x43a;&#x443;&#x445;&#x43d;&#x435;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanKitchenOnActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="mnFanKitchenOff">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                        <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x43d;&#x430; &#x43a;&#x443;&#x445;&#x43d;&#x435;"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanKitchenOffActionPerformed"/>
+                      </Events>
+                    </MenuItem>
+                  </SubComponents>
+                </Menu>
               </SubComponents>
             </Menu>
           </SubComponents>

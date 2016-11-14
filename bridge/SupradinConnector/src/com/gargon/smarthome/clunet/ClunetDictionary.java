@@ -233,25 +233,33 @@ public class ClunetDictionary {
         return null;
     }
     
+   
+   public static final int HEATFLOOR_MODE_OFF = 0;
+   public static final int HEATFLOOR_MODE_MANUAL = 1;
+   public static final int HEATFLOOR_MODE_DAY = 2;
+   public static final int HEATFLOOR_MODE_WEEK = 3;
+   public static final int HEATFLOOR_MODE_PARTY = 4;
+   public static final int HEATFLOOR_MODE_DAY_FOR_TODAY = 5;
+   
     public static String heatfloorMode(int m) {
         String mode;
         switch (m) {
-            case 0:
+            case HEATFLOOR_MODE_OFF:
                 mode = "Выкл.";
                 break;
-            case 1:
+            case HEATFLOOR_MODE_MANUAL:
                 mode = "режим ручной";
                 break;
-            case 2:
+            case HEATFLOOR_MODE_DAY:
                 mode = "режим дневной";
                 break;
-            case 3:
+            case HEATFLOOR_MODE_WEEK:
                 mode = "режим недельный";
                 break;
-            case 4:
+            case HEATFLOOR_MODE_PARTY:
                 mode = "режим вечеринка";
                 break;
-            case 5:
+            case HEATFLOOR_MODE_DAY_FOR_TODAY:
                 mode = "режим дневной на день";
                 break;
             default:

@@ -5,6 +5,8 @@ import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
 import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.HeatFloorDictionary;
+import com.gargon.smarthome.HeatfloorChannel;
+import com.gargon.smarthome.HeatfloorProgram;
 import com.gargon.smarthome.clunet.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
 import com.gargon.smarthome.supradin.SupradinConnection;
@@ -45,14 +47,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -168,54 +174,215 @@ public class SupradinConsole extends javax.swing.JFrame {
             InputStream stream = FMDictionary.class.getResourceAsStream("resources/heatfloor/Programs.properties");
             hfProp.load(stream);
 
-            Map<Integer, Integer[]> programList = new HashMap();
+            Map<Integer, HeatfloorProgram> programList = new HashMap();
             for (String key : hfProp.stringPropertyNames()) {
                 try {
-                    String value = hfProp.getProperty(key);
-                    String[] s_values = value.split(";");
-                    List<Integer> list = new ArrayList(s_values.length);
-                    for (String s : s_values){
-                        list.add(Integer.parseInt(s));
+                    String[] key_s = key.split("\\.");
+                    if (key_s.length == 2) {
+                        int num = Integer.parseInt(key_s[0]);
+                        HeatfloorProgram p = programList.get(num);
+                        if (p == null) {
+                            programList.put(num, p = new HeatfloorProgram());
+                        }
+                        switch (key_s[1]) {
+                            case "name":
+                                p.setName(hfProp.getProperty(key));
+                                break;
+                            case "schedule":
+                                String[] s_values = hfProp.getProperty(key).split(";");
+                                List<Integer> list = new ArrayList(s_values.length);
+                                for (String s : s_values) {
+                                    list.add(Integer.parseInt(s));
+                                }
+                                p.setSchedule(list.toArray(new Integer[]{}));
+                                break;
+                        }
                     }
-                    
-                    programList.put(Integer.parseInt(key), list.toArray(new Integer[]{}));
                 } catch (Exception e) {
-                    System.out.println("Can't read prop as station frequency: '" + key + "'");
+                    System.out.println("Can't read heatflorr programs list: '" + key + "'");
                 }
             }
 
-            HeatFloorDictionary.init(programList);
-            
+            //heatfloor channels
+            String[] available_channels = new String[]{"Kitchen", "Bathroom"};
+
+            Map<String, HeatfloorChannel> channels = new HashMap();
+
+            for (String channel : available_channels) {
+                hfProp = new Properties();
+                stream = FMDictionary.class.getResourceAsStream("resources/heatfloor/" + channel + ".properties");
+                hfProp.load(stream);
+                try {
+                    int num = Integer.parseInt(hfProp.getProperty("channel", "-1"));
+                    String name = hfProp.getProperty("name", "");
+                    if (num >= 0 && !name.isEmpty()) {
+                        HeatfloorChannel hc = new HeatfloorChannel(num, name);
+                        String programs = hfProp.getProperty("programs");
+                        String[] ps = programs.split(";");
+                        for (String p : ps) {
+                            hc.addProgram(Integer.parseInt(p));
+                        }
+
+                        Pattern p = Pattern.compile("program\\.set\\.week\\.(\\d)");
+
+                        for (String key : hfProp.stringPropertyNames()) {
+                            Matcher m = p.matcher(key);
+                            if (m.matches()) {
+                                String wv = hfProp.getProperty(key);
+                                String[] vs = wv.split(";");
+                                int[] vi = new int[vs.length];
+                                int vii = 0;
+                                for (String v : vs) {
+                                    vi[vii++] = Integer.parseInt(v);
+                                }
+
+                                hc.addWeekProgramSet(Integer.parseInt(m.group(1)), vi);
+                            }
+                        }
+                        channels.put(name, hc);
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Can't read heatfloor channels properties: '" + channel + "'");
+                }
+            }
+
+            HeatFloorDictionary.init(programList, channels);
+
             //complete popup menu
-//            FMDictionary fmDictionary = FMDictionary.getInstance();
-//            if (fmDictionary != null) {
-//                for (final Map.Entry<Float, String> entry : fmDictionary.getStationList().entrySet()) {
-//                    //room
-//                    JMenuItem miStationRoom = new JMenuItem(entry.getValue());
-//
-//                    miStationRoom.addActionListener(new java.awt.event.ActionListener() {
-//                        @Override
-//                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                            Commands.selectFMFrequencyInRoom(connection, entry.getKey());
-//                        }
-//                    });
-//                    mnSoundRoomFMStations.add(miStationRoom);
-//
-//                    //bathroom
-//                    JMenuItem miStationBathroom = new JMenuItem(entry.getValue());
-//
-//                    miStationBathroom.addActionListener(new java.awt.event.ActionListener() {
-//                        @Override
-//                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                            Commands.selectFMFrequencyInBathroom(connection, entry.getKey());
-//                        }
-//                    });
-//                    mnSoundBathroomFMStations.add(miStationBathroom);
-//                }
-//            }
-            
+            HeatFloorDictionary hfDictionary = HeatFloorDictionary.getInstance();
+            if (hfDictionary != null) {
+                for (Map.Entry<String, HeatfloorChannel> entry : hfDictionary.getChannelList().entrySet()) {
+                    String name = entry.getKey();
+                    final HeatfloorChannel channel = entry.getValue();
+                    //find by name
+                    for (Component c : mnClimate.getMenuComponents()) {
+                        if (c instanceof JMenu && ((JMenu) c).getText().equals(name)) {
+                            JMenu mnHeatfloor = new JMenu("Теплый пол");
+                            ((JMenu) c).add(mnHeatfloor);
+
+                            JMenuItem miHeatfloorOff = new JMenuItem("Выключить");
+                            miHeatfloorOff.addActionListener(new java.awt.event.ActionListener() {
+                                @Override
+                                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                    Commands.selectHeatfloorModeOff(connection, channel.getNum());
+                                }
+                            });
+                            mnHeatfloor.add(miHeatfloorOff);
+
+                            JMenu mnHeatfloorManual = new JMenu("Ручной режим");
+                            mnHeatfloor.add(mnHeatfloorManual);
+
+                            for (int t = 24; t <= 34; t++) {
+                                final int ft = t;
+                                JMenuItem miHeatfloorManualT = new JMenuItem(String.valueOf(t) + "°C");
+                                miHeatfloorManualT.addActionListener(new java.awt.event.ActionListener() {
+                                    @Override
+                                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                        Commands.selectHeatfloorModeManual(connection, channel.getNum(), ft);
+                                    }
+                                });
+
+                                mnHeatfloorManual.add(miHeatfloorManualT);
+                            }
+
+                            JMenu mnHeatfloorDay = new JMenu("Дневной режим");
+                            mnHeatfloor.add(mnHeatfloorDay);
+
+                            for (Integer program : channel.getProgramList()) {
+                                final int fp = program;
+                                JMenuItem miHeatfloorDayProgram = new JMenuItem(hfDictionary.getProgramList().get(fp).getName());
+                                miHeatfloorDayProgram.addActionListener(new java.awt.event.ActionListener() {
+                                    @Override
+                                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                        Commands.selectHeatfloorModeDay(connection, channel.getNum(), fp);
+                                    }
+                                });
+                                mnHeatfloorDay.add(miHeatfloorDayProgram);
+                            }
+
+                            JMenu mnHeatfloorWeek = new JMenu("Недельный режим");
+                            mnHeatfloor.add(mnHeatfloorWeek);
+
+                            for (final Map.Entry<Integer, int[]> set : channel.getWeekProgramSet().entrySet()) {
+                                if (set.getValue().length == 3) {
+                                    String label = String.format("Пн-пт: %s; Сб: %s; Вс: %s",
+                                            hfDictionary.getProgramList().get(set.getValue()[0]).getName(),
+                                            hfDictionary.getProgramList().get(set.getValue()[1]).getName(),
+                                            hfDictionary.getProgramList().get(set.getValue()[2]).getName());
+                                    
+                                    JMenuItem miHeatfloorWeekSet = new JMenuItem(label);
+                                    miHeatfloorWeekSet.addActionListener(new java.awt.event.ActionListener() {
+                                        @Override
+                                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                            Commands.selectHeatfloorModeWeek(connection, channel.getNum(), set.getValue()[0], set.getValue()[1], set.getValue()[2]);
+                                        }
+                                    });
+                                    mnHeatfloorWeek.add(miHeatfloorWeekSet);
+                                }
+                            }
+
+                            JMenu mnHeatfloorDayForToday = new JMenu("Дневной режим на сегодня");
+                            mnHeatfloor.add(mnHeatfloorDayForToday);
+
+                            for (Integer program : channel.getProgramList()) {
+                                final int fp = program;
+                                JMenuItem miHeatfloorDayForTodayProgram = new JMenuItem(hfDictionary.getProgramList().get(fp).getName());
+                                miHeatfloorDayForTodayProgram.addActionListener(new java.awt.event.ActionListener() {
+                                    @Override
+                                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                        Commands.selectHeatfloorModeDayForToday(connection, channel.getNum(), fp);
+                                    }
+                                });
+                                mnHeatfloorDayForToday.add(miHeatfloorDayForTodayProgram);
+                            }
+
+                            JMenu mnHeatfloorParty = new JMenu("Вечеринка");
+                            mnHeatfloor.add(mnHeatfloorParty);
+
+                            for (int t = 28; t <= 34; t++) {
+                                final int ft = t;
+                                JMenu mnHeatfloorPartyT = new JMenu(String.valueOf(t) + "°C");
+
+                                for (int h = 2; h <= 6; h++) {
+                                    final int fh = h;
+                                    JMenuItem miHeatfloorPartyH = new JMenuItem("на " + String.valueOf(h) + " часов");
+
+                                    miHeatfloorPartyH.addActionListener(new java.awt.event.ActionListener() {
+                                        @Override
+                                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                            Commands.selectHeatfloorModeParty(connection, channel.getNum(), ft, fh * 3600);
+                                        }
+                                    });
+
+                                    mnHeatfloorPartyT.add(miHeatfloorPartyH);
+                                }
+
+                                mnHeatfloorParty.add(mnHeatfloorPartyT);
+                            }
+                            
+                            JSeparator separator = new JSeparator();
+                            mnHeatfloor.add(separator);
+
+                            JMenuItem miWriteHeatfloorProgramsToEEPROM = new JMenuItem("Записать программы (+Ctrl)");
+
+                            miWriteHeatfloorProgramsToEEPROM.addActionListener(new java.awt.event.ActionListener() {
+                                @Override
+                                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                    if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK) {
+                                        Commands.writeHeatfloorProgramsToEEPROM(connection);
+                                    }
+                                }
+                            });
+
+                            mnHeatfloor.add(miWriteHeatfloorProgramsToEEPROM);
+                             
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
-            System.out.println("Can't load fm stations list: " + e.getMessage());
+            System.out.println("Can't load heatfloor params: " + e.getMessage());
         }
         
         
@@ -583,9 +750,14 @@ public class SupradinConsole extends javax.swing.JFrame {
         miLightBathroomOn = new javax.swing.JMenuItem();
         miLightBathroomOff = new javax.swing.JMenuItem();
         mnClimate = new javax.swing.JMenu();
+        mnClimateBathroom = new javax.swing.JMenu();
         mnFanBathroom = new javax.swing.JMenu();
         mnFanBathroomOn = new javax.swing.JMenuItem();
         mnFanBathroomOff = new javax.swing.JMenuItem();
+        mnClimateKitchen = new javax.swing.JMenu();
+        mnFanKitchen = new javax.swing.JMenu();
+        mnFanKitchenOn = new javax.swing.JMenuItem();
+        mnFanKitchenOff = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         miExit = new javax.swing.JMenuItem();
         pmMain = new javax.swing.JPopupMenu();
@@ -861,10 +1033,13 @@ public class SupradinConsole extends javax.swing.JFrame {
 
         mnClimate.setText("Климат");
 
+        mnClimateBathroom.setText("Ванная");
+
         mnFanBathroom.setText("Вентилятор");
         mnFanBathroom.setActionCommand("Вентилятор в ванной");
 
         mnFanBathroomOn.setText("Включить");
+        mnFanBathroomOn.setActionCommand("Включить вентилятор в ванной");
         mnFanBathroomOn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnFanBathroomOnActionPerformed(evt);
@@ -873,6 +1048,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         mnFanBathroom.add(mnFanBathroomOn);
 
         mnFanBathroomOff.setText("Выключить");
+        mnFanBathroomOff.setActionCommand("Выключить вентилятор в ванной");
         mnFanBathroomOff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnFanBathroomOffActionPerformed(evt);
@@ -880,7 +1056,36 @@ public class SupradinConsole extends javax.swing.JFrame {
         });
         mnFanBathroom.add(mnFanBathroomOff);
 
-        mnClimate.add(mnFanBathroom);
+        mnClimateBathroom.add(mnFanBathroom);
+
+        mnClimate.add(mnClimateBathroom);
+
+        mnClimateKitchen.setText("Кухня");
+
+        mnFanKitchen.setText("Вентилятор");
+        mnFanKitchen.setActionCommand("Вентилятор на кухне");
+
+        mnFanKitchenOn.setText("Включить");
+        mnFanKitchenOn.setActionCommand("Включить вентилятор на кухне");
+        mnFanKitchenOn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnFanKitchenOnActionPerformed(evt);
+            }
+        });
+        mnFanKitchen.add(mnFanKitchenOn);
+
+        mnFanKitchenOff.setText("Выключить");
+        mnFanKitchenOff.setActionCommand("Выключить вентилятор на кухне");
+        mnFanKitchenOff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnFanKitchenOffActionPerformed(evt);
+            }
+        });
+        mnFanKitchen.add(mnFanKitchenOff);
+
+        mnClimateKitchen.add(mnFanKitchen);
+
+        mnClimate.add(mnClimateKitchen);
 
         pmTray.add(mnClimate);
         pmTray.add(jSeparator1);
@@ -1593,6 +1798,14 @@ public class SupradinConsole extends javax.swing.JFrame {
        }
     }//GEN-LAST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
 
+    private void mnFanKitchenOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanKitchenOnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mnFanKitchenOnActionPerformed
+
+    private void mnFanKitchenOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanKitchenOffActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mnFanKitchenOffActionPerformed
+
     private void trayImageFree() {
         if (tray != null && trayIcon != null){
             tray.remove(trayIcon);
@@ -1780,9 +1993,14 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JMenuItem miSoundRoomSourceFM;
     private javax.swing.JMenuItem miSoundRoomSourcePC;
     private javax.swing.JMenu mnClimate;
+    private javax.swing.JMenu mnClimateBathroom;
+    private javax.swing.JMenu mnClimateKitchen;
     private javax.swing.JMenu mnFanBathroom;
     private javax.swing.JMenuItem mnFanBathroomOff;
     private javax.swing.JMenuItem mnFanBathroomOn;
+    private javax.swing.JMenu mnFanKitchen;
+    private javax.swing.JMenuItem mnFanKitchenOff;
+    private javax.swing.JMenuItem mnFanKitchenOn;
     private javax.swing.JMenu mnLight;
     private javax.swing.JMenu mnLightBathroom;
     private javax.swing.JMenu mnLightCloackroom;

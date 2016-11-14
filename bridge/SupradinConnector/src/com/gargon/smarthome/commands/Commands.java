@@ -2,7 +2,10 @@ package com.gargon.smarthome.commands;
 
 
 import com.gargon.smarthome.FMDictionary;
+import com.gargon.smarthome.HeatFloorDictionary;
+import com.gargon.smarthome.HeatfloorProgram;
 import com.gargon.smarthome.clunet.Clunet;
+import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
@@ -45,6 +48,9 @@ public class Commands {
     private static final int AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT = 500; //ms
     private static final int FM_EEPROM_WAITING_RESPONSE_TIMEOUT    = 500; //ms
 
+    private static final int HEATFLOOR_EEPROM_WAITING_RESPONSE_TIMEOUT    = 500; //ms
+
+    
     private static final int NUM_ATTEMPTS_COMMAND = 5;
     private static final int NUM_ATTEMPTS_STATE = 2;
 
@@ -763,7 +769,7 @@ public class Commands {
         return null;
     }
     
-    private static int writeFMStationsToEEPROM(SupradinConnection connection, final int address) {
+    private static void writeFMStationsToEEPROM(SupradinConnection connection, final int address) {
         FMDictionary fmDict = FMDictionary.getInstance();
         if (fmDict != null) {
             //стираем
@@ -805,15 +811,94 @@ public class Commands {
 
             }
         }
-        return -1;
     }
 
-    public static int writeFMStationsTOEEPROMInRoom(SupradinConnection connection){
-        return writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBOX);
+    public static void writeFMStationsTOEEPROMInRoom(SupradinConnection connection){
+        writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBOX);
     }
     
-    public static int writeFMStationsTOEEPROMInBathroom(SupradinConnection connection){
-        return writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBATH);
+    public static void writeFMStationsTOEEPROMInBathroom(SupradinConnection connection){
+        writeFMStationsToEEPROM(connection, Clunet.ADDRESS_AUDIOBATH);
     }
     
+    
+    public static void writeHeatfloorProgramsToEEPROM(SupradinConnection connection) {
+        HeatFloorDictionary hfDict = HeatFloorDictionary.getInstance();
+        if (hfDict != null) {
+
+            //сначала стирать ??
+            for (int i = 0; i < 10; i++) {   //max 10 programs
+                final HeatfloorProgram program = hfDict.getProgramList().get(i);
+                if (program != null) {
+
+                    final byte[] data = new byte[program.getSchedule().length + 1];
+                    data[0] = (byte) (0xF0 | i);
+                    for (int j = 0; j < program.getSchedule().length; j++) {
+                        data[j + 1] = (byte)((int)program.getSchedule()[j]);
+                    }
+
+                    Clunet.sendResponsible(connection,
+                            Clunet.ADDRESS_RELAY_1,
+                            Clunet.PRIORITY_COMMAND,
+                            Clunet.COMMAND_HEATFLOOR, data,
+                            new SupradinConnectionResponseFilter() {
+                        @Override
+                        public boolean filter(SupradinDataMessage supradinRecieved) {
+                            return supradinRecieved.getSrc() == Clunet.ADDRESS_RELAY_1
+                                    && supradinRecieved.getCommand() == Clunet.COMMAND_HEATFLOOR_INFO
+                                    && supradinRecieved.getData().length > 2
+                                    && supradinRecieved.getData()[0] == data[0]
+                                    && supradinRecieved.getData()[1] == program.getSchedule().length / 2;
+                        }
+                    }, HEATFLOOR_EEPROM_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND);
+                }
+            }
+        }
+    }
+    
+    private static void selectHeatfloorMode(SupradinConnection connection, int mode, int channel, byte[] params) {
+        byte[] rdata = new byte[params.length + 3];
+        rdata[0] = (byte) 0xFE;
+        rdata[1] = (byte) (0x01 << channel);
+        rdata[2] = (byte) mode;
+        System.arraycopy(params, 0, rdata, 3, params.length);
+
+        Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_RELAY_1,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_HEATFLOOR, rdata,
+                new SupradinConnectionResponseFilter() {
+            @Override
+            public boolean filter(SupradinDataMessage supradinRecieved) {
+                return supradinRecieved.getSrc() == Clunet.ADDRESS_RELAY_1
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_HEATFLOOR_INFO;
+            }
+        }, HEATFLOOR_EEPROM_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND);
+    }
+    
+    public static void selectHeatfloorModeOff(SupradinConnection connection, int channel){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_OFF, channel, new byte[]{});
+    }
+    
+    public static void selectHeatfloorModeManual(SupradinConnection connection, int channel, int temperature){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_MANUAL, channel, new byte[]{(byte)temperature});
+    }
+    
+    public static void selectHeatfloorModeDay(SupradinConnection connection, int channel, int program){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_DAY, channel, new byte[]{(byte)program});
+    }
+    
+    public static void selectHeatfloorModeWeek(SupradinConnection connection, int channel, int program_mo_fr, int program_sa, int program_su){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_WEEK, channel, 
+                new byte[]{(byte)program_mo_fr, (byte)program_sa, (byte)program_su});
+    }
+    
+    public static void selectHeatfloorModeParty(SupradinConnection connection, int channel, int temperature, int num_seconds){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_PARTY, channel, 
+                new byte[]{(byte)temperature, (byte)(num_seconds & 0xFF), (byte)((num_seconds >> 8) & 0xFF)});
+    }
+    
+    public static void selectHeatfloorModeDayForToday(SupradinConnection connection, int channel, int program){
+        selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_DAY_FOR_TODAY, channel, new byte[]{(byte)program});
+    }
 }
