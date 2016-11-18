@@ -635,10 +635,15 @@ public class SupradinConsole extends javax.swing.JFrame {
             public void dataRecieved(SupradinConnection connection, SupradinDataMessage supradin) {
 
                 String src = "0x" + DataFormat.byteToHex(supradin.getSrc());
-                String srcName = ClunetDictionary.getDeviceById(supradin.getSrc());
-                if (srcName != null) {
-                    src += " - " + srcName;
+                if (supradin.getSrc() == Clunet.ADDRESS_SUPRADIN) {
+                    src += " - " + supradin.getIpAsString();
+                } else {
+                    String srcName = ClunetDictionary.getDeviceById(supradin.getSrc());
+                    if (srcName != null) {
+                        src += " - " + srcName;
+                    }
                 }
+                
 
                 String rcv = "0x" +DataFormat.byteToHex(supradin.getDst());
                 String rcvName = ClunetDictionary.getDeviceById(supradin.getDst());
