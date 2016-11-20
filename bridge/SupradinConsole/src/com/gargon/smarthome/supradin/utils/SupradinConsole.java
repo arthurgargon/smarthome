@@ -1673,7 +1673,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         for (int i = 0; i < model.getSize(); i++) {
             CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
             if (cbi.isChecked()) {
-                srcFilters.add(RowFilter.regexFilter(cbi.toString(), 1));
+                srcFilters.add(RowFilter.regexFilter(cbi.getIdAsHex(), 1));
             }
         }
         if (!srcFilters.isEmpty()) {
@@ -1685,7 +1685,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         for (int i = 0; i < model.getSize(); i++) {
             CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
             if (cbi.isChecked()) {
-                rcvFilters.add(RowFilter.regexFilter(cbi.toString(), 2));
+                rcvFilters.add(RowFilter.regexFilter(cbi.getIdAsHex(), 2));
             }
         }
         if (!rcvFilters.isEmpty()) {
@@ -1697,7 +1697,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         for (int i = 0; i < model.getSize(); i++) {
             CheckBoxItem cbi = (CheckBoxItem) model.getElementAt(i);
             if (cbi.isChecked()) {
-                cmdFilters.add(RowFilter.regexFilter(cbi.toString(), 3));
+                cmdFilters.add(RowFilter.regexFilter(cbi.getIdAsHex(), 3));
             }
         }
         if (!cmdFilters.isEmpty()) {
@@ -2061,10 +2061,14 @@ class ComboBoxItem {
     public int getId() {
         return id;
     }
+    
+    public String getIdAsHex(){
+        return String.format("0x%s", DataFormat.byteToHex(id));
+    }
 
     @Override
     public String toString() {
-        return String.format("0x%s - %s", DataFormat.byteToHex(id), value);
+        return String.format("%s - %s", getIdAsHex(), value);
     }
 }
 
