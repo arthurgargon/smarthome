@@ -89,6 +89,9 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_FAN, "Fan");
         put(Clunet.COMMAND_FAN_INFO, "FanInfo");
         
+        put(Clunet.COMMAND_CHARGE, "Charge");
+        put(Clunet.COMMAND_CHARGE_INFO, "ChargeInfo");
+        
         put(Clunet.COMMAND_DOORS, "Doors");
         put(Clunet.COMMAND_DOORS_INFO, "DoorsInfo");
         
@@ -411,6 +414,19 @@ public class ClunetDictionary {
                     return String.format("Уровень освещенности %s (%d%%)", ll[0] == 1 ? "высокий" : "низкий", ll[1]);
                 }
                 break;
+                
+            case Clunet.COMMAND_CHARGE_INFO:
+                if (value.length == 1) {
+                    if (value[0] == 0x00) {
+                        return "Зарядное устройство отключено";
+                    }
+                } else if (value.length == 3) {
+                    if (value[0] == 0x01) {
+                        return String.format("Зарядное устройство включено (осталось: %d секунд)", ((value[2] & 0xFF) << 8) | (value[1] & 0xFF));
+                    }
+                }
+                break;
+                
             case Clunet.COMMAND_HEATFLOOR_INFO:
                 if (value.length > 0) {
                     response = "";

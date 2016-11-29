@@ -130,6 +130,12 @@ public class Clunet {
     /* Сообщает о текущем состоянии вентилятора */
     public final static int COMMAND_FAN_INFO = 0x51;
     
+    /* Команда управления подзарядкой устройств */
+    public final static int COMMAND_CHARGE = 0x52;
+    
+    /* Сообщает о текущем состоянии процесса зарядки */
+    public final static int COMMAND_CHARGE_INFO = 0x53;
+    
     /* Команда запроса состояния дверей*/
     public final static int COMMAND_DOORS = 0x55;
     
