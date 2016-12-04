@@ -359,7 +359,24 @@ public class ClunetDictionary {
                 break;
             case Clunet.COMMAND_BUTTON_INFO:
                 if (value.length == 2){
-                    return String.format("Кнопка %d: %s", value[0], value[1] == 1 ? "нажата" : "не нажата");
+                    String buttonState;
+                    switch (value[1]){
+                        case 0:
+                           buttonState = "не нажата";
+                           break;
+                        case 1:
+                           buttonState = "нажата";
+                           break;
+                        case 2:
+                           buttonState = "в положении ВКЛ";
+                           break;
+                        case 3:
+                           buttonState = "в положении ОТКЛ";
+                           break;
+                        default:
+                            buttonState = "???";
+                    }
+                    return String.format("Кнопка %d: %s", value[0], buttonState);
                 }
                 break;
              case Clunet.COMMAND_TIME_INFO:
