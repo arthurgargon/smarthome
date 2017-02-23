@@ -1,0 +1,36 @@
+sudo rpi-update
+sudo wget https://raw.githubusercontent.com/notro/rpi-source/master/rpi-source -O /usr/bin/rpi-source && sudo chmod +x /usr/bin/rpi-source && /usr/bin/rpi-source -q --tag-update
+rpi-source
+git clone https://github.com/umlaeute/v4l2loopback
+cd v4l2loopback
+make
+sudo make install
+sudo modprobe v4l2loopback video_nr=1
+
+cd /usr/src
+git clone git://git.videolan.org/x264
+cd x264
+./configure --host=arm-unknown-linux-gnueabi --enable-static --disable-opencl
+sudo make
+sudo make install
+
+cd /usr/src
+git clone https://github.com/FFmpeg/FFmpeg.git
+cd ffmpeg
+#to compile ffmpeg with hardware assist h264 encoding:
+./configure --enable-mmal --enable-omx-rpi --enable-omx
+sudo make -j4
+sudo make install
+
+
+
+
+#examples
+#duplicate video0 to: video1 and video2
+ffmpeg -f video4linux2 -s 800x600 -i /dev/video0 -codec copy -f v4l2 /dev/video1 \ -codec copy -f v4l2 /dev/video2 
+
+#copy and stream
+ffmpeg -f video4linux2 -i /dev/video1 -s 720x480 -r 25 \-codec copy -f v4l2 /dev/video0 \-c:v h264_omx -f mpegts udp://192.168.1.2:1234
+
+
+ffmpeg -f video4linux2 -i /dev/video1 -s 720x480 \-codec copy -f v4l2 /dev/video0
