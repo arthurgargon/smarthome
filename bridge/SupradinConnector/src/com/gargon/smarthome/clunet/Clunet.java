@@ -1,6 +1,6 @@
 package com.gargon.smarthome.clunet;
 
-import com.gargon.smarthome.clunet.utils.IntelHexReader;
+import com.gargon.smarthome.utils.IntelHexReader;
 import java.io.PrintStream;
 import java.util.List;
 import com.gargon.smarthome.supradin.SupradinConnection;

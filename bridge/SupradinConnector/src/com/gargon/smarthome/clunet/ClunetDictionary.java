@@ -1,7 +1,7 @@
 package com.gargon.smarthome.clunet;
 
 import com.gargon.smarthome.FMDictionary;
-import com.gargon.smarthome.clunet.utils.DataFormat;
+import com.gargon.smarthome.utils.DataFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

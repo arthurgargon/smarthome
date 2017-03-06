@@ -1,6 +1,6 @@
 package com.gargon.smarthome.supradin.utils.logger.commands.readers;
 
-import com.gargon.smarthome.clunet.utils.DataFormat;
+import com.gargon.smarthome.utils.DataFormat;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import java.util.Arrays;
 import java.util.HashMap;

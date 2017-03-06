@@ -7,7 +7,7 @@ import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.HeatFloorDictionary;
 import com.gargon.smarthome.HeatfloorChannel;
 import com.gargon.smarthome.HeatfloorProgram;
-import com.gargon.smarthome.clunet.utils.DataFormat;
+import com.gargon.smarthome.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinDataListener;

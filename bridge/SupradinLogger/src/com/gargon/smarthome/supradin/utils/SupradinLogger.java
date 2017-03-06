@@ -1,7 +1,6 @@
 package com.gargon.smarthome.supradin.utils;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
-import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
 import com.gargon.smarthome.supradin.utils.http.AskHTTPCallback;
 import com.gargon.smarthome.supradin.utils.http.AskHTTPHandler;
 import com.gargon.smarthome.supradin.utils.http.SendHTTPHandler;

@@ -1,4 +1,4 @@
-package com.gargon.smarthome.clunet.utils;
+package com.gargon.smarthome.utils;
 
 import java.io.BufferedReader;
 import java.io.File;

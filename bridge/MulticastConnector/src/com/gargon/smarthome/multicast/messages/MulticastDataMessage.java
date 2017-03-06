@@ -1,4 +1,4 @@
-package com.gargon.smarthome.supradin.messages;
+package com.gargon.smarthome.multicast.messages;
 
 import com.gargon.smarthome.utils.DataFormat;
 import java.util.Arrays;
@@ -7,7 +7,7 @@ import java.util.Arrays;
  *
  * @author gargon
  */
-public class SupradinDataMessage {
+public class MulticastDataMessage {
 
     private final static int MESSAGE_LENGTH  = 8;
     
@@ -26,7 +26,7 @@ public class SupradinDataMessage {
     
     private byte[] data;
 
-    public SupradinDataMessage(byte[] buf) {
+    public MulticastDataMessage(byte[] buf) {
         if (buf != null && buf.length >= MESSAGE_LENGTH) {
             size = buf[OFFSET_SIZE] & 0xFF;
             if (buf.length == size + MESSAGE_LENGTH) {
@@ -46,7 +46,7 @@ public class SupradinDataMessage {
         }
     }
 
-    public SupradinDataMessage(int dst, int prio, int command, byte[] data) {
+    public MulticastDataMessage(int dst, int prio, int command, byte[] data) {
         if (data != null) {
             this.ip = 0;
             this.src = prio;
@@ -58,7 +58,7 @@ public class SupradinDataMessage {
         }
     }
     
-     public SupradinDataMessage(int dst, int prio, int command) {
+     public MulticastDataMessage(int dst, int prio, int command) {
          this(dst, prio, command, new byte[]{});
     }
 
@@ -137,7 +137,7 @@ public class SupradinDataMessage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final SupradinDataMessage other = (SupradinDataMessage) obj;
+        final MulticastDataMessage other = (MulticastDataMessage) obj;
         if (this.ip != other.ip) {
             return false;
         }

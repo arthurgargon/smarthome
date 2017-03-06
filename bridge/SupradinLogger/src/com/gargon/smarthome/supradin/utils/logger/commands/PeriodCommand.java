@@ -1,7 +1,7 @@
 package com.gargon.smarthome.supradin.utils.logger.commands;
 
 import com.gargon.smarthome.clunet.Clunet;
-import com.gargon.smarthome.clunet.utils.DataFormat;
+import com.gargon.smarthome.utils.DataFormat;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.utils.logger.RealTimeSupradinDataMessage;
 import java.util.ArrayList;

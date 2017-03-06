@@ -1,7 +1,7 @@
 package com.gargon.smarthome.supradin.utils.http;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
-import com.gargon.smarthome.clunet.utils.DataFormat;
+import com.gargon.smarthome.utils.DataFormat;
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Map;
