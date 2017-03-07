@@ -5,6 +5,7 @@ import com.gargon.smarthome.multicast.messages.MulticastDataMessage;
 import com.gargon.smarthome.multicast.socket.MulticastSocket;
 import com.gargon.smarthome.multicast.socket.MulticastSocketDataListener;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -81,12 +82,12 @@ public class MulticastConnection{
             socketWrapper.addDatagramDataListener(socketListener = new MulticastSocketDataListener() {
 
                 @Override
-                public void dataRecieved(int port, byte[] data) {
+                public void dataRecieved(InetAddress ip, int port, byte[] data) {
                     if (port == dataPort) {
                         MulticastDataMessage message = new MulticastDataMessage(data);
                         if (message.isValid()) {
                             for (MulticastDataListener listener : dataListeners) {
-                                listener.dataRecieved(connection, message);
+                                listener.dataRecieved(connection, ip, message);
                             }
                         }
                     }

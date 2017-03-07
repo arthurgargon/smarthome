@@ -6,6 +6,7 @@ import com.gargon.smarthome.multicast.messages.MulticastDataMessage;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,16 +29,25 @@ public class SupradinMulticastBridge {
 
             supradinConnection.addDataListener(new SupradinDataListener() {
                 @Override
-                public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
-                    multicastConnection.sendData(new MulticastDataMessage(message.toByteArray()));
+                public void dataRecieved(SupradinConnection connection, SupradinDataMessage sm) {
+                    multicastConnection.sendData(new MulticastDataMessage(sm.getDst(), sm.getSrc(), sm.getCommand(), sm.getData()));
                     //System.out.println("supradin recieved: " + message.toString());
                 }
             });
 
             multicastConnection.addDataListener(new MulticastDataListener() {
                 @Override
-                public void dataRecieved(MulticastConnection connection, MulticastDataMessage message) {
-                    supradinConnection.sendData(new SupradinDataMessage(message.toByteArray()));
+                public void dataRecieved(MulticastConnection connection, InetAddress ip, MulticastDataMessage mm) {
+                    
+                    int ip4 = 0;
+                    if (ip != null) {
+                        for (byte b : ip.getAddress()) {
+                            ip4 = ip4 << 8 | (b & 0xFF);
+                        }
+                    }
+
+                    //отправляет в супрадин сообщение с IP адерсом отправителя из мультикаст-сети
+                    supradinConnection.sendData(new SupradinDataMessage(ip4, mm.getDst(), mm.getSrc(), mm.getCommand(), mm.getData()));
                     //System.out.println("multicast recieved: " + message.toString());
                 }
             });

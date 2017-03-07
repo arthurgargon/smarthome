@@ -86,7 +86,7 @@ public class MulticastSocket {
                             byte[] data = Arrays.copyOfRange(recvPacket.getData(), recvPacket.getOffset(), recvPacket.getLength() - recvPacket.getOffset());
 
                             for (MulticastSocketDataListener listener : dataListeners) {
-                                listener.dataRecieved(recvPacket.getPort(), data);
+                                listener.dataRecieved(recvPacket.getAddress(), recvPacket.getPort(), data);
                             }
                         }
                     } catch (Exception ex) {
@@ -144,7 +144,7 @@ public class MulticastSocket {
                     addDatagramDataListener(listener = new MulticastSocketDataListener() {
 
                         @Override
-                        public void dataRecieved(int port_, byte[] data_) {
+                        public void dataRecieved(InetAddress ip, int port_, byte[] data_) {
                             if (port == port_ && responseFilter.filter(data_)) {
                                 synchronized (rdata) {
                                     rdata.add(data_);

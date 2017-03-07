@@ -9,16 +9,14 @@ import java.util.Arrays;
  */
 public class MulticastDataMessage {
 
-    private final static int MESSAGE_LENGTH  = 8;
+    private final static int MESSAGE_LENGTH  = 4;
     
-    private final static int OFFSET_IP = 0;
-    private final static int OFFSET_SRC_PRIO = 4;
-    private final static int OFFSET_DST      = 5;
-    private final static int OFFSET_COMMAND  = 6;
-    private final static int OFFSET_SIZE     = 7;
+    private final static int OFFSET_SRC_PRIO = 0;
+    private final static int OFFSET_DST      = 1;
+    private final static int OFFSET_COMMAND  = 2;
+    private final static int OFFSET_SIZE     = 3;
 
     
-    private int ip;
     private int src;    //union prio
     private int dst;    
     private int command;
@@ -30,11 +28,6 @@ public class MulticastDataMessage {
         if (buf != null && buf.length >= MESSAGE_LENGTH) {
             size = buf[OFFSET_SIZE] & 0xFF;
             if (buf.length == size + MESSAGE_LENGTH) {
-                ip = (((buf[OFFSET_IP + 3] & 0xFF) << 24)
-                        | ((buf[OFFSET_IP + 2] & 0xFF) << 16)
-                        | ((buf[OFFSET_IP + 1] & 0xFF) << 8)
-                        | ((buf[OFFSET_IP + 0] & 0xFF) << 0));
-                
                 src = buf[OFFSET_SRC_PRIO] & 0xFF;
                 dst = buf[OFFSET_DST] & 0xFF;
                 command = buf[OFFSET_COMMAND] & 0xFF;
@@ -46,10 +39,9 @@ public class MulticastDataMessage {
         }
     }
 
-    public MulticastDataMessage(int dst, int prio, int command, byte[] data) {
+    public MulticastDataMessage(int dst, int src_prio, int command, byte[] data) {
         if (data != null) {
-            this.ip = 0;
-            this.src = prio;
+            this.src = src_prio;
             this.dst = dst;
             this.command = command;
 
@@ -58,8 +50,8 @@ public class MulticastDataMessage {
         }
     }
     
-     public MulticastDataMessage(int dst, int prio, int command) {
-         this(dst, prio, command, new byte[]{});
+     public MulticastDataMessage(int dst, int src_prio, int command) {
+         this(dst, src_prio, command, new byte[]{});
     }
 
     public boolean isValid() {
@@ -70,11 +62,6 @@ public class MulticastDataMessage {
         byte[] array = null;
         if (size >= 0) {
             array = new byte[MESSAGE_LENGTH + size];
-
-            array[OFFSET_IP + 0] = 0;
-            array[OFFSET_IP + 1] = 0;
-            array[OFFSET_IP + 2] = 0;
-            array[OFFSET_IP + 3] = 0;
             
             array[OFFSET_SRC_PRIO] = (byte) src;
             array[OFFSET_DST] = (byte) dst;
@@ -98,26 +85,13 @@ public class MulticastDataMessage {
         return command;
     }
 
-    public int getIp() {
-        return ip;
-    }
-
     public byte[] getData() {
         return data;
-    }
-    
-    public String getIpAsString() {
-        return String.format("%d.%d.%d.%d",
-                (ip >> 0) & 0xFF,
-                (ip >> 8) & 0xFF,
-                (ip >> 16) & 0xFF,
-                (ip >> 24) & 0xFF);
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 19 * hash + this.ip;
         hash = 19 * hash + this.src;
         hash = 19 * hash + this.dst;
         hash = 19 * hash + this.command;
@@ -138,9 +112,7 @@ public class MulticastDataMessage {
             return false;
         }
         final MulticastDataMessage other = (MulticastDataMessage) obj;
-        if (this.ip != other.ip) {
-            return false;
-        }
+
         if (this.src != other.src) {
             return false;
         }
