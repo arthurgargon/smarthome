@@ -106,11 +106,23 @@ public class Clunet {
     /* Сообщает об уровне влажности*/
     public final static int COMMAND_HUMIDITY_INFO = 0x28;
     
+    /* Команда запроса текущего атмосферного давления*/
+    public final static int COMMAND_PRESSURE = 0x29;
+    
+    /* Сообщает об уровне атмосферного давления*/
+    public final static int COMMAND_PRESSURE_INFO = 0x2A;
+    
     /* Команда поиска 1-wire устройств*/
     public final static int COMMAND_ONEWIRE_SEARCH = 0x30;
     
     /* Сообщает о найденном 1-wire устройстве*/
     public final static int COMMAND_ONEWIRE_INFO = 0x31;
+    
+    /* Команда запроса напряжения*/
+    public final static int COMMAND_VOLTAGE = 0x32;
+    
+    /* Сообщает об уровне напряжения*/
+    public final static int COMMAND_VOLTAGE_INFO = 0x33;
 
     /* Команда запроса наличия движения*/
     public final static int COMMAND_MOTION = 0x40;
@@ -196,6 +208,7 @@ public class Clunet {
     public final static int ADDRESS_WARDROBE        = 0x1F;
     
     
+    public final static int ADDRESS_METEO           = 0x81;
     
     
      /**Отправляет сообщение по сети clunet:
