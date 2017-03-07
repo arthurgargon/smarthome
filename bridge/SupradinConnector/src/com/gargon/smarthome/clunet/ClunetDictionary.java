@@ -2,6 +2,8 @@ package com.gargon.smarthome.clunet;
 
 import com.gargon.smarthome.FMDictionary;
 import com.gargon.smarthome.utils.DataFormat;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -175,10 +177,16 @@ public class ClunetDictionary {
                             break;
                         case 1: //dht
                             sensorId = "DHT-22 (" + String.valueOf(value[pos] & 0xFF) + ")";
-                            if (value[pos + 2] != 0xFF && value[pos + 1] != 0xFF){
+                            if ((value[pos + 2] & 0xFF) != 0xFF && (value[pos + 1] & 0xFF) != 0xFF){
                                 temperatureValue = (((value[pos + 2] & 0xFF) << 8) | (value[pos + 1] & 0xFF)) / 10f;
                             }
                             pos += 3;
+                            break;
+                        case 2: //bmp/bme
+                            sensorId = "BME280";
+                            if ((value[pos + 1] & 0xFF) != 0xFF && (value[pos + 0] & 0xFF) != 0xFF){
+                                temperatureValue = (((value[pos + 1] & 0xFF) << 8) | (value[pos + 0] & 0xFF)) / 100f;
+                            }
                     }
                     if (temperatureValue != null) {
                         r.put(sensorId, temperatureValue);
@@ -225,20 +233,62 @@ public class ClunetDictionary {
             return null;
         }
     }
+   
+    public static Float pressureInfo(byte[] value) {
+        try {
+            if (value.length >= 4) {
+                ByteBuffer bb = ByteBuffer.wrap(value);
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+                int p = bb.getInt();
+                if (p != 0xFFFFFFFF) {
+                    return p / 1000f;
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
     
     public static Float humidityInfo(byte[] value) {
         try {
-            if (value[0] != (byte)0xFF && value[1] != (byte)0xFF){
-                return (((value[1] & 0xFF) << 8) | (value[0] & 0xFF)) / 10f;
+            if (value.length >= 2) {
+                ByteBuffer bb = ByteBuffer.wrap(value);
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+                int h = bb.getChar();
+                if (h != 0xFFFF) {
+                    return h / 10f;
+                }
             }
         } catch (Exception e) {
         }
         return null;
     }
 
-   public static int[] lightLevelInfo(byte[] value) {
-        if (value.length == 2) {
+    public static Float voltageInfo(byte[] value) {
+        try {
+            if (value.length >= 2) {
+                ByteBuffer bb = ByteBuffer.wrap(value);
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+                int v = bb.getChar();
+                if (v != 0xFFFF) {
+                    return v / 100f;
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    public static int[] lightLevelInfo(byte[] value) {
+        if (value.length == 2 && (value[0] == 0 || value[0] == 1)) {
             return new int[]{value[0], value[1]};
+        } else if (value.length == 3 && value[0] == 2) {
+            ByteBuffer bb = ByteBuffer.wrap(value, 1, 2);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            int l = bb.getChar();
+            if (l != 0xFFFF) {
+                return new int[]{value[0], l};
+            }
         }
         return null;
     }
@@ -412,13 +462,25 @@ public class ClunetDictionary {
             case Clunet.COMMAND_HUMIDITY_INFO:
                 Float h = humidityInfo(value);
                 if (h != null){
-                    return String.format(Locale.ROOT, "H=%.01f%%", h);
+                    return String.format(Locale.ROOT, "%.01f%%", h);
+                }
+                break;
+            case Clunet.COMMAND_PRESSURE_INFO:
+                Float p = pressureInfo(value);
+                if (p != null){
+                    return String.format(Locale.ROOT, "%.001f мм рт.ст.", p);
+                }
+                break;
+            case Clunet.COMMAND_VOLTAGE_INFO:
+                Float v = voltageInfo(value);
+                if (v != null){
+                    return String.format(Locale.ROOT, "%.01f В", v);
                 }
                 break;
             case Clunet.COMMAND_MOTION_INFO:
                 if (value.length == 2) {
                     response = value[0] == 1 ? "Обнаружено движение" : "Движение отсутствует";
-                    response += " (локация "+value[1]+")";
+                    response += " (локация " + value[1] + ")";
                     return response;
                 }
                 break;
@@ -435,7 +497,12 @@ public class ClunetDictionary {
             case Clunet.COMMAND_LIGHT_LEVEL_INFO:
                 int[] ll = lightLevelInfo(value);
                 if (ll != null) {
-                    return String.format("Уровень освещенности %s (%d%%)", ll[0] == 1 ? "высокий" : "низкий", ll[1]);
+                    if (ll[0] == 0 || ll[1] == 1){
+                    return String.format("Уровень освещенности %s (%d%%)", 
+                            ll[0] == 1 ? "высокий" : "низкий", ll[1]);
+                    }else if (ll[0] == 2){
+                        return String.format("%d лк", ll[1]);
+                    }
                 }
                 break;
                 
@@ -446,7 +513,8 @@ public class ClunetDictionary {
                     }
                 } else if (value.length == 3) {
                     if (value[0] == 0x01) {
-                        return String.format("Зарядное устройство включено (осталось: %d секунд)", ((value[2] & 0xFF) << 8) | (value[1] & 0xFF));
+                        return String.format("Зарядное устройство включено (осталось: %d секунд)",
+                                ((value[2] & 0xFF) << 8) | (value[1] & 0xFF));
                     }
                 }
                 break;
