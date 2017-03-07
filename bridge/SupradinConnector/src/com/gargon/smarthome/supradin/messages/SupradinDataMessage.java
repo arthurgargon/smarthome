@@ -11,7 +11,7 @@ public class SupradinDataMessage {
 
     private final static int MESSAGE_LENGTH  = 8;
     
-    private final static int OFFSET_IP = 0;
+    private final static int OFFSET_IP       = 0;
     private final static int OFFSET_SRC_PRIO = 4;
     private final static int OFFSET_DST      = 5;
     private final static int OFFSET_COMMAND  = 6;
@@ -46,10 +46,10 @@ public class SupradinDataMessage {
         }
     }
 
-    public SupradinDataMessage(int dst, int prio, int command, byte[] data) {
+     public SupradinDataMessage(int ip, int dst, int src_prio, int command, byte[] data) {
         if (data != null) {
             this.ip = 0;
-            this.src = prio;
+            this.src = src_prio;
             this.dst = dst;
             this.command = command;
 
@@ -58,8 +58,12 @@ public class SupradinDataMessage {
         }
     }
     
-     public SupradinDataMessage(int dst, int prio, int command) {
-         this(dst, prio, command, new byte[]{});
+    public SupradinDataMessage(int dst, int src_prio, int command, byte[] data) {
+        this(0, dst, src_prio, command, data);
+    }
+    
+     public SupradinDataMessage(int dst, int src_prio, int command) {
+         this(dst, src_prio, command, new byte[]{});
     }
 
     public boolean isValid() {
