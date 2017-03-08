@@ -177,15 +177,21 @@ public class ClunetDictionary {
                             break;
                         case 1: //dht
                             sensorId = "DHT-22 (" + String.valueOf(value[pos] & 0xFF) + ")";
-                            if ((value[pos + 2] & 0xFF) != 0xFF && (value[pos + 1] & 0xFF) != 0xFF){
-                                temperatureValue = (((value[pos + 2] & 0xFF) << 8) | (value[pos + 1] & 0xFF)) / 10f;
+                            ByteBuffer bb = ByteBuffer.wrap(value, pos+1, 2);
+                            bb.order(ByteOrder.LITTLE_ENDIAN);
+                            int t = bb.getShort();
+                            if (t != 0xFFFF){
+                                temperatureValue = t / 10f;
                             }
                             pos += 3;
                             break;
                         case 2: //bmp/bme
                             sensorId = "BME280";
-                            if ((value[pos + 1] & 0xFF) != 0xFF && (value[pos + 0] & 0xFF) != 0xFF){
-                                temperatureValue = (((value[pos + 1] & 0xFF) << 8) | (value[pos + 0] & 0xFF)) / 100f;
+                            bb = ByteBuffer.wrap(value, pos, 2);
+                            bb.order(ByteOrder.LITTLE_ENDIAN);
+                            t = bb.getShort();
+                            if (t != 0xFFFF){
+                                temperatureValue = t / 100f;
                             }
                     }
                     if (temperatureValue != null) {
@@ -446,7 +452,7 @@ public class ClunetDictionary {
                 Map<String, Float> t = temperatureInfo(value);
                 if (t != null){
                     for (Map.Entry<String, Float> entry : t.entrySet()){
-                        response += String.format(Locale.ROOT, "T[%s]=%.01f°C; ", entry.getKey(), entry.getValue());
+                        response += String.format(Locale.ROOT, "T[%s]=%.2f°C; ", entry.getKey(), entry.getValue());
                     }
                 }
                 return response;
@@ -462,19 +468,19 @@ public class ClunetDictionary {
             case Clunet.COMMAND_HUMIDITY_INFO:
                 Float h = humidityInfo(value);
                 if (h != null){
-                    return String.format(Locale.ROOT, "%.01f%%", h);
+                    return String.format(Locale.ROOT, "%.1f%%", h);
                 }
                 break;
             case Clunet.COMMAND_PRESSURE_INFO:
                 Float p = pressureInfo(value);
                 if (p != null){
-                    return String.format(Locale.ROOT, "%.001f мм рт.ст.", p);
+                    return String.format(Locale.ROOT, "%.3f мм рт.ст.", p);
                 }
                 break;
             case Clunet.COMMAND_VOLTAGE_INFO:
                 Float v = voltageInfo(value);
                 if (v != null){
-                    return String.format(Locale.ROOT, "%.01f В", v);
+                    return String.format(Locale.ROOT, "%.2f В", v);
                 }
                 break;
             case Clunet.COMMAND_MOTION_INFO:
@@ -588,12 +594,12 @@ public class ClunetDictionary {
                                         Float sensorT = ds18b20Temperature(value, index + 2);
                                         String sensorTStr = "-";
                                         if (sensorT != null) {
-                                            sensorTStr = String.format(Locale.ROOT, "%.01f°C", sensorT);
+                                            sensorTStr = String.format(Locale.ROOT, "%.1f°C", sensorT);
                                         }
                                         Float settingT = ds18b20Temperature(value, index + 4);
                                         String settingTStr = "-";
                                         if (settingT != null) {
-                                            settingTStr = String.format(Locale.ROOT, "%.01f°C", settingT);
+                                            settingTStr = String.format(Locale.ROOT, "%.1f°C", settingT);
                                         }
                                         response += String.format(" [%s (%s/%s)]", solution, sensorTStr, settingTStr);
                                     }
