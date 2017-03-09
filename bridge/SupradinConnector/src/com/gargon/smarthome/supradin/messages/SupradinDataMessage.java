@@ -48,7 +48,7 @@ public class SupradinDataMessage {
 
      public SupradinDataMessage(int ip, int dst, int src_prio, int command, byte[] data) {
         if (data != null) {
-            this.ip = 0;
+            this.ip = ip;
             this.src = src_prio;
             this.dst = dst;
             this.command = command;
@@ -75,10 +75,10 @@ public class SupradinDataMessage {
         if (size >= 0) {
             array = new byte[MESSAGE_LENGTH + size];
 
-            array[OFFSET_IP + 0] = 0;
-            array[OFFSET_IP + 1] = 0;
-            array[OFFSET_IP + 2] = 0;
-            array[OFFSET_IP + 3] = 0;
+            array[OFFSET_IP + 0] = (byte)((ip >> 0) & 0xFF);
+            array[OFFSET_IP + 1] = (byte)((ip >> 8) & 0xFF);
+            array[OFFSET_IP + 2] = (byte)((ip >> 16) & 0xFF);
+            array[OFFSET_IP + 3] = (byte)((ip >> 24) & 0xFF);
             
             array[OFFSET_SRC_PRIO] = (byte) src;
             array[OFFSET_DST] = (byte) dst;
@@ -166,6 +166,6 @@ public class SupradinDataMessage {
     
     @Override
     public String toString() {
-        return "src=" + src + ", dst=" + dst + ", command=" + command + ", data=" + DataFormat.bytesToHex(data);
+        return "ip=" + getIpAsString() + ", src=" + src + ", dst=" + dst + ", command=" + command + ", data=" + DataFormat.bytesToHex(data);
     }
 }
