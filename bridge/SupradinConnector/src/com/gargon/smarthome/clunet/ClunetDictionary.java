@@ -83,6 +83,8 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_HUMIDITY_INFO, "HumidityInfo");
         put(Clunet.COMMAND_PRESSURE, "Pressure");
         put(Clunet.COMMAND_PRESSURE_INFO, "PressureInfo");
+        put(Clunet.COMMAND_METEO, "Meteo");
+        put(Clunet.COMMAND_METEO_INFO, "MeteoInfo");
         
         put(Clunet.COMMAND_ONEWIRE_SEARCH, "OneWireSearch");
         put(Clunet.COMMAND_ONEWIRE_INFO, "OneWireInfo");
@@ -172,25 +174,25 @@ public class ClunetDictionary {
                             sensorId = DataFormat.bytesToHex(Arrays.copyOfRange(value, pos, pos + 8));
                             //temperatureValue = (short) (((value[pos + 9] & 0xFF) << 8) | (value[pos + 8] & 0xFF)) * .0625f;
                             //temperatureValue = (((value[pos + 9] & 0xFF) << 8) | (value[pos + 8] & 0xFF)) / 10f;
-                            temperatureValue = ds18b20Temperature(value, pos+8);
+                            temperatureValue = ds18b20Temperature(value, pos + 8);
                             pos += 10;
                             break;
                         case 1: //dht
                             sensorId = "DHT-22 (" + String.valueOf(value[pos] & 0xFF) + ")";
-                            ByteBuffer bb = ByteBuffer.wrap(value, pos+1, 2);
+                            ByteBuffer bb = ByteBuffer.wrap(value, pos + 1, 2);
                             bb.order(ByteOrder.LITTLE_ENDIAN);
                             int t = bb.getShort();
-                            if (t != 0xFFFF){
+                            if (t != 0xFFFF) {
                                 temperatureValue = t / 10f;
                             }
                             pos += 3;
                             break;
                         case 2: //bmp/bme
-                            sensorId = "BME280";
-                            bb = ByteBuffer.wrap(value, pos, 2);
+                            sensorId = "BME280 (" + String.valueOf(value[pos] & 0xFF) + ")";
+                            bb = ByteBuffer.wrap(value, pos + 1, 2);
                             bb.order(ByteOrder.LITTLE_ENDIAN);
                             t = bb.getShort();
-                            if (t != 0xFFFF){
+                            if (t != 0xFFFF) {
                                 temperatureValue = t / 100f;
                             }
                     }
@@ -299,6 +301,46 @@ public class ClunetDictionary {
         return null;
     }
     
+    
+    private static final int METEO_PARAM_T = 0;
+    private static final int METEO_PARAM_H = 1;
+    private static final int METEO_PARAM_P = 2;
+    private static final int METEO_PARAM_L = 3;
+    
+    public static Float[] meteoInfo(byte[] value) {
+        try {
+            if (value.length == 9) {
+                Float[] meteo = {null, null, null, null};
+                ByteBuffer bb = ByteBuffer.wrap(value);
+                bb.order(ByteOrder.LITTLE_ENDIAN);
+
+                int valid = bb.get();
+
+                int t = bb.getShort();
+                if (((valid >> METEO_PARAM_T) & 0x01) == 0x01) {
+                    meteo[METEO_PARAM_T] = t / 100f;
+                }
+
+                int h = bb.getChar();
+                if (((valid >> METEO_PARAM_H) & 0x01) == 0x01) {
+                    meteo[METEO_PARAM_H] = h / 10f;
+                }
+
+                int p = bb.getChar();
+                if (((valid >> METEO_PARAM_P) & 0x01) == 0x01) {
+                    meteo[METEO_PARAM_P] = p / 10f;
+                }
+
+                int l = bb.getChar();
+                if (((valid >> METEO_PARAM_L) & 0x01) == 0x01) {
+                    meteo[METEO_PARAM_L] = (float) l;
+                }
+                return meteo;
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
    
    public static final int HEATFLOOR_MODE_OFF = 0;
    public static final int HEATFLOOR_MODE_MANUAL = 1;
@@ -475,6 +517,31 @@ public class ClunetDictionary {
                 Float p = pressureInfo(value);
                 if (p != null){
                     return String.format(Locale.ROOT, "%.3f мм рт.ст.", p);
+                }
+                break;
+            case Clunet.COMMAND_METEO_INFO:
+                Float[] meteo = meteoInfo(value);
+                if (meteo != null){
+                    String meteo_s = "";
+                    for (int i=0; i<meteo.length; i++){
+                        if (meteo[i] != null){
+                            switch (i){
+                                case METEO_PARAM_T:
+                                    meteo_s += String.format(Locale.ROOT, "T=%.2f°C; ", meteo[i]);
+                                    break;
+                                case METEO_PARAM_H:
+                                    meteo_s += String.format(Locale.ROOT, "H=%.1f%%; ", meteo[i]);
+                                    break;
+                                case METEO_PARAM_P:
+                                    meteo_s += String.format(Locale.ROOT, "P=%.1f мм рт.ст.; ", meteo[i]);
+                                    break;
+                                case METEO_PARAM_L:
+                                    meteo_s += String.format(Locale.ROOT, "L=%d лк; ", meteo[i].intValue());
+                                    break;
+                            }
+                        }
+                    }
+                    return meteo_s;
                 }
                 break;
             case Clunet.COMMAND_VOLTAGE_INFO:

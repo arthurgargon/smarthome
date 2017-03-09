@@ -112,6 +112,13 @@ public class Clunet {
     /* Сообщает об уровне атмосферного давления*/
     public final static int COMMAND_PRESSURE_INFO = 0x2A;
     
+    /* Команда запроса метеоданных*/
+    public final static int COMMAND_METEO = 0x2E;
+    
+    /* Сообщает метеоданные*/
+    public final static int COMMAND_METEO_INFO = 0x2F;
+    
+    
     /* Команда поиска 1-wire устройств*/
     public final static int COMMAND_ONEWIRE_SEARCH = 0x30;
     
