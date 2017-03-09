@@ -632,32 +632,35 @@ public class SupradinConsole extends javax.swing.JFrame {
             DateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss.SSS");
 
             @Override
-            public void dataRecieved(SupradinConnection connection, SupradinDataMessage supradin) {
+            public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
 
-                String src = "0x" + DataFormat.byteToHex(supradin.getSrc());
-                if (supradin.getSrc() == Clunet.ADDRESS_SUPRADIN) {
-                    src += " - " + supradin.getIpAsString();
+                String src = "0x" + DataFormat.byteToHex(message.getSrc());
+                if (message.getSrc() == Clunet.ADDRESS_SUPRADIN) {
+                    src += " - " + message.getIpAsString();
                 } else {
-                    String srcName = ClunetDictionary.getDeviceById(supradin.getSrc());
+                    String srcName = ClunetDictionary.getDeviceById(message.getSrc());
                     if (srcName != null) {
                         src += " - " + srcName;
+                    }
+                    if (message.getIp() != 0) {
+                        src += " (" + message.getIpAsString() + ")";
                     }
                 }
                 
 
-                String rcv = "0x" +DataFormat.byteToHex(supradin.getDst());
-                String rcvName = ClunetDictionary.getDeviceById(supradin.getDst());
+                String rcv = "0x" +DataFormat.byteToHex(message.getDst());
+                String rcvName = ClunetDictionary.getDeviceById(message.getDst());
                 if (rcvName != null) {
                     rcv += " - " + rcvName;
                 }
 
-                String cmd = "0x" +DataFormat.byteToHex(supradin.getCommand());
-                String cmdName = ClunetDictionary.getCommandById(supradin.getCommand());
+                String cmd = "0x" +DataFormat.byteToHex(message.getCommand());
+                String cmdName = ClunetDictionary.getCommandById(message.getCommand());
                 if (cmdName != null) {
                     cmd += " - " + cmdName;
                 }
 
-                String interpretation = ClunetDictionary.toString(supradin.getCommand(), supradin.getData());
+                String interpretation = ClunetDictionary.toString(message.getCommand(), message.getData());
 
                 //check if we need autoscroll
                 JViewport viewport = (JViewport) tbMain.getParent();
@@ -666,7 +669,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                 boolean autoscroll = new Rectangle(viewport.getExtentSize()).contains(rect);
 
                 //add row
-                model.addRow(new Object[]{sdf.format(new Date()), src, rcv, cmd, DataFormat.bytesToHex(supradin.getData()), interpretation});
+                model.addRow(new Object[]{sdf.format(new Date()), src, rcv, cmd, DataFormat.bytesToHex(message.getData()), interpretation});
 
                 //perform autoscroll if we need
                 if (autoscroll) {
@@ -1331,9 +1334,9 @@ public class SupradinConsole extends javax.swing.JFrame {
             tbMain.getColumnModel().getColumn(0).setMinWidth(150);
             tbMain.getColumnModel().getColumn(0).setPreferredWidth(150);
             tbMain.getColumnModel().getColumn(0).setMaxWidth(150);
-            tbMain.getColumnModel().getColumn(1).setMinWidth(150);
-            tbMain.getColumnModel().getColumn(1).setPreferredWidth(150);
-            tbMain.getColumnModel().getColumn(1).setMaxWidth(150);
+            tbMain.getColumnModel().getColumn(1).setMinWidth(180);
+            tbMain.getColumnModel().getColumn(1).setPreferredWidth(180);
+            tbMain.getColumnModel().getColumn(1).setMaxWidth(180);
             tbMain.getColumnModel().getColumn(2).setMinWidth(150);
             tbMain.getColumnModel().getColumn(2).setPreferredWidth(150);
             tbMain.getColumnModel().getColumn(2).setMaxWidth(150);
