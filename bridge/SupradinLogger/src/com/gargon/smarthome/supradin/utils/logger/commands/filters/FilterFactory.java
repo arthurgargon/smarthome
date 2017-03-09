@@ -15,6 +15,12 @@ public class FilterFactory {
                 switch (filterName) {
                     case "databytecmp":
                         return new DataByteCmp(config);
+                    case "notaresponse":
+                        return new NotAResponse();
+                    case "dst":
+                        return new Dst(config);
+                    case "src":
+                        return new Src(config);
                     default:
                 }
             }

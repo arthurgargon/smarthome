@@ -7,29 +7,13 @@ import org.json.JSONObject;
  *
  * @author gargon
  */
-public class DataByteCmp implements Filter {
-
-    private int byteNum = -1;
+public class Dst implements Filter {
 
     private Integer eq = null;
     private Integer ne = null;
 
-    protected DataByteCmp(int num, boolean eq_, int value) {
-        byteNum = num;
-        if (eq_) {
-            eq = value;
-        } else {
-            ne = value;
-        }
-
-        if (byteNum < 0) {
-            throw new IllegalArgumentException();
-        }
-    }
-    
-    public DataByteCmp(JSONObject config) {
+    public Dst(JSONObject config) {
         if (config != null) {
-            byteNum = config.optInt("byte", -1);
             if (config.has("eq")) {
                 try {
                     eq = config.getInt("eq");
@@ -45,19 +29,17 @@ public class DataByteCmp implements Filter {
             }
         }
 
-        if ((eq == null && ne == null) || byteNum < 0) {
+        if (eq == null && ne == null) {
             throw new IllegalArgumentException();
         }
     }
 
     @Override
     public boolean filter(SupradinDataMessage supradin) {
-        if (supradin.getData().length > byteNum) {
-            if (eq != null) {
-                return supradin.getData()[byteNum] == eq;
-            } else if (ne != null) {
-                return supradin.getData()[byteNum] != ne;
-            }
+        if (eq != null) {
+            return supradin.getDst() == eq;
+        } else if (ne != null) {
+            return supradin.getDst() != ne;
         }
         return false;
     }

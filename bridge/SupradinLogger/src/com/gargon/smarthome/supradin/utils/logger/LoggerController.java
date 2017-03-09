@@ -32,7 +32,7 @@ public final class LoggerController {
     private static SupradinConnection supradinConnection;
     private ScheduledExecutorService periodicalCommandsScheduledExecutor;
 
-    Map<Byte, Command> commands = new HashMap();
+    Map<Integer, Command> commands = new HashMap();
 
     public LoggerController(JSONObject config) throws Exception {
         if (config != null) {
@@ -47,8 +47,8 @@ public final class LoggerController {
                         
                         //System.out.println(rtm.toString());
                         
-                        if (commands.containsKey((byte) message.getCommand())) {
-                            if (commands.get((byte) message.getCommand()).approve(rtm)) {
+                        if (commands.containsKey(message.getCommand())) {
+                            if (commands.get(message.getCommand()).approve(rtm)) {
                                 List<RealTimeSupradinDataMessage> messages = new ArrayList() {
                                     {
                                         add(rtm);
@@ -71,7 +71,7 @@ public final class LoggerController {
 
                         Command c = CommandFactory.createCommand(config.optJSONObject(key));
                         if (c != null) {
-                            commands.put((byte) commandId, c);
+                            commands.put(commandId, c);
 
                             if (c instanceof PeriodCommand) {
                                 periodCommands.add((PeriodCommand) c);
