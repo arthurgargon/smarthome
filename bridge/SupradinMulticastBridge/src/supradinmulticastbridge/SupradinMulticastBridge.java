@@ -41,8 +41,8 @@ public class SupradinMulticastBridge {
                     
                     int ip4 = 0;
                     if (ip != null) {
-                        for (byte b : ip.getAddress()) {
-                            ip4 = ip4 << 8 | (b & 0xFF);
+                        for (int i=ip.getAddress().length-1; i>=0; i--) {
+                            ip4 = ip4 << 8 | (ip.getAddress()[i] & 0xFF);
                         }
                     }
 
