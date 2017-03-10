@@ -1,5 +1,6 @@
 package supradinmulticastbridge;
 
+import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.multicast.MulticastConnection;
 import com.gargon.smarthome.multicast.MulticastDataListener;
 import com.gargon.smarthome.multicast.messages.MulticastDataMessage;
@@ -30,8 +31,12 @@ public class SupradinMulticastBridge {
             supradinConnection.addDataListener(new SupradinDataListener() {
                 @Override
                 public void dataRecieved(SupradinConnection connection, SupradinDataMessage sm) {
-                    multicastConnection.sendData(new MulticastDataMessage(sm.getDst(), sm.getSrc(), sm.getCommand(), sm.getData()));
-                    //System.out.println("supradin recieved: " + message.toString());
+                    //ip может быть только у супрадин, все остальные
+                    //приходят назад, зацикливаясь из мультикаст сети
+                    if (sm.getIp()==0 || sm.getSrc()==Clunet.ADDRESS_SUPRADIN){
+                        multicastConnection.sendData(new MulticastDataMessage(sm.getDst(), sm.getSrc(), sm.getCommand(), sm.getData()));
+                        //System.out.println("supradin recieved: " + message.toString());
+                    }
                 }
             });
 
