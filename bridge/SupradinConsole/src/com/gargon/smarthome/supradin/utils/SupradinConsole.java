@@ -635,6 +635,7 @@ public class SupradinConsole extends javax.swing.JFrame {
             public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
 
                 String src = "0x" + DataFormat.byteToHex(message.getSrc());
+                
                 if (message.getSrc() == Clunet.ADDRESS_SUPRADIN) {
                     src += " - " + message.getIpAsString();
                 } else {
@@ -642,8 +643,8 @@ public class SupradinConsole extends javax.swing.JFrame {
                     if (srcName != null) {
                         src += " - " + srcName;
                     }
-                    if (message.getIp() != 0) {
-                        src += " (" + message.getIpAsString() + ")";
+                    if (message.isIpValid()){
+                        src += " [" + message.getIpAsString() + "]";
                     }
                 }
                 

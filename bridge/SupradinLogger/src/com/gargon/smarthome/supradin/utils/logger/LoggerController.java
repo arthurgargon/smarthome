@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -32,7 +33,7 @@ public final class LoggerController {
     private static SupradinConnection supradinConnection;
     private ScheduledExecutorService periodicalCommandsScheduledExecutor;
 
-    Map<Integer, Command> commands = new HashMap();
+    Map<Integer, List<Command>> commands = new HashMap();
 
     public LoggerController(JSONObject config) throws Exception {
         if (config != null) {
@@ -48,16 +49,20 @@ public final class LoggerController {
                         //System.out.println(rtm.toString());
                         
                         if (commands.containsKey(message.getCommand())) {
-                            if (commands.get(message.getCommand()).approve(rtm)) {
-                                List<RealTimeSupradinDataMessage> messages = new ArrayList() {
-                                    {
-                                        add(rtm);
+                            List<Command> c_list = commands.get(message.getCommand());
+                            for (Command c : c_list) {
+                                if (c.approve(rtm)) {
+                                    List<RealTimeSupradinDataMessage> messages = new ArrayList() {
+                                        {
+                                            add(rtm);
+                                        }
+                                    };
+                                    for (LoggerControllerMessageListener listener : messageListeners) {
+                                        listener.messages(messages);
                                     }
-                                };
-                                for (LoggerControllerMessageListener listener : messageListeners) {
-                                    listener.messages(messages);
                                 }
                             }
+
                         }
                     }
                 });
@@ -69,12 +74,25 @@ public final class LoggerController {
                     try {
                         int commandId = Integer.parseInt(key);
 
-                        Command c = CommandFactory.createCommand(config.optJSONObject(key));
-                        if (c != null) {
-                            commands.put(commandId, c);
+                        //может быть как массивом элементов так и отдельным элементов
+                        JSONArray commandArray = config.optJSONArray(key);
+                        if (commandArray == null) {
+                            commandArray = new JSONArray();
+                            commandArray.put(config.optJSONObject(key));
+                        }
 
-                            if (c instanceof PeriodCommand) {
-                                periodCommands.add((PeriodCommand) c);
+                        for (int i = 0; i < commandArray.length(); i++) {
+                            Command c = CommandFactory.createCommand(commandArray.optJSONObject(i));
+                            if (c != null) {
+                                List list = commands.get(commandId);
+                                if (list == null){
+                                    commands.put(commandId, list=new ArrayList());
+                                }
+                                list.add(c);
+
+                                if (c instanceof PeriodCommand) {
+                                    periodCommands.add((PeriodCommand) c);
+                                }
                             }
                         }
 

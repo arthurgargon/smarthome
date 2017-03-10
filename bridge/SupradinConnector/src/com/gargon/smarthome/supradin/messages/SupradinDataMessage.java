@@ -1,5 +1,6 @@
 package com.gargon.smarthome.supradin.messages;
 
+import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.utils.DataFormat;
 import java.util.Arrays;
 
@@ -108,6 +109,11 @@ public class SupradinDataMessage {
 
     public byte[] getData() {
         return data;
+    }
+    
+    public boolean isIpValid() {
+        return ip != 0
+                && (src == Clunet.ADDRESS_SUPRADIN || src > 0x80);
     }
     
     public String getIpAsString() {

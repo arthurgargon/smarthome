@@ -570,7 +570,7 @@ public class ClunetDictionary {
             case Clunet.COMMAND_LIGHT_LEVEL_INFO:
                 int[] ll = lightLevelInfo(value);
                 if (ll != null) {
-                    if (ll[0] == 0 || ll[1] == 1){
+                    if (ll[0] == 0 || ll[0] == 1){
                     return String.format("Уровень освещенности %s (%d%%)", 
                             ll[0] == 1 ? "высокий" : "низкий", ll[1]);
                     }else if (ll[0] == 2){
