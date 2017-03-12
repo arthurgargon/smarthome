@@ -36,13 +36,13 @@ public class ClunetDictionary {
         
         put(Clunet.ADDRESS_RELAY_1, "Relay_1");
         put(Clunet.ADDRESS_RELAY_2, "Relay_2");
-        put(Clunet.ADDRESS_KITCHEN_LIGHT, "KitchenLight");
         
         put(Clunet.ADDRESS_KITCHEN, "Kitchen");
         put(Clunet.ADDRESS_BATH_SENSORS, "BathSensors");
         put(Clunet.ADDRESS_WARDROBE, "Wardrobe");
         
         put(Clunet.ADDRESS_METEO, "Meteo");
+        put(Clunet.ADDRESS_KITCHEN_LIGHT, "KitchenLight");
     }};
     
     private static final Map<Integer, String> COMMANDS = new LinkedHashMap(){{
@@ -105,6 +105,9 @@ public class ClunetDictionary {
         
         put(Clunet.COMMAND_DOORS, "Doors");
         put(Clunet.COMMAND_DOORS_INFO, "DoorsInfo");
+        
+        put(Clunet.COMMAND_DIMMER, "Dimmer");
+        put(Clunet.COMMAND_DIMMER_INFO, "DimmerInfo");
         
         put(Clunet.COMMAND_HEATFLOOR, "Heatfloor");
         put(Clunet.COMMAND_HEATFLOOR_INFO, "HeatfloorInfo");

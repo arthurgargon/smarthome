@@ -162,6 +162,13 @@ public class Clunet {
     public final static int COMMAND_DOORS_INFO = 0x56;
     
     
+    /* Команда упрвления диммером*/
+    public final static int COMMAND_DIMMER = 0x57;
+    
+    /* Сообщает о текущем состоянии диммера */
+    public final static int COMMAND_DIMMER_INFO = 0x58;
+    
+    
     /* Команда управления теплым полом */
     public final static int COMMAND_HEATFLOOR = 0x60;
     
@@ -208,14 +215,13 @@ public class Clunet {
     
     public final static int ADDRESS_RELAY_1         = 0x14;
     public final static int ADDRESS_RELAY_2         = 0x15;
-    public final static int ADDRESS_KITCHEN_LIGHT   = 0x16;
     
     public final static int ADDRESS_KITCHEN         = 0x1D;
     public final static int ADDRESS_BATH_SENSORS    = 0x1E;
     public final static int ADDRESS_WARDROBE        = 0x1F;
     
-    
     public final static int ADDRESS_METEO           = 0x81;
+    public final static int ADDRESS_KITCHEN_LIGHT   = 0x82;
     
     
      /**Отправляет сообщение по сети clunet:
