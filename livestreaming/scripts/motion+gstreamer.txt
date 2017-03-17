@@ -96,5 +96,5 @@ motion сам копирует только что созданные файлы в облако (yandex disk)
 
 Полезные команды:
 Остановить motion -> sudo service motion stop
-Запустить motion -> sudo morion
+Запустить motion -> sudo motion
 Поиск запущенных gst-launch -> ps aux | grep gst-launch
