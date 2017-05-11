@@ -42,7 +42,7 @@ public class SupradinMulticastBridge {
 
             multicastConnection.addDataListener(new MulticastDataListener() {
                 @Override
-                public void dataRecieved(MulticastConnection connection, InetAddress ip, MulticastDataMessage mm) {
+                public synchronized void dataRecieved(MulticastConnection connection, InetAddress ip, MulticastDataMessage mm) {
                     
                     int ip4 = 0;
                     if (ip != null) {
@@ -54,6 +54,13 @@ public class SupradinMulticastBridge {
                     //отправляет в супрадин сообщение с IP адерсом отправителя из мультикаст-сети
                     supradinConnection.sendData(new SupradinDataMessage(ip4, mm.getDst(), mm.getSrc(), mm.getCommand(), mm.getData()));
                     //System.out.println("multicast recieved: " + mm.toString());
+                    
+                    //помогаем supradin разрулить подряд идущие сообщения
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SupradinMulticastBridge.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             });
 
