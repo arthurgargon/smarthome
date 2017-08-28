@@ -33,7 +33,7 @@ public class SupradinMulticastBridge {
                 public void dataRecieved(SupradinConnection connection, SupradinDataMessage sm) {
                     //ip может быть только у супрадин, все остальные
                     //приходят назад, зацикливаясь из мультикаст сети
-                    if (sm.getIp()==0 || sm.getSrc()==Clunet.ADDRESS_SUPRADIN){
+                    if (sm.getSrc() <= 0x80) {  //supradin addresses
                         multicastConnection.sendData(new MulticastDataMessage(sm.getDst(), sm.getSrc(), sm.getCommand(), sm.getData()));
                         //System.out.println("supradin recieved: " + sm.toString());
                     }
