@@ -1,0 +1,259 @@
+{
+	db:{
+		jdbc_url: "jdbc:mysql://localhost/smarthome?useUnicode=true&characterEncoding=utf8",
+		jdbc_user: "smarthome",
+		jdbc_pass: ""
+	},
+	commands: {
+		3: {},		/*CLUNET_COMMAND_REBOOT*/
+		4: {},		/*CLUNET_COMMAND_BOOT_COMPLETED*/
+		/*8: {},		CLUNET_TIME*/
+		/*9: {},		CLUNET_TIME_INFO*/
+		16:{		/*CLUNET_COMMAND_CHANNEL*/
+			type: "always",	/*by default*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		21:{		/*CLUNET_COMMAND_VOLUME*/ /**/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		23: {},		/*CLUNET_COMMAND_MUTE*/
+		24:{		/*CLUNET_COMMAND_EQUALIZER*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		28:{		/*CLUNET_COMMAND_FM*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		30:{		/*CLUNET_COMMAND_POWER*/
+			 filters: [
+				{
+						name: "databytecmp",
+						byte: 0,
+						ne: -1  /*0xFF*/
+				}
+            ]
+		},
+		32:{		/*CLUNET_COMMAND_SWITCH*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		34:{		/*CLUNET_COMMAND_BUTTON*/
+ 			filters: [
+				{
+						name: "databytecmp",
+						byte: 0,
+						ne: -1  /*0xFF*/
+				}
+            ]
+		},
+        112:{          /*CLUNET_COMMAND_DEVICE_STATE*/
+ 			filters: [
+				{
+						name: "databytecmp",
+						byte: 1,
+						ne: -1  /*0xFF*/
+				}
+            ]
+        },
+		80:{		/*CLUNET_COMMAND_FAN*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		82:{		/*CLUNET_COMMAND_CHARGE*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		96:{		/*CLUNET_COMMAND_HEATFLOOR*/
+			filters: [
+				{
+					name: "databytecmp",
+					byte: 0,
+					ne: -1	/*0xFF*/
+				}
+			]
+		},
+		35: {},		/*CLUNET_COMMAND_BUTTON_INFO*/
+		65: {},		/*CLUNET_COMMAND_MOTION_INFO*/
+		
+		
+		
+		/*periodically logging commands*/
+		
+		38:{		/*CLUNET_COMMAND_TEMPERATURE_INFO*/
+			type: "period",
+			period: 300,
+			trigger: {
+				command: 37,		/*CLUNET_COMMAND_TEMPERATURE*/
+				data: "00",
+				timeout: 2000
+			},	
+			uniqueCount: 5,
+			reader:	{
+				name: "temperature"
+			},
+		},
+		40:{		/*CLUNET_COMMAND_HUMIDITY_INFO*/
+			type: "period",
+			period: 300,
+			trigger: {
+				command: 39,		/*CLUNET_COMMAND_HUMIDITY*/
+				timeout: 1000
+			},
+			uniqueCount: 2,
+		},
+		49:{		/*CLUNET_COMMAND_ONEWIRE_INFO*/
+			type: "period",
+			period: 3600,
+			trigger: {
+				command: 48,		/*CLUNET_COMMAND_ONEWIRE_SEARCH*/
+				timeout: 4000,
+			},
+			triggerRequired: 1,
+			reader: {
+				name: "onewire"
+			}
+		},
+		-1:{		/*CLUNET_COMMAND_PING_REPLY*/
+			type: "period",
+			period: 3600,
+			trigger: {
+				command: -2,		/*CLUNET_COMMAND_PING*/
+				timeout: 3000,
+			},
+			triggerRequired: 1,
+		},
+		
+		
+		/*change state logging commands*/
+		
+		81:{		/*CLUNET_COMMAND_FAN_INFO*/
+			type: "change",
+			reader: {
+				name: "databytes",
+				valueByte0: 0,
+				valueByte1: 1,
+			}
+		},
+		
+		83:{		/*CLUNET_COMMAND_CHARGE_INFO*/
+			type: "change",
+			 reader: {
+                name: "databyte",
+                valueByte: 0
+            }
+		},
+		
+		97:{		/*CLUNET_COMMAND_HEATFLOOR_INFO*/
+			type: "change",
+			reader: {
+				name: "heatfloor"
+			}
+		},
+		113:{		/*CLUNET_COMMAND_DEVICE_STATE_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				idByte: 0,
+				valueByte: 1
+			}
+		},
+		86:{		/*CLUNET_COMMAND_DOOR_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				valueByte: 0
+			}
+		},
+		31:{		/*CLUNET_COMMAND_POWER_INFO*/
+			type: "change",
+			 reader: {
+                name: "databyte",
+                valueByte: 0
+            }
+		},
+		33:{		/*CLUNET_COMMAND_SWITCH_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				valueByte: 0
+			}
+		},
+		22:{		/*CLUNET_COMMAND_VOLUME_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				valueByte: 1
+			}
+		},
+		25:{		/*CLUNET_COMMAND_EQUALIZER_INFO*/
+			type: "change",
+			reader: {
+				name: "databytes",
+				valueByte0: 0,
+				valueByte1: 2,
+			}
+		},
+		29:{		/*CLUNET_COMMAND_FM_INFO*/
+			type: "change",
+			reader: {
+				name: "databytes",
+				idByte0: 0,
+				idByte1: 0,
+				valueByte0: 1,
+				valueByte1: 3,
+			}
+		},
+		17:{		/*CLUNET_COMMAND_CHANNEL_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				valueByte: 0
+			}
+		},
+		70:{		/*CLUNET_COMMAND_LIGHT_LEVEL_INFO*/
+			type: "change",
+			reader: {
+				name: "databyte",
+				valueByte: 0
+			}
+		},
+	}
+}
