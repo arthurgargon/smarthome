@@ -37,6 +37,8 @@ public class ClunetDictionary {
         put(Clunet.ADDRESS_RELAY_1, "Relay_1");
         put(Clunet.ADDRESS_RELAY_2, "Relay_2");
         
+        put(Clunet.ADDRESS_SOCKET_DIMMER, "SocketDimmer");
+        
         put(Clunet.ADDRESS_KITCHEN, "Kitchen");
         put(Clunet.ADDRESS_BATH_SENSORS, "BathSensors");
         put(Clunet.ADDRESS_WARDROBE, "Wardrobe");
