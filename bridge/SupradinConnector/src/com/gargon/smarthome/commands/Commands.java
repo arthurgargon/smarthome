@@ -210,10 +210,11 @@ public class Commands {
      * (автоматический/ручной)
      *
      * @param connection текущее соединение
+     * @param auto_mode
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean selectFanModeInBathroom(SupradinConnection connection, boolean auto_mode) {
-        byte mode = (byte)(auto_mode ? 1 : 0);
+        final byte mode = (byte)(auto_mode ? 1 : 0);
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_2,
                 Clunet.PRIORITY_COMMAND,
