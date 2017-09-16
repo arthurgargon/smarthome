@@ -39,10 +39,14 @@ public class Commands {
     public static final int RELAY_2_FAN_SWITCH_ID = 2;
     public static final int RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID = 3;
     
+    public static final int KITCHEN_FAN_SWITCH_ID = 1;
     
     private static final int RELAY_1_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int RELAY_2_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int AUDIOBOX_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    private static final int KITCHEN_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    private static final int KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    private static final int SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT = 500; //ms
     
     private static final int AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT = 500; //ms
     private static final int AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT = 500; //ms
@@ -61,7 +65,7 @@ public class Commands {
      * @param connection текущее соединение
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean switchLightInCloackroom(SupradinConnection connection) {
+    public static boolean toggleLightInCloackroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_1,
                 Clunet.PRIORITY_COMMAND,
@@ -112,7 +116,7 @@ public class Commands {
      *                    false - если свет в гардеробной выключен;
      *                    null - если передано неверное по формату сообщение для анализа
      */
-    public static Boolean isSwitchLightOnInCloackroom(SupradinDataMessage message){
+    public static Boolean checkLightInCloackroomSwitchedOn(SupradinDataMessage message){
         if (message != null){
             if (message.getSrc() == Clunet.ADDRESS_RELAY_1
                     && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
@@ -134,8 +138,8 @@ public class Commands {
      *                    false - если свет в гардеробной выключен;
      *                    null - не удалось определить (возникла ошибка при отправке или ответ не получен)
      */
-    public static Boolean isSwitchLightOnInCloackroom(SupradinConnection connection) {
-        return isSwitchLightOnInCloackroom(Clunet.sendResponsible(connection,
+    public static Boolean isLightInCloackroomSwitchedOn(SupradinConnection connection) {
+        return checkLightInCloackroomSwitchedOn(Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_1,
                 Clunet.PRIORITY_COMMAND,
                 Clunet.COMMAND_SWITCH,
@@ -201,53 +205,101 @@ public class Commands {
     }
     
     
-    
     /**
-     * Переключает вентилятор в ванной
+     * Выбирает режим управления работой вентилятора в ванной
+     * (автоматический/ручной)
      *
      * @param connection текущее соединение
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean switchFanInBathroom(SupradinConnection connection) {
+    public static boolean selectFanModeInBathroom(SupradinConnection connection, boolean auto_mode) {
+        byte mode = (byte)(auto_mode ? 1 : 0);
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_2,
                 Clunet.PRIORITY_COMMAND,
-                Clunet.COMMAND_SWITCH,
-                new byte[]{(byte) 2, RELAY_2_FAN_SWITCH_ID},
+                Clunet.COMMAND_FAN,
+                new byte[]{mode},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
                         return supradinRecieved.getSrc() == Clunet.ADDRESS_RELAY_2
-                                && supradinRecieved.getCommand() == Clunet.COMMAND_SWITCH_INFO
-                                && supradinRecieved.getData().length == 1;
+                                && supradinRecieved.getCommand() == Clunet.COMMAND_FAN_INFO
+                                && supradinRecieved.getData().length == 9
+                                && supradinRecieved.getData()[0] == mode;
                     }
                 }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
     }
     
      /**
-     * Управляет включением вентилятора в ванной
+     * Переключает вентилятор в ванной
      *
      * @param connection текущее соединение
-     * @param on признак включить/выключить
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean switchFanInBathroom(SupradinConnection connection, final boolean on) {
+    public static boolean toggleFanInBathroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_2,
                 Clunet.PRIORITY_COMMAND,
-                Clunet.COMMAND_SWITCH,
-                new byte[]{(byte) (on ? 1 : 0), RELAY_2_FAN_SWITCH_ID},
+                Clunet.COMMAND_FAN,
+                new byte[]{(byte) 2},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
                         return supradinRecieved.getSrc() == Clunet.ADDRESS_RELAY_2
-                        && supradinRecieved.getCommand() == Clunet.COMMAND_SWITCH_INFO
-                        && supradinRecieved.getData().length == 1
-                        && ((supradinRecieved.getData()[0] >> (RELAY_2_FAN_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
+                                && supradinRecieved.getCommand() == Clunet.COMMAND_FAN_INFO
+                                && supradinRecieved.getData().length == 9;
                     }
                 }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+    }
+    
+    /**
+     * Переключает вентилятор на кухне
+     *
+     * @param connection текущее соединение
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean toggleFanInKitchen(SupradinConnection connection) {
+        return Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_KITCHEN,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_SWITCH,
+                new byte[]{(byte) 2, KITCHEN_FAN_SWITCH_ID},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == Clunet.ADDRESS_KITCHEN
+                                && supradinRecieved.getCommand() == Clunet.COMMAND_SWITCH_INFO
+                                && supradinRecieved.getData().length == 1;
+                    }
+                }, KITCHEN_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+    }
+    
+     /**
+     * Управляет включением вентилятора на кухне
+     *
+     * @param connection текущее соединение
+     * @param on признак включить/выключить
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean switchFanInKitchen(SupradinConnection connection, final boolean on) {
+        return Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_KITCHEN,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_SWITCH,
+                new byte[]{(byte) (on ? 1 : 0), KITCHEN_FAN_SWITCH_ID},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == Clunet.ADDRESS_KITCHEN
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_SWITCH_INFO
+                        && supradinRecieved.getData().length == 1
+                        && ((supradinRecieved.getData()[0] >> (KITCHEN_FAN_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
+                    }
+                }, KITCHEN_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
     }
     
     
@@ -259,7 +311,7 @@ public class Commands {
      * вентилятор в ванной выключен; null - если передано неверное по формату
      * сообщение для анализа
      */
-    public static Boolean isSwitchFanOnInBathroom(SupradinDataMessage message) {
+    public static Boolean checkFanInBathroomSwitchedOn(SupradinDataMessage message) {
         if (message != null) {
             if (message.getSrc() == Clunet.ADDRESS_RELAY_2
                     && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
@@ -280,8 +332,8 @@ public class Commands {
      * - если вентилятор в ванной комнате выключен; null - не удалось определить
      * (возникла ошибка при отправке или ответ не получен)
      */
-    public static Boolean isSwitchFanOnInBathroom(SupradinConnection connection) {
-        return isSwitchFanOnInBathroom(
+    public static Boolean isFanInBathroomSwitchedOn(SupradinConnection connection) {
+        return checkFanInBathroomSwitchedOn(
                 Clunet.sendResponsible(connection,
                         Clunet.ADDRESS_RELAY_2,
                         Clunet.PRIORITY_COMMAND,
@@ -304,7 +356,7 @@ public class Commands {
      * @param connection текущее соединение
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean switchLightInMirroredBoxInBathroom(SupradinConnection connection) {
+    public static boolean toggleLightInBathroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_2,
                 Clunet.PRIORITY_COMMAND,
@@ -328,7 +380,7 @@ public class Commands {
      * @param on признак включить/выключить
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean switchLightInMirroredBoxInBathroom(SupradinConnection connection, final boolean on) {
+    public static boolean switchLightInBathroom(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_RELAY_2,
                 Clunet.PRIORITY_COMMAND,
@@ -354,7 +406,7 @@ public class Commands {
      * @return возвращает true - если свет включен; false - если свет выключен;
      * null - если передано неверное по формату сообщение для анализа
      */
-    public static Boolean isSwitchLightOnInMirroredBoxInBathroom(SupradinDataMessage message) {
+    public static Boolean checkLightInBathroomSwitchedOn(SupradinDataMessage message) {
         if (message != null) {
             if (message.getSrc() == Clunet.ADDRESS_RELAY_2
                     && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
@@ -376,8 +428,8 @@ public class Commands {
      * null - не удалось определить (возникла ошибка при отправке или ответ не
      * получен)
      */
-    public static Boolean isSwitchLightOnInMirroredBoxInBathroom(SupradinConnection connection) {
-        return isSwitchFanOnInBathroom(
+    public static Boolean isLightInBathroomSwitchedOn(SupradinConnection connection) {
+        return checkFanInBathroomSwitchedOn(
                 Clunet.sendResponsible(connection,
                         Clunet.ADDRESS_RELAY_2,
                         Clunet.PRIORITY_COMMAND,
@@ -543,7 +595,7 @@ public class Commands {
      * @param percent уровень громкости в процентах
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean setPercentVolumeOfSoundInRoom(SupradinConnection connection, final int percent) {
+    public static boolean setSoundVolumeLevelInRoom(SupradinConnection connection, final int percent) {
         return Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_AUDIOBOX,
                 Clunet.PRIORITY_COMMAND,
@@ -567,7 +619,7 @@ public class Commands {
      * @param inc признак задает увеличение или уменьшение уровня громкости
      * @return возвращает true, если команда успешно выполнена
      */
-    private static boolean changeVolumeOfSound(SupradinConnection connection, final int address, final boolean inc) {
+    private static boolean changeSoundVolumeLevel(SupradinConnection connection, final int address, final boolean inc) {
         return Clunet.sendResponsible(connection,
                 address,
                 Clunet.PRIORITY_COMMAND,
@@ -591,8 +643,8 @@ public class Commands {
      * @param inc признак задает увеличение или уменьшение уровня громкости
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean changeVolumeOfSoundInRoom(SupradinConnection connection, final boolean inc) {
-        return changeVolumeOfSound(connection, Clunet.ADDRESS_AUDIOBOX, inc);
+    public static boolean changeSoundVolumeLevelInRoom(SupradinConnection connection, final boolean inc) {
+        return changeSoundVolumeLevel(connection, Clunet.ADDRESS_AUDIOBOX, inc);
     }
     
      /**
@@ -602,8 +654,8 @@ public class Commands {
      * @param inc признак задает увеличение или уменьшение уровня громкости
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean changeVolumeOfSoundInBathroom(SupradinConnection connection, final boolean inc) {
-        return changeVolumeOfSound(connection, Clunet.ADDRESS_AUDIOBATH, inc);
+    public static boolean changeSoundVolumeLevelInBathroom(SupradinConnection connection, final boolean inc) {
+        return changeSoundVolumeLevel(connection, Clunet.ADDRESS_AUDIOBATH, inc);
     }
   
     /**
@@ -614,7 +666,7 @@ public class Commands {
      * @return возвращает уровень громкости звука в комнате; null - если
      * передано неверное по формату сообщение для анализа
      */
-    public static Integer getPercentVolumeOfSoundInRoom(SupradinDataMessage message) {
+    public static Integer getSoundVolumeLevel(SupradinDataMessage message) {
         if (message != null) {
             if (message.getSrc() == Clunet.ADDRESS_AUDIOBOX
                     && message.getCommand() == Clunet.COMMAND_VOLUME_INFO
@@ -634,8 +686,8 @@ public class Commands {
      * @return возвращает уровень громкости звука в комнате; null - не удалось
      * определить (возникла ошибка при отправке или ответ не получен)
      */
-    public static Integer getVolumePercentOfSoundInRoom(SupradinConnection connection) {
-        return getPercentVolumeOfSoundInRoom(Clunet.sendResponsible(connection,
+    public static Integer getSoundVolumeLevelInRoom(SupradinConnection connection) {
+        return getSoundVolumeLevel(Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_AUDIOBOX,
                 Clunet.PRIORITY_COMMAND,
                 Clunet.COMMAND_VOLUME,
@@ -662,7 +714,7 @@ public class Commands {
      * @param inc признак задает увеличение или уменьшение значения параметра
      * @return возвращает true, если команда успешно выполнена
      */
-    public static boolean changeEqualizerOfSoundInRoom(SupradinConnection connection, final int param, final boolean inc) {
+    public static boolean changeSoundEqualizerInRoom(SupradinConnection connection, final int param, final boolean inc) {
         if (param == EQUALIZER_TREBLE || param == EQUALIZER_GAIN || param == EQUALIZER_BASS) {
             return Clunet.sendResponsible(connection,
                     Clunet.ADDRESS_AUDIOBOX,
@@ -683,7 +735,7 @@ public class Commands {
     }
 
     
-    private static boolean nextFMStation(SupradinConnection connection, final int address, final boolean up){
+    private static boolean selectNextFMStation(SupradinConnection connection, final int address, final boolean up){
         return Clunet.sendResponsible(connection,
                 address,
                 Clunet.PRIORITY_COMMAND,
@@ -700,12 +752,12 @@ public class Commands {
                     }, AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
     }
     
-    public static boolean nextFMStationInRoom(SupradinConnection connection, final boolean up){
-        return nextFMStation(connection, Clunet.ADDRESS_AUDIOBOX, up);
+    public static boolean selectNextFMStationInRoom(SupradinConnection connection, final boolean up){
+        return selectNextFMStation(connection, Clunet.ADDRESS_AUDIOBOX, up);
     }
     
-    public static boolean nextFMStationInBathroom(SupradinConnection connection, final boolean up){
-        return nextFMStation(connection, Clunet.ADDRESS_AUDIOBATH, up);
+    public static boolean selectNextFMStationInBathroom(SupradinConnection connection, final boolean up){
+        return selectNextFMStation(connection, Clunet.ADDRESS_AUDIOBATH, up);
     }
     
     private static boolean selectFMFrequency(SupradinConnection connection, final int address, float frequency) {
@@ -900,5 +952,44 @@ public class Commands {
     
     public static void selectHeatfloorModeDayForToday(SupradinConnection connection, int channel, int program){
         selectHeatfloorMode(connection, ClunetDictionary.HEATFLOOR_MODE_DAY_FOR_TODAY, channel, new byte[]{(byte)program});
+    }
+    
+    
+    /**
+     * Устанавливает уровень диммера 
+     *
+     * @param connection текущее соединение
+     * @param deviceId идентификатор устройства
+     * @param dimmerChannel номер канала диммера
+     * @param value значение диммера (0-255)
+     * @param responseTimeout
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean setDimmerLevel(SupradinConnection connection,
+            final int deviceId, final int dimmerChannel, final int value,
+            int responseTimeout
+            ) {
+        return Clunet.sendResponsible(connection,
+                deviceId,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_DIMMER,
+                new byte[]{(byte) dimmerChannel, (byte) value},
+                new SupradinConnectionResponseFilter() {
+
+            @Override
+            public boolean filter(SupradinDataMessage supradinRecieved) {
+                return supradinRecieved.getSrc() == deviceId
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_DIMMER_INFO
+                        && supradinRecieved.getData().length == 3;
+            }
+        }, responseTimeout, NUM_ATTEMPTS_STATE) != null;
+    }
+    
+    public static boolean setDimmerLevelInKitchenLight(SupradinConnection connection, final int value) {
+        return setDimmerLevel(connection, Clunet.ADDRESS_KITCHEN_LIGHT, 1, value, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT);
+    }
+    
+    public static boolean setDimmerLevelInSocketDimmer(SupradinConnection connection, final int value) {
+        return setDimmerLevel(connection, Clunet.ADDRESS_SOCKET_DIMMER, 1, value, SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT);
     }
 }

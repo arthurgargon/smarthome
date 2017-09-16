@@ -536,13 +536,13 @@ public class SupradinConsole extends javax.swing.JFrame {
                 public void onHotKey(int i) {
                     switch (i) {
                         case 1:
-                            Commands.switchLightInCloackroom(connection);   //переключаем
+                            Commands.toggleLightInCloackroom(connection);   //переключаем
                             break;
                         case 2:
-                            Commands.switchLightInMirroredBoxInBathroom(connection);       //переключаем
+                            Commands.toggleLightInBathroom(connection);       //переключаем
                             break;
                         case 3:
-                            Commands.switchFanInBathroom(connection);      //переключаем
+                            Commands.toggleFanInBathroom(connection);      //переключаем
                             break;
                             
                         case 10:
@@ -556,22 +556,22 @@ public class SupradinConsole extends javax.swing.JFrame {
                             break;
                             
                         case 13:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_TREBLE, true);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_TREBLE, true);
                             break;
                         case 14:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_TREBLE, false);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_TREBLE, false);
                             break;
                         case 15:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_BASS, true);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_BASS, true);
                             break;
                         case 16:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_BASS, false);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_BASS, false);
                             break;
                         case 17:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_GAIN, true);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_GAIN, true);
                             break;
                         case 18:
-                            Commands.changeEqualizerOfSoundInRoom(connection, Commands.EQUALIZER_GAIN, false);
+                            Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_GAIN, false);
                             break;
                             
                         case 19:
@@ -761,8 +761,11 @@ public class SupradinConsole extends javax.swing.JFrame {
         mnClimate = new javax.swing.JMenu();
         mnClimateBathroom = new javax.swing.JMenu();
         mnFanBathroom = new javax.swing.JMenu();
-        mnFanBathroomOn = new javax.swing.JMenuItem();
-        mnFanBathroomOff = new javax.swing.JMenuItem();
+        mnFanBathroomMode = new javax.swing.JMenu();
+        mnFanBathroomModeAuto = new javax.swing.JMenuItem();
+        mnFanBathroomModeManual = new javax.swing.JMenuItem();
+        jSeparator10 = new javax.swing.JPopupMenu.Separator();
+        mnFanBathroomToggle = new javax.swing.JMenuItem();
         mnClimateKitchen = new javax.swing.JMenu();
         mnFanKitchen = new javax.swing.JMenu();
         mnFanKitchenOn = new javax.swing.JMenuItem();
@@ -1047,23 +1050,35 @@ public class SupradinConsole extends javax.swing.JFrame {
         mnFanBathroom.setText("Вентилятор");
         mnFanBathroom.setActionCommand("Вентилятор в ванной");
 
-        mnFanBathroomOn.setText("Включить");
-        mnFanBathroomOn.setActionCommand("Включить вентилятор в ванной");
-        mnFanBathroomOn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mnFanBathroomOnActionPerformed(evt);
-            }
-        });
-        mnFanBathroom.add(mnFanBathroomOn);
+        mnFanBathroomMode.setText("Режим");
 
-        mnFanBathroomOff.setText("Выключить");
-        mnFanBathroomOff.setActionCommand("Выключить вентилятор в ванной");
-        mnFanBathroomOff.addActionListener(new java.awt.event.ActionListener() {
+        mnFanBathroomModeAuto.setText("Авто");
+        mnFanBathroomModeAuto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mnFanBathroomOffActionPerformed(evt);
+                mnFanBathroomModeAutoActionPerformed(evt);
             }
         });
-        mnFanBathroom.add(mnFanBathroomOff);
+        mnFanBathroomMode.add(mnFanBathroomModeAuto);
+
+        mnFanBathroomModeManual.setText("Ручной");
+        mnFanBathroomModeManual.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnFanBathroomModeManualActionPerformed(evt);
+            }
+        });
+        mnFanBathroomMode.add(mnFanBathroomModeManual);
+
+        mnFanBathroom.add(mnFanBathroomMode);
+        mnFanBathroom.add(jSeparator10);
+
+        mnFanBathroomToggle.setText("Переключить");
+        mnFanBathroomToggle.setActionCommand("Включить вентилятор в ванной");
+        mnFanBathroomToggle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnFanBathroomToggleActionPerformed(evt);
+            }
+        });
+        mnFanBathroom.add(mnFanBathroomToggle);
 
         mnClimateBathroom.add(mnFanBathroom);
 
@@ -1563,27 +1578,23 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundRoomSourceFMActionPerformed
 
     private void miLightBathroomOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightBathroomOnActionPerformed
-        Commands.switchLightInMirroredBoxInBathroom(connection, true);
+        Commands.switchLightInBathroom(connection, true);
     }//GEN-LAST:event_miLightBathroomOnActionPerformed
 
     private void miLightBathroomOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightBathroomOffActionPerformed
-        Commands.switchLightInMirroredBoxInBathroom(connection, false);
+        Commands.switchLightInBathroom(connection, false);
     }//GEN-LAST:event_miLightBathroomOffActionPerformed
 
-    private void mnFanBathroomOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanBathroomOnActionPerformed
-        Commands.switchFanInBathroom(connection, true);
-    }//GEN-LAST:event_mnFanBathroomOnActionPerformed
-
-    private void mnFanBathroomOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanBathroomOffActionPerformed
-        Commands.switchFanInBathroom(connection, false);
-    }//GEN-LAST:event_mnFanBathroomOffActionPerformed
+    private void mnFanBathroomToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanBathroomToggleActionPerformed
+        Commands.toggleFanInBathroom(connection);
+    }//GEN-LAST:event_mnFanBathroomToggleActionPerformed
 
     private void miSoundRoomIncVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomIncVolumeActionPerformed
-        Commands.changeVolumeOfSoundInRoom(connection, true);
+        Commands.changeSoundVolumeLevelInRoom(connection, true);
     }//GEN-LAST:event_miSoundRoomIncVolumeActionPerformed
 
     private void miSoundRoomDecVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomDecVolumeActionPerformed
-        Commands.changeVolumeOfSoundInRoom(connection, false);
+        Commands.changeSoundVolumeLevelInRoom(connection, false);
     }//GEN-LAST:event_miSoundRoomDecVolumeActionPerformed
 
     private void pmiCopyAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiCopyAllActionPerformed
@@ -1764,11 +1775,11 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundBathroomSourceFMActionPerformed
 
     private void miSoundBathroomIncVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomIncVolumeActionPerformed
-        Commands.changeVolumeOfSoundInBathroom(connection, true);
+        Commands.changeSoundVolumeLevelInBathroom(connection, true);
     }//GEN-LAST:event_miSoundBathroomIncVolumeActionPerformed
 
     private void miSoundBathroomDecVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomDecVolumeActionPerformed
-        Commands.changeVolumeOfSoundInBathroom(connection, false);
+        Commands.changeSoundVolumeLevelInBathroom(connection, false);
     }//GEN-LAST:event_miSoundBathroomDecVolumeActionPerformed
 
     private void miSoundBathroomMuteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomMuteActionPerformed
@@ -1780,11 +1791,11 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundBathroomSourcePadActionPerformed
 
     private void miSoundRoomFMPrevStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMPrevStationActionPerformed
-        Commands.nextFMStationInRoom(connection, false);
+        Commands.selectNextFMStationInRoom(connection, false);
     }//GEN-LAST:event_miSoundRoomFMPrevStationActionPerformed
 
     private void miSoundRoomFMNextStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMNextStationActionPerformed
-        Commands.nextFMStationInRoom(connection, true);
+        Commands.selectNextFMStationInRoom(connection, true);
     }//GEN-LAST:event_miSoundRoomFMNextStationActionPerformed
 
     private void miSoundRoomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
@@ -1794,11 +1805,11 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
 
     private void miSoundBathroomFMPrevStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMPrevStationActionPerformed
-        Commands.nextFMStationInBathroom(connection, false);
+        Commands.selectNextFMStationInBathroom(connection, false);
     }//GEN-LAST:event_miSoundBathroomFMPrevStationActionPerformed
 
     private void miSoundBathroomFMNextStationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMNextStationActionPerformed
-        Commands.nextFMStationInBathroom(connection, true);
+        Commands.selectNextFMStationInBathroom(connection, true);
     }//GEN-LAST:event_miSoundBathroomFMNextStationActionPerformed
 
     private void miSoundBathroomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
@@ -1808,12 +1819,20 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
 
     private void mnFanKitchenOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanKitchenOnActionPerformed
-        // TODO add your handling code here:
+        Commands.switchFanInKitchen(connection, true);
     }//GEN-LAST:event_mnFanKitchenOnActionPerformed
 
     private void mnFanKitchenOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanKitchenOffActionPerformed
-        // TODO add your handling code here:
+        Commands.switchFanInKitchen(connection, false);
     }//GEN-LAST:event_mnFanKitchenOffActionPerformed
+
+    private void mnFanBathroomModeAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanBathroomModeAutoActionPerformed
+        Commands.selectFanModeInBathroom(connection, true);
+    }//GEN-LAST:event_mnFanBathroomModeAutoActionPerformed
+
+    private void mnFanBathroomModeManualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanBathroomModeManualActionPerformed
+        Commands.selectFanModeInBathroom(connection, false);
+    }//GEN-LAST:event_mnFanBathroomModeManualActionPerformed
 
     private void trayImageFree() {
         if (tray != null && trayIcon != null){
@@ -1958,6 +1977,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -2005,8 +2025,10 @@ public class SupradinConsole extends javax.swing.JFrame {
     private javax.swing.JMenu mnClimateBathroom;
     private javax.swing.JMenu mnClimateKitchen;
     private javax.swing.JMenu mnFanBathroom;
-    private javax.swing.JMenuItem mnFanBathroomOff;
-    private javax.swing.JMenuItem mnFanBathroomOn;
+    private javax.swing.JMenu mnFanBathroomMode;
+    private javax.swing.JMenuItem mnFanBathroomModeAuto;
+    private javax.swing.JMenuItem mnFanBathroomModeManual;
+    private javax.swing.JMenuItem mnFanBathroomToggle;
     private javax.swing.JMenu mnFanKitchen;
     private javax.swing.JMenuItem mnFanKitchenOff;
     private javax.swing.JMenuItem mnFanKitchenOn;

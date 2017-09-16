@@ -298,22 +298,38 @@
                     <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
                   </Properties>
                   <SubComponents>
-                    <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOn">
+                    <Menu class="javax.swing.JMenu" name="mnFanBathroomMode">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
+                        <Property name="text" type="java.lang.String" value="&#x420;&#x435;&#x436;&#x438;&#x43c;"/>
+                      </Properties>
+                      <SubComponents>
+                        <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomModeAuto">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="&#x410;&#x432;&#x442;&#x43e;"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomModeAutoActionPerformed"/>
+                          </Events>
+                        </MenuItem>
+                        <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomModeManual">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="&#x420;&#x443;&#x447;&#x43d;&#x43e;&#x439;"/>
+                          </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomModeManualActionPerformed"/>
+                          </Events>
+                        </MenuItem>
+                      </SubComponents>
+                    </Menu>
+                    <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator10">
+                    </MenuItem>
+                    <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomToggle">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="&#x41f;&#x435;&#x440;&#x435;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
                         <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOnActionPerformed"/>
-                      </Events>
-                    </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="mnFanBathroomOff">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;"/>
-                        <Property name="actionCommand" type="java.lang.String" value="&#x412;&#x44b;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c; &#x432;&#x435;&#x43d;&#x442;&#x438;&#x43b;&#x44f;&#x442;&#x43e;&#x440; &#x432; &#x432;&#x430;&#x43d;&#x43d;&#x43e;&#x439;"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomOffActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnFanBathroomToggleActionPerformed"/>
                       </Events>
                     </MenuItem>
                   </SubComponents>
