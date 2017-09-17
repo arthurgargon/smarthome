@@ -40,13 +40,17 @@ public class Commands {
     public static final int RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID = 3;
     
     public static final int KITCHEN_FAN_SWITCH_ID = 1;
+    public static final int KITCHEN_LIGHT_SWITCH_ID = 1;
+    
+    public static final int SOCKET_DIMMER_SWITCH_ID = 1;
     
     private static final int RELAY_1_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int RELAY_2_WAITING_RESPONSE_TIMEOUT  = 500; //ms
     private static final int AUDIOBOX_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    private static final int AUDIOBATH_WAITING_RESPONSE_TIMEOUT = 500; //ms
     private static final int KITCHEN_WAITING_RESPONSE_TIMEOUT = 500; //ms
     private static final int KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT = 500; //ms
-    private static final int SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT = 500; //ms
+    private static final int SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT = 50; //ms
     
     private static final int AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT = 500; //ms
     private static final int AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT = 500; //ms
@@ -122,6 +126,44 @@ public class Commands {
                     && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
                     && message.getData().length == 1){
                 return ((message.getData()[0] >> (RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID - 1)) & 1) == 1;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Определяет включен ли свет на кухне по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @return возвращает true -  если свет на кухне включен (также и любое состояние диммера);
+     *                    false - если свет на кухне выключен;
+     *                    null - если передано неверное по формату сообщение для анализа
+     */
+    public static Boolean checkLightInKitchenSwitchedOn(SupradinDataMessage message){
+        if (message != null){
+            if (message.getSrc() == Clunet.ADDRESS_KITCHEN_LIGHT
+                    && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
+                    && message.getData().length == 1){
+                return ((message.getData()[0] >> (KITCHEN_LIGHT_SWITCH_ID - 1)) & 1) == 1;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Определяет включен ли свет в комнате по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @return возвращает true -  если ночник включен (также и любое состояние диммера);
+     *                    false - если ночник выключен;
+     *                    null - если передано неверное по формату сообщение для анализа
+     */
+    public static Boolean checkLightInSocketSwitchedOn(SupradinDataMessage message){
+        if (message != null){
+            if (message.getSrc() == Clunet.ADDRESS_SOCKET_DIMMER
+                    && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
+                    && message.getData().length == 1){
+                return ((message.getData()[0] >> (SOCKET_DIMMER_SWITCH_ID - 1)) & 1) == 1;
             }
         }
         return null;
@@ -301,6 +343,26 @@ public class Commands {
                         && ((supradinRecieved.getData()[0] >> (KITCHEN_FAN_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
                 }, KITCHEN_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
+    }
+    
+        
+    /**
+     * Определяет включен ли вентилятор на кухне по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @return возвращает true - если вентилятор на кухне включен; false - если
+     * вентилятор в ванной выключен; null - если передано неверное по формату
+     * сообщение для анализа
+     */
+    public static Boolean checkFanInKitchenSwitchedOn(SupradinDataMessage message) {
+        if (message != null) {
+            if (message.getSrc() == Clunet.ADDRESS_KITCHEN
+                    && message.getCommand() == Clunet.COMMAND_SWITCH_INFO
+                    && message.getData().length == 1) {
+                return ((message.getData()[0] >> (KITCHEN_FAN_SWITCH_ID - 1)) & 1) == 1;
+            }
+        }
+        return null;
     }
     
     
@@ -512,6 +574,24 @@ public class Commands {
         }
         return null;
     }
+    
+    /**
+     * Определяет номер источника аудиосигнала в в ванной комнате по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @return возвращает номер источника аудиосигнала;
+     *                    null - если передано неверное по формату сообщение для анализа
+     */
+    public static Integer getSelectedSourceOfSoundInBathRoom(SupradinDataMessage message){
+        if (message != null){
+            if (message.getSrc() == Clunet.ADDRESS_AUDIOBATH
+                    && message.getCommand() == Clunet.COMMAND_CHANNEL_INFO
+                    && message.getData().length == 1){
+                return (int)message.getData()[0];
+            }
+        }
+        return null;
+    }
 
     /**
      * Определяет номер источника аудиосигнала в комнате.
@@ -540,6 +620,34 @@ public class Commands {
         return getSelectedSourceOfSoundInRoom(response);
     }
 
+    
+    
+    /**
+     * Определяет номер источника аудиосигнала в ванной комнате.
+     * Отправляет команду аудиобоксу и
+     * в случае успешного ее выполнения определяет номер активного источника аудиосигнала
+     *
+     * @param connection текущее соединение
+     * @return возвращает номер источника аудиосигнала;
+     *                    null - не удалось определить (возникла ошибка при отправке или ответ не получен)
+     */
+    public static Integer getSelectedSourceOfSoundInBathRoom(SupradinConnection connection) {
+        SupradinDataMessage response = Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_AUDIOBATH,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_CHANNEL,
+                new byte[]{(byte)0xFF},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBATH
+                                && supradinRecieved.getCommand() == Clunet.COMMAND_CHANNEL_INFO
+                                && supradinRecieved.getData().length == 1;
+                    }
+                }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE);
+        return getSelectedSourceOfSoundInBathRoom(response);
+    }
 
     /**
      * Выключает звук
@@ -613,6 +721,31 @@ public class Commands {
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
     }
     
+     /**
+     * Устанавливает уровень громкости (в процентах от максимального) звука в
+     * ванной комнате
+     *
+     * @param connection текущее соединение
+     * @param percent уровень громкости в процентах
+     * @return возвращает true, если команда успешно выполнена
+     */
+    public static boolean setSoundVolumeLevelInBathRoom(SupradinConnection connection, final int percent) {
+        return Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_AUDIOBATH,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_VOLUME,
+                new byte[]{0x00, (byte) percent},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBATH
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getData().length == 2 /*&& supradinRecieved.getData()[0] == percent*/;       //TODO: баг с передачей громкости в процентах
+                    }
+                }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
+    }
+    
     /**
      * Изменяет уровень громкости звука
      *
@@ -667,9 +800,29 @@ public class Commands {
      * @return возвращает уровень громкости звука в комнате; null - если
      * передано неверное по формату сообщение для анализа
      */
-    public static Integer getSoundVolumeLevel(SupradinDataMessage message) {
+    public static Integer getSoundVolumeLevelInRoom(SupradinDataMessage message) {
         if (message != null) {
             if (message.getSrc() == Clunet.ADDRESS_AUDIOBOX
+                    && message.getCommand() == Clunet.COMMAND_VOLUME_INFO
+                    && message.getData().length == 2
+                    && message.getData()[0] >= 0 && message.getData()[0] <= 100) {
+                return (int) message.getData()[0];
+            }
+        }
+        return null;
+    }
+    
+        /**
+     * Определяет уровень громкости (в процентах от максимального) звука в
+     * ванной комнате по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @return возвращает уровень громкости звука в комнате; null - если
+     * передано неверное по формату сообщение для анализа
+     */
+    public static Integer getSoundVolumeLevelInBathRoom(SupradinDataMessage message) {
+        if (message != null) {
+            if (message.getSrc() == Clunet.ADDRESS_AUDIOBATH
                     && message.getCommand() == Clunet.COMMAND_VOLUME_INFO
                     && message.getData().length == 2
                     && message.getData()[0] >= 0 && message.getData()[0] <= 100) {
@@ -688,7 +841,7 @@ public class Commands {
      * определить (возникла ошибка при отправке или ответ не получен)
      */
     public static Integer getSoundVolumeLevelInRoom(SupradinConnection connection) {
-        return getSoundVolumeLevel(Clunet.sendResponsible(connection,
+        return getSoundVolumeLevelInRoom(Clunet.sendResponsible(connection,
                 Clunet.ADDRESS_AUDIOBOX,
                 Clunet.PRIORITY_COMMAND,
                 Clunet.COMMAND_VOLUME,
@@ -702,6 +855,32 @@ public class Commands {
                         && supradinRecieved.getData().length == 2;
                     }
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
+    }
+    
+    
+        /**
+     * Определяет уровень громкости (в процентах от максимального) звука в
+     * ванной комнате
+     *
+     * @param connection текущее соединение
+     * @return возвращает уровень громкости звука в комнате; null - не удалось
+     * определить (возникла ошибка при отправке или ответ не получен)
+     */
+    public static Integer getSoundVolumeLevelInBathRoom(SupradinConnection connection) {
+        return getSoundVolumeLevelInBathRoom(Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_AUDIOBATH,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_VOLUME,
+                new byte[]{(byte) 0xFF},
+                new SupradinConnectionResponseFilter() {
+
+                    @Override
+                    public boolean filter(SupradinDataMessage supradinRecieved) {
+                        return supradinRecieved.getSrc() == Clunet.ADDRESS_AUDIOBATH
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getData().length == 2;
+                    }
+                }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
     }
     
     
@@ -992,5 +1171,89 @@ public class Commands {
     
     public static boolean setDimmerLevelInSocketDimmer(SupradinConnection connection, final int value) {
         return setDimmerLevel(connection, Clunet.ADDRESS_SOCKET_DIMMER, 1, value, SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT);
+    }
+    
+    /**
+     * Определяет уровень диммера (0-255) по сообщению
+     *
+     * @param message входящее сообщение для анализа
+     * @param deviceId
+     * @param dimmerChannel
+     * @return возвращает значение диммера; null - если передано неверное по
+     * формату сообщение для анализа
+     */
+    private static Integer getDimmerLevel(SupradinDataMessage message, int deviceId, int dimmerChannel) {
+        if (message != null) {
+            if (message.getSrc() == deviceId
+                    && message.getCommand() == Clunet.COMMAND_DIMMER_INFO
+                    && message.getData().length > 1) {
+                int cnt = message.getData()[0] & 0xFF;
+                if (message.getData().length == cnt * 2 + 1) {
+                    for (int i = 1; i < message.getData().length; i += 2) {
+                        if ((message.getData()[i] & 0xFF) == dimmerChannel) {
+                            return message.getData()[i + 1] & 0xFF;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    
+        public static Integer getDimmerLevelInKitchen(SupradinDataMessage message) {
+            return getDimmerLevel(message, Clunet.ADDRESS_KITCHEN_LIGHT, 1);
+        }
+        
+        public static Integer getDimmerLevelInSocket(SupradinDataMessage message) {
+            return getDimmerLevel(message, Clunet.ADDRESS_SOCKET_DIMMER, 1);
+        }
+
+    /**
+     * Получает значение диммера на кухне
+     *
+     * @param connection текущее соединение
+     * @return возвращает значение диммера на кухне; null - не удалось
+     * определить (возникла ошибка при отправке или ответ не получен)
+     */
+    public static Integer getDimmerLevelInKitchen(SupradinConnection connection) {
+        return getDimmerLevel(Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_KITCHEN_LIGHT,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_DIMMER,
+                new byte[]{(byte) 0xFF},
+                new SupradinConnectionResponseFilter() {
+
+            @Override
+            public boolean filter(SupradinDataMessage supradinRecieved) {
+                return supradinRecieved.getSrc() == Clunet.ADDRESS_KITCHEN_LIGHT
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_DIMMER_INFO;
+            }
+        }, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE),
+                Clunet.ADDRESS_KITCHEN_LIGHT, 1);
+    }
+    
+       /**
+     * Получает значение диммера в комнате
+     *
+     * @param connection текущее соединение
+     * @return возвращает значение диммера в комнате; null - не удалось
+     * определить (возникла ошибка при отправке или ответ не получен)
+     */
+    public static Integer getDimmerLevelInSocket(SupradinConnection connection) {
+        return getDimmerLevel(Clunet.sendResponsible(connection,
+                Clunet.ADDRESS_SOCKET_DIMMER,
+                Clunet.PRIORITY_COMMAND,
+                Clunet.COMMAND_DIMMER,
+                new byte[]{(byte) 0xFF},
+                new SupradinConnectionResponseFilter() {
+
+            @Override
+            public boolean filter(SupradinDataMessage supradinRecieved) {
+                return supradinRecieved.getSrc() == Clunet.ADDRESS_SOCKET_DIMMER
+                        && supradinRecieved.getCommand() == Clunet.COMMAND_DIMMER_INFO;
+            }
+        }, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE),
+                Clunet.ADDRESS_SOCKET_DIMMER, 1);
     }
 }
