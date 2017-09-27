@@ -325,6 +325,19 @@ public class SupradinConsole extends javax.swing.JFrame {
                             JMenu mnHeatfloorDayForToday = new JMenu("Дневной режим на сегодня");
                             mnHeatfloor.add(mnHeatfloorDayForToday);
 
+                            //выкл до конца дня
+                            JMenuItem miHeatfloorDayForTodaySwitchOff = new JMenuItem("Выключить");
+                            miHeatfloorDayForTodaySwitchOff.addActionListener(new java.awt.event.ActionListener() {
+                                @Override
+                                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                    Commands.selectHeatfloorModeDayForToday(connection, channel.getNum(), 0xFF);
+                                }
+                            });
+                            mnHeatfloorDayForToday.add(miHeatfloorDayForTodaySwitchOff);
+  
+                            JSeparator separator = new JSeparator();
+                            mnHeatfloorDayForToday.add(separator);
+                            
                             for (Integer program : channel.getProgramList()) {
                                 final int fp = program;
                                 JMenuItem miHeatfloorDayForTodayProgram = new JMenuItem(hfDictionary.getProgramList().get(fp).getName());
@@ -361,7 +374,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                                 mnHeatfloorParty.add(mnHeatfloorPartyT);
                             }
                             
-                            JSeparator separator = new JSeparator();
+                            separator = new JSeparator();
                             mnHeatfloor.add(separator);
 
                             JMenuItem miWriteHeatfloorProgramsToEEPROM = new JMenuItem("Записать программы (+Ctrl)");
