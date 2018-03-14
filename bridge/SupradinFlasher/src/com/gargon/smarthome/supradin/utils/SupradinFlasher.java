@@ -23,7 +23,7 @@ import org.apache.commons.cli.DefaultParser;
 public class SupradinFlasher {
 
     public static final int BOOTLOADER_TIMEOUT = 5000;
-    public static final int RESPONSE_TIMEOUT = 3000;
+    public static final int RESPONSE_TIMEOUT = 500;
 
     private static final int COMMAND_FIRMWARE_UPDATE_START = 0;
     private static final int COMMAND_FIRMWARE_UPDATE_INIT = 1;
