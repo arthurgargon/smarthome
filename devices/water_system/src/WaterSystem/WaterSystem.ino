@@ -3,11 +3,11 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-#include <Servo.h>
-#include "WaterSystem.h"
-
 #include "ESPAsyncTCP.h"
 #include "ESPAsyncWebServer.h"
+
+#include "WaterSystem.h"
+#include <Servo.h>
 
 #include "ClunetMulticast.h"
 #include "Credentials.h"
@@ -21,23 +21,24 @@ IPAddress subnet(255, 255, 255, 0);
 
 AsyncWebServer server(80);
 
-
 Servo servo;
 int pump_state = LOW;
 
-long fill_time[POT_COUNT] = {0};
+TaskExt task_queue[TASK_QUEUE_MAX_LENGTH];
+int task_queue_count = 0;
 
-int c_mode, n_mode = -1;
+Task task_queue_tmp[TASK_QUEUE_MAX_LENGTH];
 
 void setup() {
+  Serial.begin(115200);
+  Serial.println("Booting");
+  
+  
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(PUMP_PIN, pump_state);
   
   servo.attach(SERVO_PIN);
 
-  Serial.begin(115200);
-
-  Serial.println("Booting");
   WiFi.mode(WIFI_STA);
 
   WiFi.begin(ssid, pass);
@@ -75,9 +76,6 @@ void setup() {
 
   ArduinoOTA.begin();
 
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
   clunetMulticastBegin();
 
   //server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){  //toggle
@@ -98,24 +96,18 @@ void setup() {
 
           if (checkUintArg(arg)) {
             int pot = arg.toInt();
-            if (has_pot(pot)){
-
-              n_mode = pot;
+            int n = set_task(get_water_task(task_queue_tmp, pot));
+            if (n > 0){
               r = 200;
-              
-              //if (pot_exec(pot)) {
-              //  r = 200;
-              //}else{
-              //  r = 403;  //горшок есть, но поливать еще пока нельзя -> ждем пока утечет вода
-              //}
+            }else if (n < 0){
+              r = 403; //запрещенное действие
             }
           }
-       }else if (request->hasArg("all")){
-          n_mode = POT_COUNT;
-          //if (pot_exec_all()){
-             r = 200;
-          //}
+      }else if (request->hasArg("all")){
+        if (set_task(get_water_all_task(task_queue_tmp))){
+          r = 200;
         }
+      }
     }
     server_response(request, r);
   });
@@ -128,38 +120,35 @@ void setup() {
   
           if (checkUintArg(arg)) {
             int pot = arg.toInt();
-            if (pot_pos(pot)){
-                r = 200;
-              }
+            if (set_task(get_water_task(task_queue_tmp, pot))){
+              r = 200;
+            }
           }
       }else if (request->hasArg("test")){
-          for (int i=0; i<20; i++){
-            pot_pos(random(POT_COUNT));
-            delay(1000);
+          if (set_task(get_servo_test_task(task_queue_tmp, 10, 1000))){
+             r = 200;
           }
       }
     }
     server_response(request, r);
   });
 
-  server.on("/pump_on", HTTP_GET, [](AsyncWebServerRequest *request){  //on and dimmer
+  server.on("/pump_on", HTTP_GET, [](AsyncWebServerRequest *request){
     int r = 404;
-      switch (request->args()) {
-        case 0:
-          if (pump_on(true)){
-            r = 200;
+    if (request->args() == 0) {
+          if (set_task(get_pump_task(task_queue_tmp, 1))){
+             r = 200;
           }
-          break;
-      }
+    }
     server_response(request, r);
   });
 
-  server.on("/pump_off", HTTP_GET, [](AsyncWebServerRequest *request){  //off
+  server.on("/pump_off", HTTP_GET, [](AsyncWebServerRequest *request){
     int r = 404;
     if (request->args() == 0) {
-      if (pump_off(true)){
-        r = 200;
-      }
+          if (set_task(get_pump_task(task_queue_tmp, 0))){
+             r = 200;
+          }
     }
     server_response(request, r);
   });
@@ -190,7 +179,7 @@ void server_response(AsyncWebServerRequest *request, unsigned int response) {
       request->send(200);
       break;
     case 403:
-      request->send(403, "text/plain", "Too frequent period\n\n");
+      request->send(403, "text/plain", "Too frequent request\n\n");
       break;
     default:
       //case 404:
@@ -227,7 +216,8 @@ boolean pumpExecute(char command) {
   return true;
 }
 
-boolean pump_exec(char command, boolean send_response) {
+boolean pump_exec(char command) {
+  boolean send_response = pump_state != command;
   boolean r = pumpExecute(command);
   if (r) {
     if (send_response) {
@@ -237,73 +227,65 @@ boolean pump_exec(char command, boolean send_response) {
   return r;
 }
 
-boolean pump_on(boolean send_response) {
-  return pump_exec(0x01, send_response);
+void stop_all(){
+  pump_exec(0);
 }
 
-boolean pump_off(boolean send_response) {
-  return pump_exec(0x00, send_response);
+void copy_task(TaskExt* dst, Task* src){
+  dst->id = src->id;
+  dst->param = src->param;
+  dst->start_time = 0;
 }
 
-boolean pump_toggle(boolean send_response) {
-  return pump_exec(0x02, send_response);
-}
+int set_task(int n){
+  if (n){
+    if (task_queue_count > 0){
+      task_queue_count = 0;
+      stop_all();
+    }
 
-boolean has_pot(int i){
-  return i >=0 && i<POT_COUNT;
-}
-
-boolean pot_pos(int i){
-  if (has_pot(i)){
-    servo.write(pot_angle[i]);
-    delay(1000); //TODO: killme
-    return true;
+    for (int i=0; i<n; i++){
+      copy_task(&task_queue[i], &task_queue_tmp[i]);
+    }
+    task_queue_count = n;
   }
-  return false;
+  return n;
 }
 
-boolean can_pot_fill(int i){
-  return  has_pot(i) && ((fill_time[i] == 0) || (millis() - fill_time[i] > POT_FILL_PERIOD));
-}
-
-boolean pot_fill(int i){
-  if (can_pot_fill(i)){
+void update_task_queue(){
+  if (task_queue_count > 0){
+    boolean next = false;
+    long t = millis();
     
-    pump_on(i);
-    delay(POT_FILL_TIME);
-    pump_off(i);
-    fill_time[i] = millis();
-    
-    return true;
+    TaskExt task = task_queue[0];
+    if (task.start_time == 0){
+      task.start_time = t;
+    }
+    switch (task.id){
+      case TASK_SERVO:
+        servo.write(task.param);
+        next = true;
+        break;
+      case TASK_PUMP:
+        pump_exec(task.param);
+        next = true;
+        break;
+      case TASK_DELAY:
+        next = (t - task.start_time) >= task.param;
+        break;
+    }
+    if (next){
+      --task_queue_count;
+      //shift queue
+      for (int i=0; i<task_queue_count; i++){
+        copy_task(&task_queue[i], &task_queue[i+1]);
+       }
+    }
   }
-  return false;
 }
-
-boolean pot_exec(int i){
-  return can_pot_fill(i) && pot_pos(i) && pot_fill(i);
-}
-
-boolean pot_exec_all(){
-  for (int i=0; i<POT_COUNT; i++){
-    pot_exec(i);
-  }
-  
-    return true;
-}
-
-
-//boolean setMode(int new_mode){
-//  if (c_mode != new_mode){
-//    switch (mode){
-//      case 0...POT_COUNT-1:
-//    }
-//  }
-//  return true;
-//}
-
 
 void loop() {
- clunet_msg msg;
+  clunet_msg msg;
   if (clunetMulticastHandleMessages(&msg)) {
     switch (msg.command) {
       case CLUNET_COMMAND_SWITCH:
@@ -316,22 +298,7 @@ void loop() {
     }
   }
 
-  if (n_mode >= 0){
-    pump_off(true);
-    
-
-    switch (n_mode){
-      case 0 ... POT_COUNT-1:
-        pot_exec(n_mode);
-        break;
-      case POT_COUNT:
-        pot_exec_all();
-        break;
-    }
-
-    c_mode = n_mode;
-    n_mode = -1;
-  }
+  update_task_queue();
 
   ArduinoOTA.handle();
   yield();
