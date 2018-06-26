@@ -45,6 +45,7 @@ public class ClunetDictionary {
         
         put(Clunet.ADDRESS_METEO, "Meteo");
         put(Clunet.ADDRESS_KITCHEN_LIGHT, "KitchenLight");
+        put(Clunet.ADDRESS_WATER_SYSTEM, "WaterSystem");
     }};
     
     private static final Map<Integer, String> COMMANDS = new LinkedHashMap(){{
@@ -113,6 +114,9 @@ public class ClunetDictionary {
         
         put(Clunet.COMMAND_HEATFLOOR, "Heatfloor");
         put(Clunet.COMMAND_HEATFLOOR_INFO, "HeatfloorInfo");
+        
+        put(Clunet.COMMAND_SERVO, "Servo");
+        put(Clunet.COMMAND_SERVO_INFO, "ServoInfo");
         
         put(Clunet.COMMAND_DEVICE_STATE, "DeviceState");
         put(Clunet.COMMAND_DEVICE_STATE_INFO, "DeviceStateInfo");
@@ -714,6 +718,11 @@ public class ClunetDictionary {
                     }
                 }
             break;
+            case Clunet.COMMAND_SERVO_INFO:
+                if (value.length == 2){
+                    int angle = ((value[1] & 0xFF) << 8) | (value[0] & 0xFF);
+                    return String.format("Угол поворота сервопривода: %d°", angle);
+                }
             case Clunet.COMMAND_VOLUME_INFO:
                 if (value.length == 2){
                     return String.format("Значение уровня громкости: %d %% (%d dB)", value[0], value[1]);

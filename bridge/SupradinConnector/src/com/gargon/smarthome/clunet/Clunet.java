@@ -170,6 +170,14 @@ public class Clunet {
     /* Сообщает о состоянии теплого пола */
     public final static int COMMAND_HEATFLOOR_INFO = 0x61;
     
+    
+    /* Команда управления сервоприводом */
+    public final static int COMMAND_SERVO = 0x66;
+    
+    /* Сообщает о состоянии сервопривода */
+    public final static int COMMAND_SERVO_INFO = 0x67;
+    
+    
      /* Команда управления состоянием произвольного устройства */
     public final static int COMMAND_DEVICE_STATE = 0x70;
 
@@ -219,6 +227,7 @@ public class Clunet {
     
     public final static int ADDRESS_METEO           = 0x81;
     public final static int ADDRESS_KITCHEN_LIGHT   = 0x82;
+    public final static int ADDRESS_WATER_SYSTEM    = 0x83;
     
     
      /**Отправляет сообщение по сети clunet:
