@@ -213,7 +213,7 @@ public class Clunet {
     public final static int ADDRESS_BROADCAST = 0xFF;
     
     
-    public final static int ADDRESS_AUDIOBOX        = 0x0A;
+    public final static int ADDRESS_AUDIOBOX        = 0x84;
     public final static int ADDRESS_AUDIOBATH       = 0x0B;
     
     public final static int ADDRESS_RELAY_1         = 0x14;

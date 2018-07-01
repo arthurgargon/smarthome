@@ -25,7 +25,7 @@ public class Commands {
     public static final int ROOM_AUDIOSOURCE_PC = 1;
     //public static final int ROOM_AUDIOSOURCE_PC = 2;
     public static final int ROOM_AUDIOSOURCE_BLUETOOTH = 3;
-    public static final int ROOM_AUDIOSOURCE_FM = 4;
+    public static final int ROOM_AUDIOSOURCE_FM = 2;
     
     public static final int BATHROOM_AUDIOSOURCE_PAD = 1;
     public static final int BATHROOM_AUDIOSOURCE_FM = 4;
