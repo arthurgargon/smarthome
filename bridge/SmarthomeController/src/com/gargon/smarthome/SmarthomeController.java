@@ -7,6 +7,7 @@ import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.SupradinDataListener;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import com.gargon.smarthome.trigger.TriggerController;
 import com.gargon.smarthome.utils.http.AskHTTPCallback;
 import com.gargon.smarthome.utils.http.AskHTTPHandler;
 import com.gargon.smarthome.utils.http.MainHTTPHandler;
@@ -17,6 +18,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
+import com.gargon.smarthome.config.JSONConfigReader;
 
 /**
  *
@@ -27,6 +30,8 @@ public class SmarthomeController {
     private static SupradinConnection supradinConnection;
     private static MulticastConnection multicastConnection;
     
+    private static TriggerController triggerController = null;
+    
     private static HttpServer httpServer = null;
 
     private static final Logger LOG = Logger.getLogger(SmarthomeController.class.getName());
@@ -36,20 +41,47 @@ public class SmarthomeController {
      */
     public static void main(String[] args) {
         int http_port = -1;
-        if (args.length == 2){
-            if ("-http".equals(args[0])){
-                try{
-                    http_port = Integer.parseInt(args[1]);
-                }catch(NumberFormatException e){
-                    LOG.log(Level.WARNING, "Incorrect HTTP port specified (\"{0}\"). Skip HTTP server initialization", args[1]);
-                }
+        String triggerControllerConfig = null;
+        
+        int i = 0;
+        while (i < args.length) {
+            switch (args[i]) {
+                case "-http":
+                    try {
+                        http_port = Integer.parseInt(args[++i]);
+                    } catch (Exception e) {
+                        LOG.log(Level.WARNING, "Incorrect HTTP port specified (\"{0}\"). Skip HTTP server initialization", args[1]);
+                    }
+                    break;
+                case "-c":
+                    try {
+                        triggerControllerConfig = args[++i];
+                    } catch (Exception e) {
+                        LOG.log(Level.WARNING, "TriggerController config required. Skip triggerController initialization", args[1]);
+                    }
+                    break;
             }
+
+            i++;
         }
         
         try {
             supradinConnection = new SupradinConnection();
             multicastConnection = new MulticastConnection();
 
+            if (triggerControllerConfig != null) {
+                try {
+
+                    JSONObject config = JSONConfigReader.read(triggerControllerConfig);
+                    if (config != null){
+                        triggerController = new TriggerController(config.optJSONArray("tasks"));
+                    }
+                } catch (Exception e) {
+                    LOG.log(Level.SEVERE, "Error while initializing TriggerController: " + e.getMessage(), e);
+                }
+            }
+            
+            
             supradinConnection.addDataListener(new SupradinDataListener() {
                 @Override
                 public void dataRecieved(SupradinConnection connection, SupradinDataMessage sm) {
@@ -58,6 +90,10 @@ public class SmarthomeController {
                     if (sm.getSrc() <= 0x80) {  //supradin addresses
                         multicastConnection.sendData(new MulticastDataMessage(sm.getDst(), sm.getSrc(), sm.getCommand(), sm.getData()));
                         //System.out.println("supradin recieved: " + sm.toString());
+                    }
+                    
+                    if (triggerController != null){
+                        triggerController.trigger(sm);
                     }
                 }
             });
