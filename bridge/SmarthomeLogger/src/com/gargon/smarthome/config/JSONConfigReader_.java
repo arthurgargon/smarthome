@@ -1,4 +1,4 @@
-package com.gargon.smarthome.logger;
+package com.gargon.smarthome.config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,7 +11,7 @@ import org.json.JSONObject;
  *
  * @author gargon
  */
-public class ConfigReader {
+public class JSONConfigReader_ {
 
     public static JSONObject read(String fileName) {
         String jsonData = "";
@@ -24,7 +24,7 @@ public class ConfigReader {
             }
             jsonData = jsonData.replaceAll("/\\*.*?\\*/", "");  //  /*blalba*/ comments replace
         } catch (IOException e) {
-            Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, "Read config file error", e);
+            Logger.getLogger(JSONConfigReader_.class.getName()).log(Level.SEVERE, "Read config file error", e);
             jsonData = null;
         } finally {
             try {
@@ -32,7 +32,7 @@ public class ConfigReader {
                     br.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, "Config file close error", ex);
+                Logger.getLogger(JSONConfigReader_.class.getName()).log(Level.SEVERE, "Config file close error", ex);
             }
         }
 
@@ -41,7 +41,7 @@ public class ConfigReader {
                 return new JSONObject(jsonData);
             }
         } catch (Exception e) {
-            Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, "JSON config file parse error", e);
+            Logger.getLogger(JSONConfigReader_.class.getName()).log(Level.SEVERE, "JSON config file parse error", e);
         }
         return null;
     }
