@@ -1,0 +1,3 @@
+#!/bin/bash
+
+wget --timeout=5 -qO- "http://192.168.1.130/t" &> /dev/null

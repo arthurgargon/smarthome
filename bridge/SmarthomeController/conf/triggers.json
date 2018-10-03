@@ -1,0 +1,21 @@
+{
+	tasks: [
+		{
+			/*src:	,*/
+			/*dst:	,*/
+			cmd:	0x75,
+			data:	"000072",
+			task:	"scripts/show_t"
+		},
+		{
+			cmd:	0x75,
+			data:	"0000B2",
+			task:	"scripts/show_p"
+		},
+		{
+			cmd:	0x75,
+			data:	"000032",
+			task:	"scripts/show_h"
+		}
+	]
+}
