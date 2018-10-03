@@ -2,7 +2,7 @@ package com.gargon.smarthome;
 
 import com.gargon.smarthome.clunet.ClunetDictionary;
 import com.gargon.smarthome.logger.LoggerController;
-import com.gargon.smarthome.logger.ConfigReader;
+import com.gargon.smarthome.config.JSONConfigReader_;
 import com.gargon.smarthome.logger.RealTimeSupradinDataMessage;
 import com.gargon.smarthome.logger.listeners.LoggerControllerMessageListener;
 import java.sql.Connection;
@@ -111,7 +111,7 @@ public class SmarthomeLogger {
         LOG.log(Level.INFO, "Application started");
         if (args.length == 1) {
             try {
-                JSONObject config = ConfigReader.read(args[0]); //config.json
+                JSONObject config = JSONConfigReader_.read(args[0]); //config.json
 
                 JSONObject db = config.getJSONObject("db");
                 DB_URL = db.optString("jdbc_url", DB_URL);
