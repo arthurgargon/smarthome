@@ -109,7 +109,7 @@ public class SmarthomeController {
                         }
                     }
 
-                    //отправляет в супрадин сообщение с IP адерсом отправителя из мультикаст-сети
+                    //отправляет в супрадин сообщение с IP адресом отправителя из мультикаст-сети
                     supradinConnection.sendData(new SupradinDataMessage(ip4, mm.getDst(), mm.getSrc(), mm.getCommand(), mm.getData()));
                     //System.out.println("multicast recieved: " + mm.toString());
 
