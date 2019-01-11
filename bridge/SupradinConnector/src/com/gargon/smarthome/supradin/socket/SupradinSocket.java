@@ -16,8 +16,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-/**Класс обеспечивает взаимодействие с модулем Supradin
- * посредством UDP соединения
+/**
+ * Класс обеспечивает взаимодействие с модулем Supradin посредством UDP
+ * соединения
  *
  * @author gargon
  */

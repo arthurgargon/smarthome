@@ -88,7 +88,10 @@ public class Clunet {
     
     /* Сообщает о состоянии нефиксируемой кнопки*/
     public final static int COMMAND_BUTTON_INFO = 0x23;
-
+    
+    /* Сообщает код набранный с помощью диска телефона*/
+    public final static int COMMAND_ROTARY_DIAL_NUMBER_INFO = 0x24;
+    
     /* Команда запроса текущей температуры*/
     public final static int COMMAND_TEMPERATURE = 0x25;
     
@@ -190,6 +193,7 @@ public class Clunet {
     /* Эмулирует нажтие кнопки на ПДУ */
     //public final static int CLUNET_COMMAND_RC_BUTTON_SEND = 0x76;
     
+    
      /* Команда блокирования*/
     public final static int COMMAND_ANDROID = 0xA0;
 
@@ -228,6 +232,7 @@ public class Clunet {
     public final static int ADDRESS_METEO           = 0x81;
     public final static int ADDRESS_KITCHEN_LIGHT   = 0x82;
     public final static int ADDRESS_WATER_SYSTEM    = 0x83;
+    public final static int ADDRESS_TELEPHONE       = 0x84;
     
     
      /**Отправляет сообщение по сети clunet:
