@@ -79,6 +79,7 @@ public class ClunetDictionary {
         put(Clunet.COMMAND_SWITCH_INFO, "SwitchInfo");
         put(Clunet.COMMAND_BUTTON, "Button");
         put(Clunet.COMMAND_BUTTON_INFO, "ButtonInfo");
+        put(Clunet.COMMAND_ROTARY_DIAL_NUMBER_INFO, "RotaryDialNumber");
         
         put(Clunet.COMMAND_TEMPERATURE, "Temperature");
         put(Clunet.COMMAND_TEMPERATURE_INFO, "TemperatureInfo");
@@ -491,6 +492,11 @@ public class ClunetDictionary {
                             buttonState = "???";
                     }
                     return String.format("Кнопка %d: %s", value[0], buttonState);
+                }
+                break;
+            case Clunet.COMMAND_ROTARY_DIAL_NUMBER_INFO:
+                if (value.length > 0){
+                    return String.format("Набран номер: %s", Arrays.toString(value));
                 }
                 break;
              case Clunet.COMMAND_TIME_INFO:
