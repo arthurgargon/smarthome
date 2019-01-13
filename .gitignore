@@ -4,6 +4,7 @@ nbproject
 build.xml
 *.mf
 
+nbasctions.xml
 target
 
 *.atsuo
