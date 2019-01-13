@@ -4,6 +4,8 @@ nbproject
 build.xml
 *.mf
 
+target
+
 *.atsuo
 datasheets
 Debug
@@ -63,8 +65,3 @@ Temporary Items
 .apdisk
 /devices/telephone/src/telephone/target/
 !/devices/telephone/src/telephone/src/main/java/com/gargon/smarthome/test/
-/MulticastConnector/target/
-/bridge/multicast-device/target/
-/bridge/smarthome/target/
-/devices/telephone/src/rotary-dial-driver/target/
-/devices/telephone/src/rotary-dial-telephone/target/
