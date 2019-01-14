@@ -170,7 +170,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         //load heatfloor programs
         try {
             Properties hfProp = new Properties();
-            InputStream stream = FMDictionary.class.getResourceAsStream("/com/gargon/smarthome/heatloor/resources/Programs.properties");
+            InputStream stream = FMDictionary.class.getResourceAsStream("/com/gargon/smarthome/heatfloor/resources/Programs.properties");
             hfProp.load(stream);
 
             Map<Integer, HeatfloorProgram> programList = new HashMap();
@@ -209,7 +209,7 @@ public class SupradinConsole extends javax.swing.JFrame {
 
             for (String channel : available_channels) {
                 hfProp = new Properties();
-                stream = FMDictionary.class.getResourceAsStream("/com/gargon/smarthome/heatloor/resources/" + channel + ".properties");
+                stream = FMDictionary.class.getResourceAsStream("/com/gargon/smarthome/heatfloor/resources/" + channel + ".properties");
                 hfProp.load(stream);
                 try {
                     int num = Integer.parseInt(hfProp.getProperty("channel", "-1"));
