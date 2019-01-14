@@ -39,4 +39,50 @@
         </dependency>
     </dependencies>
     
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>1.7.25</version>
+                <executions>
+                    <execution>
+                        <id>l4j-clui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <dontWrapJar>false</dontWrapJar>
+                            <headerType>gui</headerType>
+                            <jar>target/${project.build.finalName}.${project.packaging}</jar>
+                            <outfile>target/smarthome.exe</outfile>
+                            <downloadUrl>http://java.com/download</downloadUrl>
+                            <icon>release/resources/house_64.ico</icon>
+                            <jre>
+                                <bundledJre64Bit>false</bundledJre64Bit>
+                                <bundledJreAsFallback>false</bundledJreAsFallback>
+                                <minVersion>1.8.0</minVersion>
+                                <jdkPreference>preferJre</jdkPreference>
+                                <runtimeBits>64/32</runtimeBits>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>${product.version}</fileVersion>
+                                <txtFileVersion>${specification.version}</txtFileVersion>
+                                <fileDescription>${project.name}</fileDescription>
+                                <copyright>${implementation.vendor}</copyright>
+                                <productVersion>${product.version}</productVersion>
+                                <txtProductVersion>${specification.version}</txtProductVersion>
+                                <productName>${project.name}</productName>
+                                <companyName>${vendor.name}</companyName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>smarthome.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>
