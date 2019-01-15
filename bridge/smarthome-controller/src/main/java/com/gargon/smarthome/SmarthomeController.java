@@ -93,7 +93,7 @@ public class SmarthomeController {
                     }
                     
                     if (triggerController != null){
-                        triggerController.trigger(sm);
+                        triggerController.trigger(connection, sm);
                     }
                 }
             });
