@@ -39,14 +39,18 @@ public class TriggerController {
 
     public void trigger(SupradinConnection connection, SupradinDataMessage message) {
         for (final TriggerTask tt : tasks) {
-            if (tt.match(message)) {
+            List<String> match_groups;
+            if ((match_groups = tt.match(message))!=null) {
                     final String scriptCommand = tt.getCommand().getScriptCommand();
                     if (scriptCommand != null) {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
-                                    ProcessBuilder pb = new ProcessBuilder(scriptCommand);
+                                    List<String> command = new ArrayList();
+                                    command.add(scriptCommand);
+                                    command.addAll(match_groups);
+                                    ProcessBuilder pb = new ProcessBuilder(command);
                                     pb.start();
                                 } catch (IOException ex) {
                                     LOG.log(Level.SEVERE, "Error while executing task: \"{0}\": {1}",
@@ -56,14 +60,25 @@ public class TriggerController {
                         }).start();
                     } else {
                         TriggerMessage m = tt.getCommand().getMessageCommand();
-                        byte[] data = DataFormat.hexToByteArray(m.getData());
-                        
-                        if (data == null){
-                            data = new byte[]{};
+                        try {
+                            String data = m.getData();
+                            //FF/2/22AA ->  repace group_22, replace group_2
+                            for (int i = match_groups.size() - 1; i >= 0; i--) {
+                                data = data.replaceAll("/" + i, match_groups.get(i));
+                            }
+
+                            byte[] byte_array = DataFormat.hexToByteArray(data);
+
+                            if (byte_array == null) {
+                                byte_array = new byte[]{};
+                            }
+
+                            connection.sendData(new SupradinDataMessage(m.getDst_id(), Smarthome.PRIORITY_COMMAND,
+                                    m.getCmd_id(), byte_array));
+                        } catch (Exception e) {
+                            LOG.log(Level.WARNING, "Error while sending command \"{0}\": {1}",
+                                    new Object[]{m, e.getMessage()});
                         }
-                        
-                        connection.sendData(new SupradinDataMessage(m.getDst_id(), Smarthome.PRIORITY_COMMAND, 
-                            m.getCmd_id(), data));
                         
                     }
                 LOG.log(Level.INFO, "Triggered task: \"{0}\" for message: \"{1}\"", 
