@@ -497,7 +497,16 @@ public class SmarthomeDictionary {
                 break;
             case Smarthome.COMMAND_ROTARY_DIAL_NUMBER_INFO:
                 if (value.length > 0){
-                    return String.format("Набран номер: %s", Arrays.toString(value));
+                    switch (value[0]){
+                        case 0: 
+                            return "Начат набор номера";
+                        case 1:
+                            return String.format("Набран номер: %s", Arrays.toString(Arrays.copyOfRange(value, 1, value.length)));
+                        case 2:
+                            return String.format("Набираемый номер: %s", Arrays.toString(Arrays.copyOfRange(value, 1, value.length)));
+                        case 3:
+                            return "Набор номера прерван";
+                    }
                 }
                 break;
              case Smarthome.COMMAND_TIME_INFO:
