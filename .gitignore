@@ -16,6 +16,7 @@ help
 test
 
 Credentials.h
+config.json
 
 # temporary ignore android project commits
 monitor
