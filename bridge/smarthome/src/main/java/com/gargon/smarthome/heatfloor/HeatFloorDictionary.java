@@ -1,4 +1,4 @@
-package com.gargon.smarthome;
+package com.gargon.smarthome.heatfloor;
 
 import java.util.HashMap;
 import java.util.Map;

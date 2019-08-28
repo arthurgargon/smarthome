@@ -1,10 +1,9 @@
 package com.gargon.smarthome.utils;
 
 /**
- *
  * @author gargon
  */
-public class DataFormat {
+public class HexDataUtils {
 
     private static String byteArrayToHex(byte[] a) {
         if (a != null) {

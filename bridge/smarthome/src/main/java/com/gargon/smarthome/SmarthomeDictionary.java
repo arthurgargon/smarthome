@@ -1,12 +1,13 @@
 package com.gargon.smarthome;
 
-import com.gargon.smarthome.utils.DataFormat;
+import com.gargon.smarthome.enums.Command;
+import com.gargon.smarthome.fm.FMDictionary;
+import com.gargon.smarthome.utils.HexDataUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,147 +18,6 @@ import java.util.Map;
  */
 public class SmarthomeDictionary {
 
-    
-    private static final Map<Integer, String> PRIORITIES = new LinkedHashMap(){{
-        put(Smarthome.PRIORITY_NOTICE, "PRIORITY_NOTICE");
-        put(Smarthome.PRIORITY_INFO, "PRIORITY_INFO");
-        put(Smarthome.PRIORITY_MESSAGE, "PRIORITY_MESSAGE");
-        put(Smarthome.PRIORITY_COMMAND, "PRIORITY_COMMAND");
-    }};
-    
-    private static final Map<Integer, String> DEVICES = new LinkedHashMap(){{
-        put(Smarthome.ADDRESS_BROADCAST, "BROADCAST");
-        
-        put(Smarthome.ADDRESS_SUPRADIN, "Supradin");
-        
-        put(Smarthome.ADDRESS_AUDIOBOX, "AudioBox");
-        put(Smarthome.ADDRESS_AUDIOBATH, "AudioBath");
-        
-        put(Smarthome.ADDRESS_RELAY_1, "Relay_1");
-        put(Smarthome.ADDRESS_RELAY_2, "Relay_2");
-        
-        put(Smarthome.ADDRESS_SOCKET_DIMMER, "SocketDimmer");
-        
-        put(Smarthome.ADDRESS_KITCHEN, "Kitchen");
-        put(Smarthome.ADDRESS_BATH_SENSORS, "BathSensors");
-        put(Smarthome.ADDRESS_WARDROBE, "Wardrobe");
-        
-        put(Smarthome.ADDRESS_METEO, "Meteo");
-        put(Smarthome.ADDRESS_KITCHEN_LIGHT, "KitchenLight");
-        put(Smarthome.ADDRESS_WATER_SYSTEM, "WaterSystem");
-        
-        put(Smarthome.ADDRESS_TELEPHONE, "Telephone");
-    }};
-    
-    private static final Map<Integer, String> COMMANDS = new LinkedHashMap(){{
-        put(Smarthome.COMMAND_DISCOVERY, "Discovery");
-        put(Smarthome.COMMAND_DISCOVERY_RESPONSE, "DiscoveryResponse");
-        put(Smarthome.COMMAND_BOOT_CONTROL, "BootControl");
-        put(Smarthome.COMMAND_REBOOT, "Reboot");
-        put(Smarthome.COMMAND_BOOT_COMPLETED, "BootCompleted");
-        
-        put(Smarthome.COMMAND_TIME, "Time");
-        put(Smarthome.COMMAND_TIME_INFO, "TimeInfo");
-        
-        put(Smarthome.COMMAND_PING, "Ping");
-        put(Smarthome.COMMAND_PING_REPLY, "PingReply");
-        
-        put(Smarthome.COMMAND_CHANNEL, "Channel");
-        put(Smarthome.COMMAND_CHANNEL_INFO, "ChannelInfo");
-        
-        put(Smarthome.COMMAND_VOLUME, "Volume");
-        put(Smarthome.COMMAND_VOLUME_INFO, "VolumeInfo");
-        put(Smarthome.COMMAND_MUTE, "Mute");
-        put(Smarthome.COMMAND_EQUALIZER, "Equalizer");
-        put(Smarthome.COMMAND_EQUALIZER_INFO, "EqualizerInfo");
-        
-        put(Smarthome.COMMAND_FM, "FM");
-        put(Smarthome.COMMAND_FM_INFO, "FMInfo");
-        
-        put(Smarthome.COMMAND_POWER, "Power");
-        put(Smarthome.COMMAND_POWER_INFO, "PowerInfo");
-        put(Smarthome.COMMAND_SWITCH, "Switch");
-        put(Smarthome.COMMAND_SWITCH_INFO, "SwitchInfo");
-        put(Smarthome.COMMAND_BUTTON, "Button");
-        put(Smarthome.COMMAND_BUTTON_INFO, "ButtonInfo");
-        put(Smarthome.COMMAND_ROTARY_DIAL_NUMBER_INFO, "RotaryDialNumber");
-        
-        put(Smarthome.COMMAND_TEMPERATURE, "Temperature");
-        put(Smarthome.COMMAND_TEMPERATURE_INFO, "TemperatureInfo");
-        put(Smarthome.COMMAND_HUMIDITY, "Humidity");
-        put(Smarthome.COMMAND_HUMIDITY_INFO, "HumidityInfo");
-        put(Smarthome.COMMAND_PRESSURE, "Pressure");
-        put(Smarthome.COMMAND_PRESSURE_INFO, "PressureInfo");
-        put(Smarthome.COMMAND_METEO, "Meteo");
-        put(Smarthome.COMMAND_METEO_INFO, "MeteoInfo");
-        
-        put(Smarthome.COMMAND_ONEWIRE_SEARCH, "OneWireSearch");
-        put(Smarthome.COMMAND_ONEWIRE_INFO, "OneWireInfo");
-        put(Smarthome.COMMAND_VOLTAGE, "Voltage");
-        put(Smarthome.COMMAND_VOLTAGE_INFO, "VoltageInfo");
-        
-        put(Smarthome.COMMAND_MOTION, "Motion");
-        put(Smarthome.COMMAND_MOTION_INFO, "MotionInfo");
-        
-        put(Smarthome.COMMAND_LIGHT_LEVEL, "LightLevel");
-        put(Smarthome.COMMAND_LIGHT_LEVEL_INFO, "LightLevelInfo");
-        
-        put(Smarthome.COMMAND_FAN, "Fan");
-        put(Smarthome.COMMAND_FAN_INFO, "FanInfo");
-        
-        put(Smarthome.COMMAND_CHARGE, "Charge");
-        put(Smarthome.COMMAND_CHARGE_INFO, "ChargeInfo");
-        
-        put(Smarthome.COMMAND_DOORS, "Doors");
-        put(Smarthome.COMMAND_DOORS_INFO, "DoorsInfo");
-        
-        put(Smarthome.COMMAND_DIMMER, "Dimmer");
-        put(Smarthome.COMMAND_DIMMER_INFO, "DimmerInfo");
-        
-        put(Smarthome.COMMAND_HEATFLOOR, "Heatfloor");
-        put(Smarthome.COMMAND_HEATFLOOR_INFO, "HeatfloorInfo");
-        
-        put(Smarthome.COMMAND_SERVO, "Servo");
-        put(Smarthome.COMMAND_SERVO_INFO, "ServoInfo");
-        
-        put(Smarthome.COMMAND_DEVICE_STATE, "DeviceState");
-        put(Smarthome.COMMAND_DEVICE_STATE_INFO, "DeviceStateInfo");
-        
-        put(Smarthome.COMMAND_RC_BUTTON_PRESSED, "RCButtonPressed");
-        
-        put(Smarthome.COMMAND_ANDROID, "Android");
-        put(Smarthome.COMMAND_DEBUG, "Debug");
-    }};
-    
-    public static Map<Integer, String> getPrioritiesList(){
-        return new LinkedHashMap(PRIORITIES);
-    }
-    
-    public static Map<Integer, String> getDevicesList(){
-        return new LinkedHashMap(DEVICES);
-    }
-    
-    public static Map<Integer, String> getCommandsList(){
-        return new LinkedHashMap(COMMANDS);
-    }
-    
-    
-    
-    public static String getPriorityById(int id){
-        return PRIORITIES.get(id);
-    }
-    
-    public static String getDeviceById(int id){
-        return DEVICES.get(id);
-    }
-    
-    public static String getCommandById(int id){
-        return COMMANDS.get(id);
-    }
-    
-    
-    
-    
     //response decoders
     
     private static Float ds18b20Temperature(byte[] value, int startIndex) {
@@ -172,7 +32,7 @@ public class SmarthomeDictionary {
     
     public static Map<String, Float> temperatureInfo(byte[] value) {
         try {
-            Map<String, Float> r = new HashMap();
+            Map<String, Float> r = new HashMap<>();
             if (value.length > 0) {
                 int num = value[0] & 0xFF;
                 int pos = 1;
@@ -182,7 +42,7 @@ public class SmarthomeDictionary {
                     Float temperatureValue = null;
                     switch (type) {
                         case 0: //1-wire
-                            sensorId = DataFormat.bytesToHex(Arrays.copyOfRange(value, pos, pos + 8));
+                            sensorId = HexDataUtils.bytesToHex(Arrays.copyOfRange(value, pos, pos + 8));
                             //temperatureValue = (short) (((value[pos + 9] & 0xFF) << 8) | (value[pos + 8] & 0xFF)) * .0625f;
                             //temperatureValue = (((value[pos + 9] & 0xFF) << 8) | (value[pos + 8] & 0xFF)) / 10f;
                             temperatureValue = ds18b20Temperature(value, pos + 8);
@@ -220,10 +80,10 @@ public class SmarthomeDictionary {
     
     public static List<String> oneWireInfo(byte[] value) {
         try {
-            List<String> r = new ArrayList();
+            List<String> r = new ArrayList<>();
             if (value.length > 0) {
                 for (int i = 0; i < value.length; i+=8) {
-                    r.add(DataFormat.bytesToHex(Arrays.copyOfRange(value, i, i + 8)));
+                    r.add(HexDataUtils.bytesToHex(Arrays.copyOfRange(value, i, i + 8)));
                 }
             }
             return r;
@@ -238,7 +98,7 @@ public class SmarthomeDictionary {
             Map<String, Integer> r = null;
             if (value.length > 0 
                     && value[0] >=0 && value[0]<8) {
-                r = new HashMap();
+                r = new HashMap<>();
                 int cnt = value[0];
                 if (value.length == cnt * 6 + 1) {
                     for (int i = 0; i < cnt; i++) {
@@ -448,17 +308,17 @@ public class SmarthomeDictionary {
         return null;
     }
     
-    public static String toString(int commandId, byte[] value) {
-        switch (commandId) {
-            case Smarthome.COMMAND_DISCOVERY_RESPONSE:
+    public static String toString(Command command, byte[] value) {
+        switch (command) {
+            case DISCOVERY_RESPONSE:
                 return String.format("Обнаружено устройство: %s", new String(value));
-            case Smarthome.COMMAND_BOOT_COMPLETED:
+            case BOOT_COMPLETED:
                 return String.format("Устройство перезагружено");
-            case Smarthome.COMMAND_POWER_INFO:
+            case POWER_INFO:
                 if (value.length == 1){
                     return String.format("Устройство %s", value[0] == 1 ? "включено" : "отключено");
                 }
-            case Smarthome.COMMAND_SWITCH_INFO:
+            case SWITCH_INFO:
                 if (value.length == 1){
                     if (value[0] == 0){
                         return "Отключены все выключатели";
@@ -473,7 +333,7 @@ public class SmarthomeDictionary {
                     }
                 }
                 break;
-            case Smarthome.COMMAND_BUTTON_INFO:
+            case BUTTON_INFO:
                 if (value.length == 2){
                     String buttonState;
                     switch (value[1]){
@@ -495,7 +355,7 @@ public class SmarthomeDictionary {
                     return String.format("Кнопка %d: %s", value[0], buttonState);
                 }
                 break;
-            case Smarthome.COMMAND_ROTARY_DIAL_NUMBER_INFO:
+            case ROTARY_DIAL_NUMBER_INFO:
                 if (value.length > 0){
                     switch (value[0]){
                         case 0: 
@@ -509,12 +369,12 @@ public class SmarthomeDictionary {
                     }
                 }
                 break;
-             case Smarthome.COMMAND_TIME_INFO:
+             case TIME_INFO:
                 if (value.length == 7){
                     return String.format("Текущая дата: %02d-%02d-%04d %02d:%02d:%02d, %d день недели", value[2], value[1], value[0]+2000, value[3], value[4], value[5], value[6]);
                 }
                 break;
-            case Smarthome.COMMAND_TEMPERATURE_INFO:
+            case TEMPERATURE_INFO:
                 String response = "";
                 Map<String, Float> t = temperatureInfo(value);
                 if (t != null){
@@ -523,7 +383,7 @@ public class SmarthomeDictionary {
                     }
                 }
                 return response;
-            case Smarthome.COMMAND_ONEWIRE_INFO:
+            case ONEWIRE_INFO:
                 response = "";
                 List<String> ow = oneWireInfo(value);
                 if (ow != null) {
@@ -532,19 +392,19 @@ public class SmarthomeDictionary {
                     }
                 }
                 return response;
-            case Smarthome.COMMAND_HUMIDITY_INFO:
+            case HUMIDITY_INFO:
                 Float h = humidityInfo(value);
                 if (h != null){
                     return String.format(Locale.ROOT, "%.1f%%", h);
                 }
                 break;
-            case Smarthome.COMMAND_PRESSURE_INFO:
+            case PRESSURE_INFO:
                 Float p = pressureInfo(value);
                 if (p != null){
                     return String.format(Locale.ROOT, "%.3f мм рт.ст.", p);
                 }
                 break;
-            case Smarthome.COMMAND_METEO_INFO:
+            case METEO_INFO:
                 Float[] meteo = meteoInfo(value);
                 if (meteo != null){
                     String meteo_s = "";
@@ -569,30 +429,30 @@ public class SmarthomeDictionary {
                     return meteo_s;
                 }
                 break;
-            case Smarthome.COMMAND_VOLTAGE_INFO:
+            case VOLTAGE_INFO:
                 Float v = voltageInfo(value);
                 if (v != null){
                     return String.format(Locale.ROOT, "%.2f В", v);
                 }
                 break;
-            case Smarthome.COMMAND_MOTION_INFO:
+            case MOTION_INFO:
                 if (value.length == 2) {
                     response = value[0] == 1 ? "Обнаружено движение" : "Движение отсутствует";
                     response += " (локация " + value[1] + ")";
                     return response;
                 }
                 break;
-            case Smarthome.COMMAND_DOORS_INFO:       
+            case DOORS_INFO:
                 if (value.length == 1) {
                     return value[0] > 0 ? "Дверь открыта" : "Дверь закрыта";
                 }
                 break;
-            case Smarthome.COMMAND_DEVICE_STATE_INFO:       
+            case DEVICE_STATE_INFO:
                 if (value.length == 2) {
                     return String.format("Устройство %d: %s", value[0], value[1] == 1 ? "включено" : "отключено");
                 }
                 break;
-            case Smarthome.COMMAND_LIGHT_LEVEL_INFO:
+            case LIGHT_LEVEL_INFO:
                 int[] ll = lightLevelInfo(value);
                 if (ll != null) {
                     if (ll[0] == 0 || ll[0] == 1){
@@ -604,7 +464,7 @@ public class SmarthomeDictionary {
                 }
                 break;
                 
-            case Smarthome.COMMAND_CHARGE_INFO:
+            case CHARGE_INFO:
                 if (value.length == 1) {
                     if (value[0] == 0x00) {
                         return "Зарядное устройство отключено";
@@ -617,7 +477,7 @@ public class SmarthomeDictionary {
                 }
                 break;
                 
-            case Smarthome.COMMAND_HEATFLOOR_INFO:
+            case HEATFLOOR_INFO:
                 if (value.length > 0) {
                     response = "";
                     switch (value[0] & 0xFF) {
@@ -702,7 +562,7 @@ public class SmarthomeDictionary {
                     return response;
                 }
                 break;
-            case Smarthome.COMMAND_FAN_INFO:
+            case FAN_INFO:
                 if (value.length > 1){
                     String mode = null;
                     switch (value[0]){
@@ -734,27 +594,27 @@ public class SmarthomeDictionary {
                     }
                 }
             break;
-            case Smarthome.COMMAND_SERVO_INFO:
+            case SERVO_INFO:
                 if (value.length == 2){
                     int angle = ((value[1] & 0xFF) << 8) | (value[0] & 0xFF);
                     return String.format("Угол поворота сервопривода: %d°", angle);
                 }
-            case Smarthome.COMMAND_VOLUME_INFO:
+            case VOLUME_INFO:
                 if (value.length == 2){
                     return String.format("Значение уровня громкости: %d %% (%d dB)", value[0], value[1]);
                 }
             break;
-            case Smarthome.COMMAND_CHANNEL_INFO:
+            case CHANNEL_INFO:
                 if (value.length == 1){
                     return String.format("Текущий канал: %d", value[0]);
                 }
             break;
-            case Smarthome.COMMAND_EQUALIZER_INFO:
+            case EQUALIZER_INFO:
                 if (value.length == 3){
                     return String.format("Эквалайзер: gain: %d dB; treble: %d dB; bass: %d dB; ", value[0], value[1], value[2]);
                 }
             break;
-            case Smarthome.COMMAND_FM_INFO:
+            case FM_INFO:
                 return fmInfo(value);
         }
         return null;
