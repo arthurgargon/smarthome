@@ -1,10 +1,13 @@
 package com.gargon.smarthome.clunet;
 
-import com.gargon.smarthome.Smarthome;
-import java.util.List;
+import com.gargon.smarthome.enums.Address;
+import com.gargon.smarthome.enums.Command;
+import com.gargon.smarthome.enums.Priority;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+
+import java.util.List;
 
 /**
  *
@@ -23,7 +26,7 @@ public class Clunet {
       * @param data данные для отправки, не может быть null
       * @return true в случае успешной отправки сообщения
      */
-    public static boolean send(SupradinConnection conn, final int address, final int priority, final int command, final byte[] data) {
+    public static boolean send(SupradinConnection conn, final Address address, final Priority priority, final Command command, final byte[] data) {
         if (conn != null) {
             return conn.sendData(new SupradinDataMessage(address, priority, command, data));
         }
@@ -38,7 +41,7 @@ public class Clunet {
       * @param command команда для отправки
       * @return true в случае успешной отправки сообщения
      */
-    public static boolean send(SupradinConnection conn, final int address, final int priority, final int command) {
+    public static boolean send(SupradinConnection conn, final Address address, final Priority priority, final Command command) {
         if (conn != null) {
             return conn.sendData(new SupradinDataMessage(address, priority, command));
         }
@@ -74,7 +77,8 @@ public class Clunet {
      * @param numAttempts количество попыток отправки сообщений
      * @return 
      */
-    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final int address, final int priority, final int command, final byte[] data,
+    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final Address address, final Priority priority,
+                                                      final Command command, final byte[] data,
             SupradinConnectionResponseFilter responseFilter, int resonseTimeout, int numAttempts) {
         SupradinDataMessage r = null;
         if (conn != null) {
@@ -85,7 +89,7 @@ public class Clunet {
         return r;
     }
     
-    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final int address, final int priority, final int command,
+    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final Address address, final Priority priority, final Command command,
             SupradinConnectionResponseFilter responseFilter, int resonseTimeout, int numAttempts) {
         SupradinDataMessage r = null;
         if (conn != null) {
@@ -97,12 +101,13 @@ public class Clunet {
     }
     
     
-    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final int address, final int priority, final int command, final byte[] data,
+    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final Address address, final Priority priority,
+                                                      final Command command, final byte[] data,
             SupradinConnectionResponseFilter responseFilter, int resonseTimeout) {
         return sendResponsible(conn, address, priority, command, data, responseFilter, resonseTimeout, 1);
     }
     
-    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final int address, final int priority, final int command,
+    public static SupradinDataMessage sendResponsible(SupradinConnection conn, final Address address, final Priority priority, final Command command,
             SupradinConnectionResponseFilter responseFilter, int responseTimeout) {
         return sendResponsible(conn, address, priority, command, responseFilter, responseTimeout, 1);
     }
@@ -112,36 +117,36 @@ public class Clunet {
     
     public static List<SupradinDataMessage> sendDiscovery(SupradinConnection conn, final int timeout) {
         if (conn != null) {
-            return conn.sendDataAndWaitResponses(new SupradinDataMessage(Smarthome.ADDRESS_BROADCAST, Smarthome.PRIORITY_MESSAGE, Smarthome.COMMAND_DISCOVERY),
+            return conn.sendDataAndWaitResponses(new SupradinDataMessage(Address.BROADCAST, Priority.MESSAGE, Command.DISCOVERY),
                     new SupradinConnectionResponseFilter() {
 
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
-                            return supradinRecieved.getCommand() == Smarthome.COMMAND_DISCOVERY_RESPONSE;
+                            return supradinRecieved.getCommand() == Command.DISCOVERY_RESPONSE;
                         }
                     }, -1, timeout);
         }
         return null;
     }
 
-    public static SupradinDataMessage sendPing(SupradinConnection conn, final int address, byte[] data, final int timeout) {
-        return sendResponsible(conn, address, Smarthome.PRIORITY_MESSAGE, Smarthome.COMMAND_PING, data, new SupradinConnectionResponseFilter() {
+    public static SupradinDataMessage sendPing(SupradinConnection conn, final Address address, byte[] data, final int timeout) {
+        return sendResponsible(conn, address, Priority.MESSAGE, Command.PING, data, new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
-                return supradinRecieved.getCommand() == Smarthome.COMMAND_PING_REPLY
+                return supradinRecieved.getCommand() == Command.PING_REPLY
                         && supradinRecieved.getSrc() == address
-                        && supradinRecieved.getDst() == Smarthome.ADDRESS_SUPRADIN;
+                        && supradinRecieved.getDst() == Address.SUPRADIN;
             }
         }, timeout);
     }
     
-    public static SupradinDataMessage sendReboot(SupradinConnection conn, final int address, final int bootTimeout) {
-        return sendResponsible(conn, address, Smarthome.PRIORITY_MESSAGE, Smarthome.COMMAND_PING, new SupradinConnectionResponseFilter() {
+    public static SupradinDataMessage sendReboot(SupradinConnection conn, final Address address, final int bootTimeout) {
+        return sendResponsible(conn, address, Priority.MESSAGE, Command.PING, new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
-                return supradinRecieved.getCommand() == Smarthome.COMMAND_BOOT_COMPLETED
+                return supradinRecieved.getCommand() == Command.BOOT_COMPLETED
                         && supradinRecieved.getSrc() == address;
             }
         }, bootTimeout);

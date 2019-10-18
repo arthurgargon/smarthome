@@ -1,7 +1,10 @@
 package com.gargon.smarthome.supradin.messages;
 
-import com.gargon.smarthome.Smarthome;
-import com.gargon.smarthome.utils.DataFormat;
+import com.gargon.smarthome.enums.Address;
+import com.gargon.smarthome.enums.Command;
+import com.gargon.smarthome.enums.Priority;
+import com.gargon.smarthome.utils.HexDataUtils;
+
 import java.util.Arrays;
 
 /**
@@ -47,23 +50,23 @@ public class SupradinDataMessage {
         }
     }
 
-     public SupradinDataMessage(int ip, int dst, int src_prio, int command, byte[] data) {
+     public SupradinDataMessage(int ip, Address dst, Priority src_prio, Command command, byte[] data) {
         if (data != null) {
             this.ip = ip;
-            this.src = src_prio;
-            this.dst = dst;
-            this.command = command;
+            this.src = src_prio.getValue();
+            this.dst = dst.getValue();
+            this.command = command.getValue();
 
             this.size = data.length;
             this.data = data;
         }
     }
     
-    public SupradinDataMessage(int dst, int src_prio, int command, byte[] data) {
+    public SupradinDataMessage(Address dst, Priority src_prio, Command command, byte[] data) {
         this(0, dst, src_prio, command, data);
     }
     
-     public SupradinDataMessage(int dst, int src_prio, int command) {
+     public SupradinDataMessage(Address dst, Priority src_prio, Command command) {
          this(dst, src_prio, command, new byte[]{});
     }
 
@@ -91,16 +94,17 @@ public class SupradinDataMessage {
         return array;
     }
 
-    public int getSrc() {
-        return src;
+    public Address getSrc() {
+        return Address.getByValue(src);
     }
 
-    public int getDst() {
-        return dst;
+    public Address getDst() {
+        return Address.getByValue(dst);
     }
 
-    public int getCommand() {
-        return command;
+    public Command getCommand() {
+
+        return Command.getByValue(command);
     }
 
     public int getIp() {
@@ -113,7 +117,7 @@ public class SupradinDataMessage {
     
     public boolean isIpValid() {
         return ip != 0
-                && (src == Smarthome.ADDRESS_SUPRADIN || src > 0x80);
+                && (src == Address.SUPRADIN.getValue() || src > 0x80);
     }
     
     public String getIpAsString() {
@@ -172,6 +176,6 @@ public class SupradinDataMessage {
     
     @Override
     public String toString() {
-        return "ip=" + getIpAsString() + ", src=" + src + ", dst=" + dst + ", command=" + command + ", data=" + DataFormat.bytesToHex(data);
+        return "ip=" + getIpAsString() + ", src=" + getSrc() + ", dst=" + getDst() + ", command=" + getCommand() + ", data=" + HexDataUtils.bytesToHex(data);
     }
 }

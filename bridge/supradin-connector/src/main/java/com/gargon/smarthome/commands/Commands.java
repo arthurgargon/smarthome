@@ -1,15 +1,17 @@
 package com.gargon.smarthome.commands;
 
-
-import com.gargon.smarthome.FMDictionary;
-import com.gargon.smarthome.HeatFloorDictionary;
-import com.gargon.smarthome.HeatfloorProgram;
-import com.gargon.smarthome.Smarthome;
 import com.gargon.smarthome.SmarthomeDictionary;
 import com.gargon.smarthome.clunet.Clunet;
+import com.gargon.smarthome.enums.Address;
+import com.gargon.smarthome.enums.Command;
+import com.gargon.smarthome.enums.Priority;
+import com.gargon.smarthome.fm.FMDictionary;
+import com.gargon.smarthome.heatfloor.HeatFloorDictionary;
+import com.gargon.smarthome.heatfloor.HeatfloorProgram;
 import com.gargon.smarthome.supradin.SupradinConnection;
 import com.gargon.smarthome.supradin.SupradinConnectionResponseFilter;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+
 import java.util.Map;
 
 /**
@@ -72,16 +74,16 @@ public class Commands {
      */
     public static boolean toggleLightInCloackroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) 2, RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_1
+                                && supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1;
                     }
                 }, RELAY_1_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
@@ -97,16 +99,16 @@ public class Commands {
      */
     public static boolean switchLightInCloackroom(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) (on ? 1 : 0), RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_1
+                                && supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1
                                 && ((supradinRecieved.getData()[0] >> (RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
@@ -123,8 +125,8 @@ public class Commands {
      */
     public static Boolean checkLightInCloackroomSwitchedOn(SupradinDataMessage message){
         if (message != null){
-            if (message.getSrc() == Smarthome.ADDRESS_RELAY_1
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.RELAY_1
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1){
                 return ((message.getData()[0] >> (RELAY_1_LIGHT_CLOACKROOM_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -142,8 +144,8 @@ public class Commands {
      */
     public static Boolean checkLightInKitchenSwitchedOn(SupradinDataMessage message){
         if (message != null){
-            if (message.getSrc() == Smarthome.ADDRESS_KITCHEN_LIGHT
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.KITCHEN_LIGHT
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1){
                 return ((message.getData()[0] >> (KITCHEN_LIGHT_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -161,8 +163,8 @@ public class Commands {
      */
     public static Boolean checkLightInSocketSwitchedOn(SupradinDataMessage message){
         if (message != null){
-            if (message.getSrc() == Smarthome.ADDRESS_SOCKET_DIMMER
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.SOCKET_DIMMER
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1){
                 return ((message.getData()[0] >> (SOCKET_DIMMER_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -183,15 +185,15 @@ public class Commands {
      */
     public static Boolean isLightInCloackroomSwitchedOn(SupradinConnection connection) {
         return checkLightInCloackroomSwitchedOn(Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte)0xFF},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1;
                     }
                 }, RELAY_1_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
@@ -206,16 +208,16 @@ public class Commands {
      */
     public static boolean switchHeatingFloorInKitchen(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) (on ? 1 : 0), RELAY_1_FLOOR_KITCHEN_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_1
+                                && supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1
                                 && ((supradinRecieved.getData()[0] >> (RELAY_1_FLOOR_KITCHEN_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
@@ -231,16 +233,16 @@ public class Commands {
      */
     public static boolean switchHeatingFloorInBathroom(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) (on ? 1 : 0), RELAY_1_FLOOR_BATHROOM_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_1
+                                && supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1
                                 && ((supradinRecieved.getData()[0] >> (RELAY_1_FLOOR_BATHROOM_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
@@ -259,16 +261,16 @@ public class Commands {
     public static boolean selectFanModeInBathroom(SupradinConnection connection, boolean auto_mode) {
         final byte mode = (byte)(auto_mode ? 1 : 0);
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_2,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_FAN,
+                Address.RELAY_2,
+                Priority.COMMAND,
+                Command.FAN,
                 new byte[]{mode},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_2
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_FAN_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_2
+                                && supradinRecieved.getCommand() == Command.FAN_INFO
                                 && supradinRecieved.getData().length == 9
                                 && supradinRecieved.getData()[0] == mode;
                     }
@@ -283,16 +285,16 @@ public class Commands {
      */
     public static boolean toggleFanInBathroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_2,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_FAN,
+                Address.RELAY_2,
+                Priority.COMMAND,
+                Command.FAN,
                 new byte[]{(byte) 2},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_2
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_FAN_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_2
+                                && supradinRecieved.getCommand() == Command.FAN_INFO
                                 && supradinRecieved.getData().length == 9;
                     }
                 }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
@@ -306,16 +308,16 @@ public class Commands {
      */
     public static boolean toggleFanInKitchen(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_KITCHEN,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.KITCHEN,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) 2, KITCHEN_FAN_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_KITCHEN
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.KITCHEN
+                                && supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1;
                     }
                 }, KITCHEN_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
@@ -330,16 +332,16 @@ public class Commands {
      */
     public static boolean switchFanInKitchen(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_KITCHEN,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.KITCHEN,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) (on ? 1 : 0), KITCHEN_FAN_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_KITCHEN
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.KITCHEN
+                        && supradinRecieved.getCommand() == Command.SWITCH_INFO
                         && supradinRecieved.getData().length == 1
                         && ((supradinRecieved.getData()[0] >> (KITCHEN_FAN_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
@@ -357,8 +359,8 @@ public class Commands {
      */
     public static Boolean checkFanInKitchenSwitchedOn(SupradinDataMessage message) {
         if (message != null) {
-            if (message.getSrc() == Smarthome.ADDRESS_KITCHEN
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.KITCHEN
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1) {
                 return ((message.getData()[0] >> (KITCHEN_FAN_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -377,8 +379,8 @@ public class Commands {
      */
     public static Boolean checkFanInBathroomSwitchedOn(SupradinDataMessage message) {
         if (message != null) {
-            if (message.getSrc() == Smarthome.ADDRESS_RELAY_2
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.RELAY_2
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1) {
                 return ((message.getData()[0] >> (RELAY_2_FAN_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -399,15 +401,15 @@ public class Commands {
     public static Boolean isFanInBathroomSwitchedOn(SupradinConnection connection) {
         return checkFanInBathroomSwitchedOn(
                 Clunet.sendResponsible(connection,
-                        Smarthome.ADDRESS_RELAY_2,
-                        Smarthome.PRIORITY_COMMAND,
-                        Smarthome.COMMAND_SWITCH,
+                        Address.RELAY_2,
+                        Priority.COMMAND,
+                        Command.SWITCH,
                         new byte[]{(byte) 0xFF},
                         new SupradinConnectionResponseFilter() {
 
                             @Override
                             public boolean filter(SupradinDataMessage supradinRecieved) {
-                                return supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                                return supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1;
                             }
                         }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
@@ -422,16 +424,16 @@ public class Commands {
      */
     public static boolean toggleLightInBathroom(SupradinConnection connection) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_2,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_2,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) 2, RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_2
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_2
+                        && supradinRecieved.getCommand() == Command.SWITCH_INFO
                         && supradinRecieved.getData().length == 1;
                     }
                 }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
@@ -446,16 +448,16 @@ public class Commands {
      */
     public static boolean switchLightInBathroom(SupradinConnection connection, final boolean on) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_2,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_SWITCH,
+                Address.RELAY_2,
+                Priority.COMMAND,
+                Command.SWITCH,
                 new byte[]{(byte) (on ? 1 : 0), RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_2
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                        return supradinRecieved.getSrc() == Address.RELAY_2
+                        && supradinRecieved.getCommand() == Command.SWITCH_INFO
                         && supradinRecieved.getData().length == 1
                         && ((supradinRecieved.getData()[0] >> (RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID - 1)) & 1) == (on ? 1 : 0);
                     }
@@ -472,8 +474,8 @@ public class Commands {
      */
     public static Boolean checkLightInBathroomSwitchedOn(SupradinDataMessage message) {
         if (message != null) {
-            if (message.getSrc() == Smarthome.ADDRESS_RELAY_2
-                    && message.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+            if (message.getSrc() == Address.RELAY_2
+                    && message.getCommand() == Command.SWITCH_INFO
                     && message.getData().length == 1) {
                 return ((message.getData()[0] >> (RELAY_2_LIGHT_MIRRORED_BOX_SWITCH_ID - 1)) & 1) == 1;
             }
@@ -495,15 +497,15 @@ public class Commands {
     public static Boolean isLightInBathroomSwitchedOn(SupradinConnection connection) {
         return checkFanInBathroomSwitchedOn(
                 Clunet.sendResponsible(connection,
-                        Smarthome.ADDRESS_RELAY_2,
-                        Smarthome.PRIORITY_COMMAND,
-                        Smarthome.COMMAND_SWITCH,
+                        Address.RELAY_2,
+                        Priority.COMMAND,
+                        Command.SWITCH,
                         new byte[]{(byte) 0xFF},
                         new SupradinConnectionResponseFilter() {
 
                             @Override
                             public boolean filter(SupradinDataMessage supradinRecieved) {
-                                return supradinRecieved.getCommand() == Smarthome.COMMAND_SWITCH_INFO
+                                return supradinRecieved.getCommand() == Command.SWITCH_INFO
                                 && supradinRecieved.getData().length == 1;
                             }
                         }, RELAY_2_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
@@ -517,18 +519,18 @@ public class Commands {
      * @param source идентификатор источника сигнала
      * @return возвращает true, если команда успешно выполнена
      */
-    private static boolean selectSourceOfSound(SupradinConnection connection, final int address, final int source) {
+    private static boolean selectSourceOfSound(SupradinConnection connection, final Address address, final int source) {
         return Clunet.sendResponsible(connection,
                 address,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_CHANNEL,
+                Priority.COMMAND,
+                Command.CHANNEL,
                 new byte[]{0x00, (byte)source},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
                         return supradinRecieved.getSrc() == address
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_CHANNEL_INFO
+                                && supradinRecieved.getCommand() == Command.CHANNEL_INFO
                                 && supradinRecieved.getData().length == 1
                                 && supradinRecieved.getData()[0] == source;
                     }
@@ -544,7 +546,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean selectSourceOfSoundInRoom(SupradinConnection connection, final int source) {
-       return selectSourceOfSound(connection, Smarthome.ADDRESS_AUDIOBOX, source);
+       return selectSourceOfSound(connection, Address.AUDIOBOX, source);
     }
     
      /**
@@ -555,7 +557,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean selectSourceOfSoundInBathroom(SupradinConnection connection, final int source) {
-       return selectSourceOfSound(connection, Smarthome.ADDRESS_AUDIOBATH, source);
+       return selectSourceOfSound(connection, Address.AUDIOBATH, source);
     }
 
     /**
@@ -567,8 +569,8 @@ public class Commands {
      */
     public static Integer getSelectedSourceOfSoundInRoom(SupradinDataMessage message){
         if (message != null){
-            if (message.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                    && message.getCommand() == Smarthome.COMMAND_CHANNEL_INFO
+            if (message.getSrc() == Address.AUDIOBOX
+                    && message.getCommand() == Command.CHANNEL_INFO
                     && message.getData().length == 1){
                 return (int)message.getData()[0];
             }
@@ -585,8 +587,8 @@ public class Commands {
      */
     public static Integer getSelectedSourceOfSoundInBathRoom(SupradinDataMessage message){
         if (message != null){
-            if (message.getSrc() == Smarthome.ADDRESS_AUDIOBATH
-                    && message.getCommand() == Smarthome.COMMAND_CHANNEL_INFO
+            if (message.getSrc() == Address.AUDIOBATH
+                    && message.getCommand() == Command.CHANNEL_INFO
                     && message.getData().length == 1){
                 return (int)message.getData()[0];
             }
@@ -605,16 +607,16 @@ public class Commands {
      */
     public static Integer getSelectedSourceOfSoundInRoom(SupradinConnection connection) {
         SupradinDataMessage response = Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBOX,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_CHANNEL,
+                Address.AUDIOBOX,
+                Priority.COMMAND,
+                Command.CHANNEL,
                 new byte[]{(byte)0xFF},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_CHANNEL_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBOX
+                                && supradinRecieved.getCommand() == Command.CHANNEL_INFO
                                 && supradinRecieved.getData().length == 1;
                     }
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE);
@@ -634,16 +636,16 @@ public class Commands {
      */
     public static Integer getSelectedSourceOfSoundInBathRoom(SupradinConnection connection) {
         SupradinDataMessage response = Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBATH,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_CHANNEL,
+                Address.AUDIOBATH,
+                Priority.COMMAND,
+                Command.CHANNEL,
                 new byte[]{(byte)0xFF},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBATH
-                                && supradinRecieved.getCommand() == Smarthome.COMMAND_CHANNEL_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBATH
+                                && supradinRecieved.getCommand() == Command.CHANNEL_INFO
                                 && supradinRecieved.getData().length == 1;
                     }
                 }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE);
@@ -657,18 +659,18 @@ public class Commands {
      * @param address адрес устройства в сети clunet
      * @return возвращает true, если команда успешно выполнена
      */
-     public static boolean mute(SupradinConnection connection, final int address) {
+     public static boolean mute(SupradinConnection connection, final Address address) {
         return Clunet.sendResponsible(connection,
                 address,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_MUTE,
+                Priority.COMMAND,
+                Command.MUTE,
                 new byte[]{0x00}, //пробуем переключить (как с пульта)
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
                         return supradinRecieved.getSrc() == address
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2
                         && supradinRecieved.getData()[0] == 0x00;
                     }
@@ -683,7 +685,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean muteInRoom(SupradinConnection connection) {
-       return mute(connection, Smarthome.ADDRESS_AUDIOBOX);
+       return mute(connection, Address.AUDIOBOX);
     }
     
       /**
@@ -693,7 +695,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean muteInBathroom(SupradinConnection connection) {
-       return mute(connection, Smarthome.ADDRESS_AUDIOBATH);
+       return mute(connection, Address.AUDIOBATH);
     }
 
 
@@ -707,16 +709,16 @@ public class Commands {
      */
     public static boolean setSoundVolumeLevelInRoom(SupradinConnection connection, final int percent) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBOX,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_VOLUME,
+                Address.AUDIOBOX,
+                Priority.COMMAND,
+                Command.VOLUME,
                 new byte[]{0x00, (byte) percent},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBOX
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2 /*&& supradinRecieved.getData()[0] == percent*/;       //TODO: баг с передачей громкости в процентах
                     }
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
@@ -732,16 +734,16 @@ public class Commands {
      */
     public static boolean setSoundVolumeLevelInBathRoom(SupradinConnection connection, final int percent) {
         return Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBATH,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_VOLUME,
+                Address.AUDIOBATH,
+                Priority.COMMAND,
+                Command.VOLUME,
                 new byte[]{0x00, (byte) percent},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBATH
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBATH
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2 /*&& supradinRecieved.getData()[0] == percent*/;       //TODO: баг с передачей громкости в процентах
                     }
                 }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
@@ -754,18 +756,18 @@ public class Commands {
      * @param inc признак задает увеличение или уменьшение уровня громкости
      * @return возвращает true, если команда успешно выполнена
      */
-    private static boolean changeSoundVolumeLevel(SupradinConnection connection, final int address, final boolean inc) {
+    private static boolean changeSoundVolumeLevel(SupradinConnection connection, final Address address, final boolean inc) {
         return Clunet.sendResponsible(connection,
                 address,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_VOLUME,
+                Priority.COMMAND,
+                Command.VOLUME,
                 new byte[]{(byte)(inc ? 0x02 : 0x03)},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
                         return supradinRecieved.getSrc() == address
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2;
                     }
                 }, AUDIO_CHANGE_VOLUME_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE) != null;
@@ -779,7 +781,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean changeSoundVolumeLevelInRoom(SupradinConnection connection, final boolean inc) {
-        return changeSoundVolumeLevel(connection, Smarthome.ADDRESS_AUDIOBOX, inc);
+        return changeSoundVolumeLevel(connection, Address.AUDIOBOX, inc);
     }
     
      /**
@@ -790,7 +792,7 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean changeSoundVolumeLevelInBathroom(SupradinConnection connection, final boolean inc) {
-        return changeSoundVolumeLevel(connection, Smarthome.ADDRESS_AUDIOBATH, inc);
+        return changeSoundVolumeLevel(connection, Address.AUDIOBATH, inc);
     }
   
     /**
@@ -803,8 +805,8 @@ public class Commands {
      */
     public static Integer getSoundVolumeLevelInRoom(SupradinDataMessage message) {
         if (message != null) {
-            if (message.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                    && message.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+            if (message.getSrc() == Address.AUDIOBOX
+                    && message.getCommand() == Command.VOLUME_INFO
                     && message.getData().length == 2
                     && message.getData()[0] >= 0 && message.getData()[0] <= 100) {
                 return (int) message.getData()[0];
@@ -823,8 +825,8 @@ public class Commands {
      */
     public static Integer getSoundVolumeLevelInBathRoom(SupradinDataMessage message) {
         if (message != null) {
-            if (message.getSrc() == Smarthome.ADDRESS_AUDIOBATH
-                    && message.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+            if (message.getSrc() == Address.AUDIOBATH
+                    && message.getCommand() == Command.VOLUME_INFO
                     && message.getData().length == 2
                     && message.getData()[0] >= 0 && message.getData()[0] <= 100) {
                 return (int) message.getData()[0];
@@ -843,16 +845,16 @@ public class Commands {
      */
     public static Integer getSoundVolumeLevelInRoom(SupradinConnection connection) {
         return getSoundVolumeLevelInRoom(Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBOX,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_VOLUME,
+                Address.AUDIOBOX,
+                Priority.COMMAND,
+                Command.VOLUME,
                 new byte[]{(byte) 0xFF},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBOX
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2;
                     }
                 }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
@@ -869,16 +871,16 @@ public class Commands {
      */
     public static Integer getSoundVolumeLevelInBathRoom(SupradinConnection connection) {
         return getSoundVolumeLevelInBathRoom(Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_AUDIOBATH,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_VOLUME,
+                Address.AUDIOBATH,
+                Priority.COMMAND,
+                Command.VOLUME,
                 new byte[]{(byte) 0xFF},
                 new SupradinConnectionResponseFilter() {
 
                     @Override
                     public boolean filter(SupradinDataMessage supradinRecieved) {
-                        return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBATH
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_VOLUME_INFO
+                        return supradinRecieved.getSrc() == Address.AUDIOBATH
+                        && supradinRecieved.getCommand() == Command.VOLUME_INFO
                         && supradinRecieved.getData().length == 2;
                     }
                 }, AUDIOBATH_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE));
@@ -898,16 +900,16 @@ public class Commands {
     public static boolean changeSoundEqualizerInRoom(SupradinConnection connection, final int param, final boolean inc) {
         if (param == EQUALIZER_TREBLE || param == EQUALIZER_GAIN || param == EQUALIZER_BASS) {
             return Clunet.sendResponsible(connection,
-                    Smarthome.ADDRESS_AUDIOBOX,
-                    Smarthome.PRIORITY_COMMAND,
-                    Smarthome.COMMAND_EQUALIZER,
+                    Address.AUDIOBOX,
+                    Priority.COMMAND,
+                    Command.EQUALIZER,
                     new byte[]{(byte) param, (byte) (inc ? 0x02 : 0x03)},
                     new SupradinConnectionResponseFilter() {
 
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
-                            return supradinRecieved.getSrc() == Smarthome.ADDRESS_AUDIOBOX
-                            && supradinRecieved.getCommand() == Smarthome.COMMAND_EQUALIZER_INFO
+                            return supradinRecieved.getSrc() == Address.AUDIOBOX
+                            && supradinRecieved.getCommand() == Command.EQUALIZER_INFO
                             && supradinRecieved.getData().length == 3;
                         }
                     }, AUDIOBOX_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
@@ -916,46 +918,46 @@ public class Commands {
     }
 
     
-    private static boolean selectNextFMStation(SupradinConnection connection, final int address, final boolean up){
+    private static boolean selectNextFMStation(SupradinConnection connection, final Address address, final boolean up){
         return Clunet.sendResponsible(connection,
                 address,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_FM,
+                Priority.COMMAND,
+                Command.FM,
                     new byte[]{(byte) (up ? 0x02 : 0x03)},
                     new SupradinConnectionResponseFilter() {
 
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
                             return supradinRecieved.getSrc() == address
-                            && supradinRecieved.getCommand() == Smarthome.COMMAND_FM_INFO
+                            && supradinRecieved.getCommand() == Command.FM_INFO
                             && supradinRecieved.getData().length == 6;
                         }
                     }, AUDIO_SELECT_CHANNEL_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND) != null;
     }
     
     public static boolean selectNextFMStationInRoom(SupradinConnection connection, final boolean up){
-        return selectNextFMStation(connection, Smarthome.ADDRESS_AUDIOBOX, up);
+        return selectNextFMStation(connection, Address.AUDIOBOX, up);
     }
     
     public static boolean selectNextFMStationInBathroom(SupradinConnection connection, final boolean up){
-        return selectNextFMStation(connection, Smarthome.ADDRESS_AUDIOBATH, up);
+        return selectNextFMStation(connection, Address.AUDIOBATH, up);
     }
     
-    private static boolean selectFMFrequency(SupradinConnection connection, final int address, float frequency) {
+    private static boolean selectFMFrequency(SupradinConnection connection, final Address address, float frequency) {
         int freq = (int)(frequency * 100);
         final byte byte1 = (byte)(freq & 0xFF);
         final byte byte2 = (byte)((freq >> 8) & 0xFF);
         return Clunet.sendResponsible(connection,
                 address,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_FM,
+                Priority.COMMAND,
+                Command.FM,
                 new byte[]{(byte) 0x00, byte1, byte2},
                 new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
                 return supradinRecieved.getSrc() == address
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_FM_INFO
+                        && supradinRecieved.getCommand() == Command.FM_INFO
                         && supradinRecieved.getData().length == 6
                         && supradinRecieved.getData()[0] == 0x00
                         && supradinRecieved.getData()[2] == byte1
@@ -965,27 +967,27 @@ public class Commands {
     }
     
     public static boolean selectFMFrequencyInRoom(SupradinConnection connection, float frequency){
-        return selectFMFrequency(connection, Smarthome.ADDRESS_AUDIOBOX, frequency);
+        return selectFMFrequency(connection, Address.AUDIOBOX, frequency);
     }
     
     public static boolean selectFMFrequencyInBathroom(SupradinConnection connection, float frequency){
-        return selectFMFrequency(connection, Smarthome.ADDRESS_AUDIOBATH, frequency);
+        return selectFMFrequency(connection, Address.AUDIOBATH, frequency);
     }
 
     public static Integer checkAndroidInBathtroomCommand(SupradinDataMessage message) {
         if (message != null) {
             switch (message.getCommand()) {
-                case Smarthome.COMMAND_LIGHT_LEVEL_INFO:
-                    if (message.getSrc() == Smarthome.ADDRESS_BATH_SENSORS && message.getData().length == 2) {
+                case LIGHT_LEVEL_INFO:
+                    if (message.getSrc() == Address.BATH_SENSORS && message.getData().length == 2) {
                         return message.getData()[0] == 1 ? 1 : 0;
                     }
                     break;
-                case Smarthome.COMMAND_ANDROID:
+                case ANDROID:
                     if (message.getData().length == 1) {
                         return (int) message.getData()[0];
                     }
                     break;
-                case Smarthome.COMMAND_RC_BUTTON_PRESSED:
+                case RC_BUTTON_PRESSED:
                     if (message.getData().length == 3){
                         if (message.getData()[0] == 0x00 && message.getData()[1] == 0x00){
                             switch (message.getData()[2]){
@@ -1002,19 +1004,19 @@ public class Commands {
         return null;
     }
     
-    private static void writeFMStationsToEEPROM(SupradinConnection connection, final int address) {
+    private static void writeFMStationsToEEPROM(SupradinConnection connection, final Address address) {
         FMDictionary fmDict = FMDictionary.getInstance();
         if (fmDict != null) {
             //стираем
             if (Clunet.sendResponsible(connection,
                     address,
-                    Smarthome.PRIORITY_COMMAND,
-                    Smarthome.COMMAND_FM, new byte[]{(byte) 0xEE, (byte) 0xEE, (byte) 0xFF},
+                    Priority.COMMAND,
+                    Command.FM, new byte[]{(byte) 0xEE, (byte) 0xEE, (byte) 0xFF},
                     new SupradinConnectionResponseFilter() {
                 @Override
                 public boolean filter(SupradinDataMessage supradinRecieved) {
                     return supradinRecieved.getSrc() == address
-                            && supradinRecieved.getCommand() == Smarthome.COMMAND_FM_INFO
+                            && supradinRecieved.getCommand() == Command.FM_INFO
                             && supradinRecieved.getData().length == 2
                             && supradinRecieved.getData()[0] == (byte)0xEE
                             && supradinRecieved.getData()[1] == (byte)0x01;
@@ -1029,13 +1031,13 @@ public class Commands {
 
                     Clunet.sendResponsible(connection,
                             address,
-                            Smarthome.PRIORITY_COMMAND,
-                            Smarthome.COMMAND_FM, new byte[]{(byte) 0xED, (byte) i++, (byte) (freq & 0xFF), (byte) ((freq >> 8) & 0xFF)},
+                            Priority.COMMAND,
+                            Command.FM, new byte[]{(byte) 0xED, (byte) i++, (byte) (freq & 0xFF), (byte) ((freq >> 8) & 0xFF)},
                             new SupradinConnectionResponseFilter() {
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
                             return supradinRecieved.getSrc() == address
-                                    && supradinRecieved.getCommand() == Smarthome.COMMAND_FM_INFO
+                                    && supradinRecieved.getCommand() == Command.FM_INFO
                                     && supradinRecieved.getData().length == 2
                                     && supradinRecieved.getData()[0] == (byte)0xED;
                         }
@@ -1047,11 +1049,11 @@ public class Commands {
     }
 
     public static void writeFMStationsTOEEPROMInRoom(SupradinConnection connection){
-        writeFMStationsToEEPROM(connection, Smarthome.ADDRESS_AUDIOBOX);
+        writeFMStationsToEEPROM(connection, Address.AUDIOBOX);
     }
     
     public static void writeFMStationsTOEEPROMInBathroom(SupradinConnection connection){
-        writeFMStationsToEEPROM(connection, Smarthome.ADDRESS_AUDIOBATH);
+        writeFMStationsToEEPROM(connection, Address.AUDIOBATH);
     }
     
     
@@ -1071,14 +1073,14 @@ public class Commands {
                     }
 
                     Clunet.sendResponsible(connection,
-                            Smarthome.ADDRESS_RELAY_1,
-                            Smarthome.PRIORITY_COMMAND,
-                            Smarthome.COMMAND_HEATFLOOR, data,
+                            Address.RELAY_1,
+                            Priority.COMMAND,
+                            Command.HEATFLOOR, data,
                             new SupradinConnectionResponseFilter() {
                         @Override
                         public boolean filter(SupradinDataMessage supradinRecieved) {
-                            return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                                    && supradinRecieved.getCommand() == Smarthome.COMMAND_HEATFLOOR_INFO
+                            return supradinRecieved.getSrc() == Address.RELAY_1
+                                    && supradinRecieved.getCommand() == Command.HEATFLOOR_INFO
                                     && supradinRecieved.getData().length > 2
                                     && supradinRecieved.getData()[0] == data[0]
                                     && supradinRecieved.getData()[1] == program.getSchedule().length / 2;
@@ -1097,14 +1099,14 @@ public class Commands {
         System.arraycopy(params, 0, rdata, 3, params.length);
 
         Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_RELAY_1,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_HEATFLOOR, rdata,
+                Address.RELAY_1,
+                Priority.COMMAND,
+                Command.HEATFLOOR, rdata,
                 new SupradinConnectionResponseFilter() {
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
-                return supradinRecieved.getSrc() == Smarthome.ADDRESS_RELAY_1
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_HEATFLOOR_INFO;
+                return supradinRecieved.getSrc() == Address.RELAY_1
+                        && supradinRecieved.getCommand() == Command.HEATFLOOR_INFO;
             }
         }, HEATFLOOR_EEPROM_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_COMMAND);
     }
@@ -1127,7 +1129,7 @@ public class Commands {
     }
     
     public static void selectHeatfloorModeParty(SupradinConnection connection, int channel, int temperature, int num_seconds){
-        selectHeatfloorMode(connection, SmarthomeDictionary.HEATFLOOR_MODE_PARTY, channel, 
+        selectHeatfloorMode(connection, SmarthomeDictionary.HEATFLOOR_MODE_PARTY, channel,
                 new byte[]{(byte)temperature, (byte)(num_seconds & 0xFF), (byte)((num_seconds >> 8) & 0xFF)});
     }
     
@@ -1147,31 +1149,31 @@ public class Commands {
      * @return возвращает true, если команда успешно выполнена
      */
     public static boolean setDimmerLevel(SupradinConnection connection,
-            final int deviceId, final int dimmerChannel, final int value,
+            final Address deviceId, final int dimmerChannel, final int value,
             int responseTimeout
             ) {
         return Clunet.sendResponsible(connection,
                 deviceId,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_DIMMER,
+                Priority.COMMAND,
+                Command.DIMMER,
                 new byte[]{(byte) dimmerChannel, (byte) value},
                 new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
                 return supradinRecieved.getSrc() == deviceId
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_DIMMER_INFO
+                        && supradinRecieved.getCommand() == Command.DIMMER_INFO
                         && supradinRecieved.getData().length == 3;
             }
         }, responseTimeout, NUM_ATTEMPTS_STATE) != null;
     }
     
     public static boolean setDimmerLevelInKitchenLight(SupradinConnection connection, final int value) {
-        return setDimmerLevel(connection, Smarthome.ADDRESS_KITCHEN_LIGHT, 1, value, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT);
+        return setDimmerLevel(connection, Address.KITCHEN_LIGHT, 1, value, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT);
     }
     
     public static boolean setDimmerLevelInSocketDimmer(SupradinConnection connection, final int value) {
-        return setDimmerLevel(connection, Smarthome.ADDRESS_SOCKET_DIMMER, 1, value, SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT);
+        return setDimmerLevel(connection, Address.SOCKET_DIMMER, 1, value, SOCKET_DIMMER_WAITING_RESPONSE_TIMEOUT);
     }
     
     /**
@@ -1183,10 +1185,10 @@ public class Commands {
      * @return возвращает значение диммера; null - если передано неверное по
      * формату сообщение для анализа
      */
-    private static Integer getDimmerLevel(SupradinDataMessage message, int deviceId, int dimmerChannel) {
+    private static Integer getDimmerLevel(SupradinDataMessage message, Address deviceId, int dimmerChannel) {
         if (message != null) {
             if (message.getSrc() == deviceId
-                    && message.getCommand() == Smarthome.COMMAND_DIMMER_INFO
+                    && message.getCommand() == Command.DIMMER_INFO
                     && message.getData().length > 1) {
                 int cnt = message.getData()[0] & 0xFF;
                 if (message.getData().length == cnt * 2 + 1) {
@@ -1203,11 +1205,11 @@ public class Commands {
     
     
         public static Integer getDimmerLevelInKitchen(SupradinDataMessage message) {
-            return getDimmerLevel(message, Smarthome.ADDRESS_KITCHEN_LIGHT, 1);
+            return getDimmerLevel(message, Address.KITCHEN_LIGHT, 1);
         }
         
         public static Integer getDimmerLevelInSocket(SupradinDataMessage message) {
-            return getDimmerLevel(message, Smarthome.ADDRESS_SOCKET_DIMMER, 1);
+            return getDimmerLevel(message, Address.SOCKET_DIMMER, 1);
         }
 
     /**
@@ -1219,19 +1221,19 @@ public class Commands {
      */
     public static Integer getDimmerLevelInKitchen(SupradinConnection connection) {
         return getDimmerLevel(Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_KITCHEN_LIGHT,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_DIMMER,
+                Address.KITCHEN_LIGHT,
+                Priority.COMMAND,
+                Command.DIMMER,
                 new byte[]{(byte) 0xFF},
                 new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
-                return supradinRecieved.getSrc() == Smarthome.ADDRESS_KITCHEN_LIGHT
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_DIMMER_INFO;
+                return supradinRecieved.getSrc() == Address.KITCHEN_LIGHT
+                        && supradinRecieved.getCommand() == Command.DIMMER_INFO;
             }
         }, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE),
-                Smarthome.ADDRESS_KITCHEN_LIGHT, 1);
+                Address.KITCHEN_LIGHT, 1);
     }
     
        /**
@@ -1243,18 +1245,18 @@ public class Commands {
      */
     public static Integer getDimmerLevelInSocket(SupradinConnection connection) {
         return getDimmerLevel(Clunet.sendResponsible(connection,
-                Smarthome.ADDRESS_SOCKET_DIMMER,
-                Smarthome.PRIORITY_COMMAND,
-                Smarthome.COMMAND_DIMMER,
+                Address.SOCKET_DIMMER,
+                Priority.COMMAND,
+                Command.DIMMER,
                 new byte[]{(byte) 0xFF},
                 new SupradinConnectionResponseFilter() {
 
             @Override
             public boolean filter(SupradinDataMessage supradinRecieved) {
-                return supradinRecieved.getSrc() == Smarthome.ADDRESS_SOCKET_DIMMER
-                        && supradinRecieved.getCommand() == Smarthome.COMMAND_DIMMER_INFO;
+                return supradinRecieved.getSrc() == Address.SOCKET_DIMMER
+                        && supradinRecieved.getCommand() == Command.DIMMER_INFO;
             }
         }, KITCHEN_LIGHT_WAITING_RESPONSE_TIMEOUT, NUM_ATTEMPTS_STATE),
-                Smarthome.ADDRESS_SOCKET_DIMMER, 1);
+                Address.SOCKET_DIMMER, 1);
     }
 }

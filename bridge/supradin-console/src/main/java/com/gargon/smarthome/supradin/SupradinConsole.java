@@ -1,46 +1,35 @@
 package com.gargon.smarthome.supradin;
 
+import com.gargon.smarthome.SmarthomeDictionary;
 import com.gargon.smarthome.clunet.Clunet;
 import com.gargon.smarthome.clunet.ClunetDateTimeResolver;
-import com.gargon.smarthome.FMDictionary;
-import com.gargon.smarthome.HeatFloorDictionary;
-import com.gargon.smarthome.HeatfloorChannel;
-import com.gargon.smarthome.HeatfloorProgram;
-import com.gargon.smarthome.Smarthome;
-import com.gargon.smarthome.SmarthomeDictionary;
-import com.gargon.smarthome.utils.DataFormat;
 import com.gargon.smarthome.commands.Commands;
+import com.gargon.smarthome.enums.Address;
+import com.gargon.smarthome.enums.Command;
+import com.gargon.smarthome.enums.Priority;
+import com.gargon.smarthome.fm.FMDictionary;
+import com.gargon.smarthome.heatfloor.HeatFloorDictionary;
+import com.gargon.smarthome.heatfloor.HeatfloorChannel;
+import com.gargon.smarthome.heatfloor.HeatfloorProgram;
 import com.gargon.smarthome.supradin.messages.SupradinDataMessage;
+import com.gargon.smarthome.utils.HexDataUtils;
 import com.melloware.jintellitype.HotkeyListener;
 import com.melloware.jintellitype.JIntellitype;
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Event;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
+import java.awt.event.*;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,31 +37,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class SupradinConsole extends javax.swing.JFrame {
-    
+
     private static final KeyStroke ksMuteRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, Event.CTRL_MASK);
-    
+
     private static final KeyStroke ksIncVolRoom = KeyStroke.getKeyStroke(KeyEvent.VK_ADD, Event.CTRL_MASK);
     private static final KeyStroke ksDecVolRoom = KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, Event.CTRL_MASK);
     private static final KeyStroke ksIncTrebleRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD7, Event.CTRL_MASK);
@@ -81,42 +50,41 @@ public class SupradinConsole extends javax.swing.JFrame {
     private static final KeyStroke ksDecBassRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD2, Event.CTRL_MASK);
     private static final KeyStroke ksIncGainRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD9, Event.CTRL_MASK);
     private static final KeyStroke ksDecGainRoom = KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD3, Event.CTRL_MASK);
-    
+
     private static final KeyStroke ksAudioSourceRoomPC = KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK);
     private static final KeyStroke ksAudioSourceRoomBT = KeyStroke.getKeyStroke(KeyEvent.VK_3, Event.CTRL_MASK);
     private static final KeyStroke ksAudioSourceRoomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.CTRL_MASK);
-    
+
     private static final KeyStroke ksAudioSourceBathroomPad = KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK + Event.ALT_MASK);
     private static final KeyStroke ksAudioSourceBathroomFM = KeyStroke.getKeyStroke(KeyEvent.VK_4, Event.CTRL_MASK + Event.ALT_MASK);
-    
+
     private static final KeyStroke ksLightCloackroom = KeyStroke.getKeyStroke(KeyEvent.VK_F5, Event.CTRL_MASK);
     private static final KeyStroke ksLightMirroredBoxBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F6, Event.CTRL_MASK);
     private static final KeyStroke ksSwitchFanBathroom = KeyStroke.getKeyStroke(KeyEvent.VK_F7, Event.CTRL_MASK);
-    
+
     private static final KeyStroke ksFMRoomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK);
     private static final KeyStroke ksFMRoomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK);
     private static final KeyStroke ksFMBathroomNextStation = KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK + Event.ALT_MASK);
     private static final KeyStroke ksFMBathroomPrevStation = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK + Event.ALT_MASK);
-    
+
     private static final String APP_TRAY_TOOLTIP = "SupradinConsole";
 
-    private static final String ACTIVE_ICON_PATH   = "/com/gargon/smarthome/supradin/resources/house_64.png";
+    private static final String ACTIVE_ICON_PATH = "/com/gargon/smarthome/supradin/resources/house_64.png";
     private static final String INACTIVE_ICON_PATH = "/com/gargon/smarthome/supradin/resources/house_red_64.png";
-    
+
     private TrayIcon trayIcon;
     private SystemTray tray;
-    
+
     private Image activeImage = null;
     private Image inactiveImage = null;
-  
+
     private static SupradinConnection connection;
     private static ScheduledExecutorService connectionChecker;
 
     public SupradinConsole() {
         initComponents();
-        
-        
-        
+
+
         //load fm dictionary
         try {
             Properties fmProp = new Properties();
@@ -133,7 +101,7 @@ public class SupradinConsole extends javax.swing.JFrame {
             }
 
             FMDictionary.init(stationList);
-            
+
             //complete popup menu
             FMDictionary fmDictionary = FMDictionary.getInstance();
             if (fmDictionary != null) {
@@ -161,11 +129,11 @@ public class SupradinConsole extends javax.swing.JFrame {
                     mnSoundBathroomFMStations.add(miStationBathroom);
                 }
             }
-            
+
         } catch (Exception e) {
             System.out.println("Can't load fm stations list: " + e.getMessage());
         }
-        
+
 
         //load heatfloor programs
         try {
@@ -309,7 +277,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                                             hfDictionary.getProgramList().get(set.getValue()[0]).getName(),
                                             hfDictionary.getProgramList().get(set.getValue()[1]).getName(),
                                             hfDictionary.getProgramList().get(set.getValue()[2]).getName());
-                                    
+
                                     JMenuItem miHeatfloorWeekSet = new JMenuItem(label);
                                     miHeatfloorWeekSet.addActionListener(new java.awt.event.ActionListener() {
                                         @Override
@@ -333,10 +301,10 @@ public class SupradinConsole extends javax.swing.JFrame {
                                 }
                             });
                             mnHeatfloorDayForToday.add(miHeatfloorDayForTodaySwitchOff);
-  
+
                             JSeparator separator = new JSeparator();
                             mnHeatfloorDayForToday.add(separator);
-                            
+
                             for (Integer program : channel.getProgramList()) {
                                 final int fp = program;
                                 JMenuItem miHeatfloorDayForTodayProgram = new JMenuItem(hfDictionary.getProgramList().get(fp).getName());
@@ -372,7 +340,7 @@ public class SupradinConsole extends javax.swing.JFrame {
 
                                 mnHeatfloorParty.add(mnHeatfloorPartyT);
                             }
-                            
+
                             separator = new JSeparator();
                             mnHeatfloor.add(separator);
 
@@ -388,7 +356,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                             });
 
                             mnHeatfloor.add(miWriteHeatfloorProgramsToEEPROM);
-                             
+
                         }
                     }
                 }
@@ -396,11 +364,11 @@ public class SupradinConsole extends javax.swing.JFrame {
         } catch (Exception e) {
             System.out.println("Can't load heatfloor params: " + e.getMessage());
         }
-        
-        
+
+
         //filter lists implementation
         MouseListener filterCheckBoxItemMouseListener = new MouseAdapter() {
-            
+
             public void mouseClicked(MouseEvent event) {
                 JList<CheckBoxItem> list = (JList<CheckBoxItem>) event.getSource();
 
@@ -416,39 +384,37 @@ public class SupradinConsole extends javax.swing.JFrame {
                 list.repaint(list.getCellBounds(index, index));
             }
         };
-        
-        
+
+
         //filters models
         listFilterSenders.setCellRenderer(new FilterListCellRenderer());
         listFilterSenders.addMouseListener(filterCheckBoxItemMouseListener);
-        
+
         DefaultListModel model = new DefaultListModel();
         listFilterSenders.setModel(model);
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getDevicesList().entrySet()) {
-            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
+        for (Address address : Address.values()) {
+            model.addElement(new CheckBoxItem(address.getValue(), address.name()));
         }
-        
-        
+
         listFilterRecievers.setCellRenderer(new FilterListCellRenderer());
         listFilterRecievers.addMouseListener(filterCheckBoxItemMouseListener);
-      
+
         model = new DefaultListModel();
         listFilterRecievers.setModel(model);
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getDevicesList().entrySet()) {
-            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
+        for (Address address : Address.values()) {
+            model.addElement(new CheckBoxItem(address.getValue(), address.name()));
         }
-        
-        
+
         listFilterCommands.setCellRenderer(new FilterListCellRenderer());
         listFilterCommands.addMouseListener(filterCheckBoxItemMouseListener);
-      
+
         model = new DefaultListModel();
         listFilterCommands.setModel(model);
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getCommandsList().entrySet()) {
-            model.addElement(new CheckBoxItem(entry.getKey(), entry.getValue()));
+        for (Command command : Command.values()) {
+            model.addElement(new CheckBoxItem(command.getValue(), command.name()));
         }
-        
-        
+
+
         try {
             activeImage = new ImageIcon(SupradinConsole.class.getResource(ACTIVE_ICON_PATH)).getImage();
         } catch (Exception e) {
@@ -462,7 +428,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         if (activeImage != null) {
             setIconImage(activeImage);
         }
-        
+
         if (SystemTray.isSupported()) {
             try {
                 tray = SystemTray.getSystemTray();
@@ -470,27 +436,27 @@ public class SupradinConsole extends javax.swing.JFrame {
                 tray = null;
             }
         }
-        
+
         //show in center of screen
         setLocation((Toolkit.getDefaultToolkit().getScreenSize().width - getSize().width) / 2,
                 (Toolkit.getDefaultToolkit().getScreenSize().height - getSize().height) / 2);
 
         //init combos
         DefaultComboBoxModel m = (DefaultComboBoxModel) cbCommand.getModel();
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getCommandsList().entrySet()) {
-            m.addElement(new ComboBoxItem(entry.getKey(), entry.getValue()));
+        for (Command command : Command.values()) {
+            m.addElement(new CheckBoxItem(command.getValue(), command.name()));
         }
 
         m = (DefaultComboBoxModel) cbAddress.getModel();
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getDevicesList().entrySet()) {
-            m.addElement(new ComboBoxItem(entry.getKey(), entry.getValue()));
+        for (Address address : Address.values()) {
+            m.addElement(new CheckBoxItem(address.getValue(), address.name()));
         }
 
         m = (DefaultComboBoxModel) cbPriority.getModel();
-        for (Map.Entry<Integer, String> entry : SmarthomeDictionary.getPrioritiesList().entrySet()) {
-            m.addElement(new ComboBoxItem(entry.getKey(), entry.getValue()));
+        for (Priority priority : Priority.values()) {
+            m.addElement(new CheckBoxItem(priority.getValue(), priority.name()));
         }
-       
+
 
         //short keys init
         try {
@@ -501,47 +467,47 @@ public class SupradinConsole extends javax.swing.JFrame {
             JIntellitype.getInstance().registerSwingHotKey(1, ksLightCloackroom.getModifiers(), ksLightCloackroom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(2, ksLightMirroredBoxBathroom.getModifiers(), ksLightMirroredBoxBathroom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(3, ksSwitchFanBathroom.getModifiers(), ksSwitchFanBathroom.getKeyCode());
-            
+
             miSoundRoomIncVolume.setAccelerator(ksIncVolRoom);
             JIntellitype.getInstance().registerSwingHotKey(10, ksIncVolRoom.getModifiers(), ksIncVolRoom.getKeyCode());
-            
+
             miSoundRoomDecVolume.setAccelerator(ksDecVolRoom);
             JIntellitype.getInstance().registerSwingHotKey(11, ksDecVolRoom.getModifiers(), ksDecVolRoom.getKeyCode());
-            
+
             miSoundRoomMute.setAccelerator(ksMuteRoom);
             JIntellitype.getInstance().registerSwingHotKey(12, ksMuteRoom.getModifiers(), ksMuteRoom.getKeyCode());
-            
+
             JIntellitype.getInstance().registerSwingHotKey(13, ksIncTrebleRoom.getModifiers(), ksIncTrebleRoom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(14, ksDecTrebleRoom.getModifiers(), ksDecTrebleRoom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(15, ksIncBassRoom.getModifiers(), ksIncBassRoom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(16, ksDecBassRoom.getModifiers(), ksDecBassRoom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(17, ksIncGainRoom.getModifiers(), ksIncGainRoom.getKeyCode());
             JIntellitype.getInstance().registerSwingHotKey(18, ksDecGainRoom.getModifiers(), ksDecGainRoom.getKeyCode());
-            
+
             miSoundRoomSourcePC.setAccelerator(ksAudioSourceRoomPC);
             JIntellitype.getInstance().registerSwingHotKey(19, ksAudioSourceRoomPC.getModifiers(), ksAudioSourceRoomPC.getKeyCode());
-            
+
             miSoundRoomSourceBT.setAccelerator(ksAudioSourceRoomBT);
             JIntellitype.getInstance().registerSwingHotKey(20, ksAudioSourceRoomBT.getModifiers(), ksAudioSourceRoomBT.getKeyCode());
-            
+
             miSoundRoomSourceFM.setAccelerator(ksAudioSourceRoomFM);
             JIntellitype.getInstance().registerSwingHotKey(21, ksAudioSourceRoomFM.getModifiers(), ksAudioSourceRoomFM.getKeyCode());
-            
+
             miSoundBathroomSourcePad.setAccelerator(ksAudioSourceBathroomPad);
             JIntellitype.getInstance().registerSwingHotKey(22, ksAudioSourceBathroomPad.getModifiers(), ksAudioSourceBathroomPad.getKeyCode());
             miSoundBathroomSourceFM.setAccelerator(ksAudioSourceBathroomFM);
             JIntellitype.getInstance().registerSwingHotKey(23, ksAudioSourceBathroomFM.getModifiers(), ksAudioSourceBathroomFM.getKeyCode());
-            
+
             miSoundRoomFMNextStation.setAccelerator(ksFMRoomNextStation);
             JIntellitype.getInstance().registerSwingHotKey(24, ksFMRoomNextStation.getModifiers(), ksFMRoomNextStation.getKeyCode());
             miSoundRoomFMPrevStation.setAccelerator(ksFMRoomPrevStation);
             JIntellitype.getInstance().registerSwingHotKey(25, ksFMRoomPrevStation.getModifiers(), ksFMRoomPrevStation.getKeyCode());
-            
+
             miSoundBathroomFMNextStation.setAccelerator(ksFMBathroomNextStation);
             JIntellitype.getInstance().registerSwingHotKey(26, ksFMBathroomNextStation.getModifiers(), ksFMBathroomNextStation.getKeyCode());
             miSoundBathroomFMPrevStation.setAccelerator(ksFMBathroomPrevStation);
             JIntellitype.getInstance().registerSwingHotKey(27, ksFMBathroomPrevStation.getModifiers(), ksFMBathroomPrevStation.getKeyCode());
-            
+
 
             JIntellitype.getInstance().addHotKeyListener(new HotkeyListener() {
                 @Override
@@ -556,7 +522,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                         case 3:
                             Commands.toggleFanInBathroom(connection);      //переключаем
                             break;
-                            
+
                         case 10:
                             miSoundRoomIncVolumeActionPerformed(null);
                             break;
@@ -566,7 +532,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                         case 12:
                             miSoundRoomMuteActionPerformed(null);
                             break;
-                            
+
                         case 13:
                             Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_TREBLE, true);
                             break;
@@ -585,7 +551,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                         case 18:
                             Commands.changeSoundEqualizerInRoom(connection, Commands.EQUALIZER_GAIN, false);
                             break;
-                            
+
                         case 19:
                             miSoundRoomSourcePCActionPerformed(null);
                             break;
@@ -595,21 +561,21 @@ public class SupradinConsole extends javax.swing.JFrame {
                         case 21:
                             miSoundRoomSourceFMActionPerformed(null);
                             break;
-                        
+
                         case 22:
                             miSoundBathroomSourcePadActionPerformed(null);
                             break;
                         case 23:
                             miSoundBathroomSourceFMActionPerformed(null);
                             break;
-                            
+
                         case 24:
                             miSoundRoomFMNextStationActionPerformed(null);
                             break;
                         case 25:
                             miSoundRoomFMPrevStationActionPerformed(null);
                             break;
-                            
+
                         case 26:
                             miSoundBathroomFMNextStationActionPerformed(null);
                             break;
@@ -625,7 +591,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                     "Ошибка инициализации",
                     JOptionPane.ERROR_MESSAGE);
         }
-        
+
         if (trayImageShow(inactiveImage, APP_TRAY_TOOLTIP)) {
             trayIn();
             setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -633,8 +599,8 @@ public class SupradinConsole extends javax.swing.JFrame {
             setVisible(true);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         }
-        
-        
+
+
         //establish connection
         connection = new SupradinConnection();
         connection.open();
@@ -646,31 +612,28 @@ public class SupradinConsole extends javax.swing.JFrame {
             @Override
             public void dataRecieved(SupradinConnection connection, SupradinDataMessage message) {
 
-                String src = "0x" + DataFormat.byteToHex(message.getSrc());
-                
-                if (message.getSrc() == Smarthome.ADDRESS_SUPRADIN) {
+                String src = "0x" + HexDataUtils.byteToHex(message.getSrc().getValue());
+
+                if (message.getSrc() == Address.SUPRADIN) {
                     src += " - " + message.getIpAsString();
                 } else {
-                    String srcName = SmarthomeDictionary.getDeviceById(message.getSrc());
-                    if (srcName != null) {
-                        src += " - " + srcName;
+                    if (message.getSrc() != null) {
+                        src += " - " + message.getSrc().name();
                     }
-                    if (message.isIpValid()){
+                    if (message.isIpValid()) {
                         src += " [" + message.getIpAsString() + "]";
                     }
                 }
-                
 
-                String rcv = "0x" +DataFormat.byteToHex(message.getDst());
-                String rcvName = SmarthomeDictionary.getDeviceById(message.getDst());
-                if (rcvName != null) {
-                    rcv += " - " + rcvName;
+
+                String rcv = "0x" + HexDataUtils.byteToHex(message.getDst().getValue());
+                if (message.getDst() != null) {
+                    rcv += " - " + message.getDst().name();
                 }
 
-                String cmd = "0x" +DataFormat.byteToHex(message.getCommand());
-                String cmdName = SmarthomeDictionary.getCommandById(message.getCommand());
-                if (cmdName != null) {
-                    cmd += " - " + cmdName;
+                String cmd = "0x" + HexDataUtils.byteToHex(message.getCommand().getValue());
+                if (message.getCommand() != null) {
+                    cmd += " - " + message.getCommand().name();
                 }
 
                 String interpretation = SmarthomeDictionary.toString(message.getCommand(), message.getData());
@@ -682,7 +645,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                 boolean autoscroll = new Rectangle(viewport.getExtentSize()).contains(rect);
 
                 //add row
-                model.addRow(new Object[]{sdf.format(new Date()), src, rcv, cmd, DataFormat.bytesToHex(message.getData()), interpretation});
+                model.addRow(new Object[]{sdf.format(new Date()), src, rcv, cmd, HexDataUtils.bytesToHex(message.getData()), interpretation});
 
                 //perform autoscroll if we need
                 if (autoscroll) {
@@ -693,14 +656,14 @@ public class SupradinConsole extends javax.swing.JFrame {
                         }
                     });
                 }
-                
+
                 printMessageCount();
             }
         });
         connection.addDataListener(new ClunetDateTimeResolver());
         connection.connect();
-       
-        
+
+
         //check connection
         connectionChecker = Executors.newSingleThreadScheduledExecutor();
         connectionChecker.scheduleAtFixedRate(new Runnable() {
@@ -711,7 +674,7 @@ public class SupradinConsole extends javax.swing.JFrame {
                     setTitle(String.format("SupradinConsole [%s]", active ? "Подключено" : "Не подключено"));
                     btSearchDevices.setEnabled(active);                              //дополнительно отсеиваем лок по нажатию на "Поиск устройств"
                     btSend.setEnabled(active);
-                    
+
                     mnLight.setEnabled(active);
                     mnSound.setEnabled(active);
                     mnClimate.setEnabled(active);
@@ -1233,47 +1196,47 @@ public class SupradinConsole extends javax.swing.JFrame {
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbFilterAllSenders)
-                    .add(lbFilterSender)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(cbFilterAllRecievers)
-                    .add(lbFilterReciever))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lbFilterCommand)
-                            .add(cbFilterAllCommands))
-                        .add(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jPanel2Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(cbFilterAllSenders)
+                                        .add(lbFilterSender)
+                                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(cbFilterAllRecievers)
+                                        .add(lbFilterReciever))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                                        .add(jPanel2Layout.createSequentialGroup()
+                                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                                        .add(lbFilterCommand)
+                                                        .add(cbFilterAllCommands))
+                                                .add(0, 0, Short.MAX_VALUE)))
+                                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lbFilterSender)
-                    .add(lbFilterReciever)
-                    .add(lbFilterCommand))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbFilterAllSenders)
-                    .add(cbFilterAllRecievers)
-                    .add(cbFilterAllCommands))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(jScrollPane3)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane4))
-                .addContainerGap())
+                jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jPanel2Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(lbFilterSender)
+                                        .add(lbFilterReciever)
+                                        .add(lbFilterCommand))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(cbFilterAllSenders)
+                                        .add(cbFilterAllRecievers)
+                                        .add(cbFilterAllCommands))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                                        .add(jScrollPane3)
+                                        .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane4))
+                                .addContainerGap())
         );
 
         btResetFilters.setText("Сбросить все фильтры");
@@ -1293,24 +1256,24 @@ public class SupradinConsole extends javax.swing.JFrame {
         org.jdesktop.layout.GroupLayout jFilterDialogLayout = new org.jdesktop.layout.GroupLayout(jFilterDialog.getContentPane());
         jFilterDialog.getContentPane().setLayout(jFilterDialogLayout);
         jFilterDialogLayout.setHorizontalGroup(
-            jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jFilterDialogLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(btResetFilters)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jFilterDialogLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(btResetFilters)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(jButton3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                        .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jFilterDialogLayout.setVerticalGroup(
-            jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jFilterDialogLayout.createSequentialGroup()
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(9, 9, 9)
-                .add(jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(btResetFilters)
-                    .add(jButton3))
-                .addContainerGap())
+                jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jFilterDialogLayout.createSequentialGroup()
+                                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(9, 9, 9)
+                                .add(jFilterDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(btResetFilters)
+                                        .add(jButton3))
+                                .addContainerGap())
         );
 
         setTitle("SupradinConsole");
@@ -1328,26 +1291,26 @@ public class SupradinConsole extends javax.swing.JFrame {
         });
 
         tbMain.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "Время", "Отправитель", "Получатель", "Команда", "Данные", "Расшифровка"
-            }
+                },
+                new String[]{
+                        "Время", "Отправитель", "Получатель", "Команда", "Данные", "Расшифровка"
+                }
         ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            Class[] types = new Class[]{
+                    java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+            boolean[] canEdit = new boolean[]{
+                    false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return types[columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return canEdit[columnIndex];
             }
         });
         tbMain.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -1401,48 +1364,48 @@ public class SupradinConsole extends javax.swing.JFrame {
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(lbData)
-                    .add(lbAddress))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(cbAddress, 0, 182, Short.MAX_VALUE)
-                        .add(18, 18, 18)
-                        .add(lbCommand)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbCommand, 0, 183, Short.MAX_VALUE)
-                        .add(18, 18, 18)
-                        .add(lbPriority))
-                    .add(edData))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbPriority, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(0, 0, Short.MAX_VALUE)
-                        .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                        .add(lbData)
+                                        .add(lbAddress))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jPanel1Layout.createSequentialGroup()
+                                                .add(cbAddress, 0, 182, Short.MAX_VALUE)
+                                                .add(18, 18, 18)
+                                                .add(lbCommand)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(cbCommand, 0, 183, Short.MAX_VALUE)
+                                                .add(18, 18, 18)
+                                                .add(lbPriority))
+                                        .add(edData))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(cbPriority, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .add(0, 0, Short.MAX_VALUE)
+                                                .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lbCommand)
-                    .add(cbCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lbAddress)
-                    .add(cbAddress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lbPriority)
-                    .add(cbPriority, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lbData)
-                    .add(edData, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(22, 22, 22))
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(lbCommand)
+                                        .add(cbCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(lbAddress)
+                                        .add(cbAddress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(lbPriority)
+                                        .add(cbPriority, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                        .add(lbData)
+                                        .add(edData, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(btSend, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(22, 22, 22))
         );
 
         btSearchDevices.setText("Поиск устройств");
@@ -1461,30 +1424,30 @@ public class SupradinConsole extends javax.swing.JFrame {
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(btSearchDevices)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lbNumDevices, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 360, Short.MAX_VALUE)
-                .add(lbNumMessages, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jScrollPane1)
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(btSearchDevices)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(lbNumDevices, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 360, Short.MAX_VALUE)
+                                .add(lbNumMessages, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(6, 6, 6)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(btSearchDevices)
-                    .add(lbNumDevices, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(lbNumMessages))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(btSearchDevices)
+                                        .add(lbNumDevices, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(lbNumMessages))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -1492,11 +1455,11 @@ public class SupradinConsole extends javax.swing.JFrame {
 
     private void btSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btSendActionPerformed
 
-           try {
-            int dst = ((ComboBoxItem) cbAddress.getSelectedItem()).getId();
-            int prio = ((ComboBoxItem) cbPriority.getSelectedItem()).getId();
-            int cmd = ((ComboBoxItem) cbCommand.getSelectedItem()).getId();
-            byte[] data = DataFormat.hexToByteArray(edData.getText());
+        try {
+            Address dst = Address.getByValue(((ComboBoxItem) cbAddress.getSelectedItem()).getId());
+            Priority prio = Priority.getByValue(((ComboBoxItem) cbPriority.getSelectedItem()).getId());
+            Command cmd = Command.getByValue(((ComboBoxItem) cbCommand.getSelectedItem()).getId());
+            byte[] data = HexDataUtils.hexToByteArray(edData.getText());
 
             connection.sendData(new SupradinDataMessage(dst, prio, cmd, data));
         } catch (Exception e) {
@@ -1509,9 +1472,9 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_btSendActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        if (tray != null){
+        if (tray != null) {
             trayIn();
-        }else{
+        } else {
             miExitActionPerformed(null);
         }
     }//GEN-LAST:event_formWindowClosing
@@ -1566,7 +1529,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miShowConsoleActionPerformed
 
     private void miLightCloackroomOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightCloackroomOffActionPerformed
-         Commands.switchLightInCloackroom(connection, false);
+        Commands.switchLightInCloackroom(connection, false);
     }//GEN-LAST:event_miLightCloackroomOffActionPerformed
 
     private void miLightCloackroomOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightCloackroomOnActionPerformed
@@ -1574,7 +1537,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miLightCloackroomOnActionPerformed
 
     private void miSoundRoomMuteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomMuteActionPerformed
-         Commands.muteInRoom(connection);
+        Commands.muteInRoom(connection);
     }//GEN-LAST:event_miSoundRoomMuteActionPerformed
 
     private void miSoundRoomSourcePCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomSourcePCActionPerformed
@@ -1586,7 +1549,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundRoomSourceBTActionPerformed
 
     private void miSoundRoomSourceFMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomSourceFMActionPerformed
-       Commands.selectSourceOfSoundInRoom(connection, Commands.ROOM_AUDIOSOURCE_FM);
+        Commands.selectSourceOfSoundInRoom(connection, Commands.ROOM_AUDIOSOURCE_FM);
     }//GEN-LAST:event_miSoundRoomSourceFMActionPerformed
 
     private void miLightBathroomOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLightBathroomOnActionPerformed
@@ -1611,7 +1574,7 @@ public class SupradinConsole extends javax.swing.JFrame {
 
     private void pmiCopyAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiCopyAllActionPerformed
         String buf = "";
-        
+
         for (int i = 0; i < tbMain.getRowCount(); i++) {
             for (int j = 0; j < tbMain.getColumnCount(); j++) {
                 Object obj = tbMain.getValueAt(i, j);
@@ -1627,14 +1590,14 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_pmiCopyAllActionPerformed
 
     private Point tbMainClickPoint = null;
- 
+
     private void tbMainMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbMainMouseClicked
         if (evt.getButton() == MouseEvent.BUTTON3) {
-            
+
             pmiCopyCell.setEnabled(evt.getSource() == tbMain);
             pmiCopyRow.setEnabled(evt.getSource() == tbMain);
             pmiCopyAll.setEnabled(evt.getSource() == tbMain);
-            
+
             pmMain.show(tbMain, evt.getX(), evt.getY());
             tbMainClickPoint = evt.getPoint();
         }
@@ -1645,7 +1608,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
         clpbrd.setContents(stringSelection, null);
     }
-    
+
     private void pmiCopyCellActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiCopyCellActionPerformed
         int row = tbMain.rowAtPoint(tbMainClickPoint);
         int col = tbMain.columnAtPoint(tbMainClickPoint);
@@ -1672,7 +1635,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_pmiCopyRowActionPerformed
 
     private void pmiClearAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pmiClearAllActionPerformed
-        ((DefaultTableModel)tbMain.getModel()).setRowCount(0);
+        ((DefaultTableModel) tbMain.getModel()).setRowCount(0);
         printMessageCount();
     }//GEN-LAST:event_pmiClearAllActionPerformed
 
@@ -1691,7 +1654,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         //reset at first
         tbMain.setRowSorter(null);
-        
+
         //prepare the filter
         List<RowFilter<Object, Object>> filters = new ArrayList(3);
 
@@ -1739,7 +1702,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         }
 
         jFilterDialog.setVisible(false);
-        
+
         printMessageCount();
     }//GEN-LAST:event_jButton3ActionPerformed
 
@@ -1777,13 +1740,13 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_btResetFiltersActionPerformed
 
     private void edDataKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_edDataKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER){
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             btSendActionPerformed(null);
         }
     }//GEN-LAST:event_edDataKeyPressed
 
     private void miSoundBathroomSourceFMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomSourceFMActionPerformed
-       Commands.selectSourceOfSoundInBathroom(connection, Commands.BATHROOM_AUDIOSOURCE_FM);
+        Commands.selectSourceOfSoundInBathroom(connection, Commands.BATHROOM_AUDIOSOURCE_FM);
     }//GEN-LAST:event_miSoundBathroomSourceFMActionPerformed
 
     private void miSoundBathroomIncVolumeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomIncVolumeActionPerformed
@@ -1811,7 +1774,7 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundRoomFMNextStationActionPerformed
 
     private void miSoundRoomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
-        if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK){
+        if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK) {
             Commands.writeFMStationsTOEEPROMInRoom(connection);
         }
     }//GEN-LAST:event_miSoundRoomFMWriteStationsToEEPROMActionPerformed
@@ -1825,9 +1788,9 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_miSoundBathroomFMNextStationActionPerformed
 
     private void miSoundBathroomFMWriteStationsToEEPROMActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
-       if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK){
+        if ((evt.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK) {
             Commands.writeFMStationsTOEEPROMInBathroom(connection);
-       }
+        }
     }//GEN-LAST:event_miSoundBathroomFMWriteStationsToEEPROMActionPerformed
 
     private void mnFanKitchenOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnFanKitchenOnActionPerformed
@@ -1847,12 +1810,12 @@ public class SupradinConsole extends javax.swing.JFrame {
     }//GEN-LAST:event_mnFanBathroomModeManualActionPerformed
 
     private void trayImageFree() {
-        if (tray != null && trayIcon != null){
+        if (tray != null && trayIcon != null) {
             tray.remove(trayIcon);
             trayIcon = null;
         }
     }
-    
+
     private boolean trayImageShow(Image trayImage, String tooltip) {
         if (tray != null) {
             try {
@@ -1910,26 +1873,26 @@ public class SupradinConsole extends javax.swing.JFrame {
         return false;
     }
 
-    private void trayIn(){
+    private void trayIn() {
         setVisible(false);
         setExtendedState(getExtendedState() | JFrame.ICONIFIED);
     }
-    
-    private void trayOut(){
+
+    private void trayOut() {
         setVisible(true);
         setExtendedState(getExtendedState() & (~JFrame.ICONIFIED));
     }
-    
-    private void printMessageCount(){
-        if (tbMain.getRowCount() != tbMain.getModel().getRowCount()){   //has filtered
+
+    private void printMessageCount() {
+        if (tbMain.getRowCount() != tbMain.getModel().getRowCount()) {   //has filtered
             lbNumMessages.setText(String.format("Сообщений: %d / %d", tbMain.getRowCount(), tbMain.getModel().getRowCount()));
             lbNumMessages.setForeground(Color.RED);
-        }else{
+        } else {
             lbNumMessages.setText(String.format("Сообщений: %d", tbMain.getRowCount()));
             lbNumMessages.setForeground(Color.BLACK);
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -1937,7 +1900,7 @@ public class SupradinConsole extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
 
         try {
@@ -2099,9 +2062,9 @@ class ComboBoxItem {
     public int getId() {
         return id;
     }
-    
-    public String getIdAsHex(){
-        return String.format("0x%s", DataFormat.byteToHex(id));
+
+    public String getIdAsHex() {
+        return String.format("0x%s", HexDataUtils.byteToHex(id));
     }
 
     @Override
@@ -2131,7 +2094,7 @@ class FilterListCellRenderer extends JCheckBox implements ListCellRenderer<Objec
 
     @Override
     public Component getListCellRendererComponent(JList<? extends Object> list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
+                                                  boolean isSelected, boolean cellHasFocus) {
 
         setComponentOrientation(list.getComponentOrientation());
         setFont(list.getFont());
@@ -2147,9 +2110,6 @@ class FilterListCellRenderer extends JCheckBox implements ListCellRenderer<Objec
 
         return this;
     }
-    
-    
-    
-    
+
 
 }
