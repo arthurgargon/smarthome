@@ -21,10 +21,6 @@ config.json
 # temporary ignore android project commits
 monitor
 
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
 # Folder config file
 Desktop.ini
 
